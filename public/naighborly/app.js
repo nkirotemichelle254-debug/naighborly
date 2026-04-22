@@ -548,7 +548,7 @@ function createProfilePost(post) {
   card.innerHTML = `
     <div class="profile-post-card__header">
       <span class="profile-post-card__tag">${escapeHtml(post.category)}</span>
-      <span class="profile-post-card__status${statusLabel === "Urgent" || statusLabel === "Request" ? " is-request" : ""}">${statusLabel}</span>
+      <span class="profile-post-card__status${statusLabel === "Urgent" || statusLabel === "Request" ? " is-request" : ""}">${escapeHtml(statusLabel)}</span>
     </div>
     <h3 class="profile-post-card__title">${escapeHtml(post.title)}</h3>
     <p class="profile-post-card__meta">${escapeHtml(post.description || `${post.intent} in ${post.location}`)}</p>
