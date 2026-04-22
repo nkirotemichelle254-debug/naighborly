@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Naighborly | Inbox</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&family=Syne:wght@500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body class="page-body">
+    <div class="page-shell">
+      <main class="single-frame-layout">
+        <section class="device-frame web-frame">
+          <div class="app-surface inbox-app">
+            <div class="inbox-pane inbox-list-pane">
+              <div class="inbox-sticky-header">
+                <div class="section-title">Messages</div>
+                <label class="searchbar compact">
+                  <span>&#128269;</span>
+                  <input type="search" placeholder="sema...what are you looking for?" />
+                </label>
+              </div>
+              <div class="conversation-list" id="conversation-list"></div>
+            </div>
+            <div class="thread-pane">
+              <div class="thread-head">
+                <div class="avatar tiny" id="thread-avatar">SK</div>
+                <strong id="thread-name">Sarah Kamau</strong>
+              </div>
+              <div class="thread-messages" id="thread-messages">
+                <div class="bubble received">Hi, is the office chair available?</div>
+                <div class="bubble sent">Yes, it is. What condition were you hoping for?</div>
+                <div class="bubble received">Good. Can I come by tomorrow?</div>
+                <div class="bubble sent">Sure, let's confirm a public pickup point in town.</div>
+              </div>
+              <label class="message-box">
+                <input type="text" placeholder="Type a message..." />
+                <button type="button">&rarr;</button>
+              </label>
+            </div>
+            <div class="mobile-thread-preview">
+              <div class="thread-head">
+                <div class="avatar tiny" id="mobile-thread-avatar">SK</div>
+                <strong id="mobile-thread-name">Sarah Kamau</strong>
+              </div>
+              <div class="thread-messages" id="mobile-thread-messages">
+                <div class="bubble received">Hi, is the office chair available?</div>
+                <div class="bubble sent">Yes, it is. What condition were you hoping for?</div>
+              </div>
+            </div>
+            <nav class="bottom-nav">
+              <a class="nav-item" href="home.html">Home</a>
+              <a class="nav-plus" href="create.html">+</a>
+              <a class="nav-item active" href="inbox.html">Messages</a>
+              <a class="nav-item" href="profile.html">Profile</a>
+            </nav>
+          </div>
+        </section>
+      </main>
+    </div>
+    <script src="app.js"></script>
+  </body>
+</html>
