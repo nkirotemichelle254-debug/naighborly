@@ -216,6 +216,15 @@ function formatLabel(value) {
   return value.charAt(0).toUpperCase() + value.slice(1).toLowerCase();
 }
 
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
 function getInitials(name) {
   return name
     .split(" ")
@@ -307,13 +316,13 @@ function createPostCard(post) {
   card.style.setProperty("--card-width", post.width || "100%");
   card.innerHTML = `
     <div class="feed-card__tags">
-      <span class="feed-card__pill feed-card__pill--category">${post.category}</span>
-      <span class="feed-card__pill feed-card__pill--intent${post.intent === "Request" ? " is-request" : ""}">${post.intent}</span>
+      <span class="feed-card__pill feed-card__pill--category">${escapeHtml(post.category)}</span>
+      <span class="feed-card__pill feed-card__pill--intent${post.intent === "Request" ? " is-request" : ""}">${escapeHtml(post.intent)}</span>
       ${post.urgent ? '<span class="feed-card__alert" aria-hidden="true">!</span>' : ""}
     </div>
-    <h3 class="feed-card__title">${post.title}</h3>
-    <p class="feed-card__description">${post.description}</p>
-    <div class="feed-card__location">${post.location}</div>
+    <h3 class="feed-card__title">${escapeHtml(post.title)}</h3>
+    <p class="feed-card__description">${escapeHtml(post.description)}</p>
+    <div class="feed-card__location">${escapeHtml(post.location)}</div>
   `;
 
   card.addEventListener("click", () => navigateToPost(post));
