@@ -1037,6 +1037,7 @@ textarea {
   grid-template-columns: 320px minmax(0, 1fr);
   gap: 0;
   min-height: 100vh;
+  background: var(--home-cream);
   padding-bottom: 88px;
 }
 
@@ -1067,6 +1068,42 @@ textarea {
 
 .mobile-thread-preview {
   display: none;
+}
+
+.inbox-app .bottom-nav {
+  align-items: end;
+  gap: 8px;
+  padding: 10px 18px 12px;
+  border-top: 1px solid var(--home-line);
+}
+
+.inbox-app .nav-item,
+.inbox-app .nav-plus {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  color: #99a1af;
+  font-family: "Inter", sans-serif;
+  font-size: 0.68rem;
+}
+
+.inbox-app .nav-item.active {
+  color: var(--home-ink);
+}
+
+.inbox-app .nav-plus {
+  width: 52px;
+  height: 52px;
+  margin: -30px auto 0;
+  border-radius: 50%;
+  background:
+    linear-gradient(rgba(16, 24, 40, 0.3), rgba(16, 24, 40, 0.3)),
+    var(--pattern-asset) center/110px auto repeat,
+    var(--home-ink);
+  color: var(--white);
+  box-shadow: 0 16px 30px rgba(16, 24, 40, 0.25);
 }
 
 .conversation-row {
