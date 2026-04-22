@@ -216,6 +216,15 @@ function formatLabel(value) {
   return value.charAt(0).toUpperCase() + value.slice(1).toLowerCase();
 }
 
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
 function getInitials(name) {
   return name
     .split(" ")
@@ -307,13 +316,13 @@ function createPostCard(post) {
   card.style.setProperty("--card-width", post.width || "100%");
   card.innerHTML = `
     <div class="feed-card__tags">
-      <span class="feed-card__pill feed-card__pill--category">${post.category}</span>
-      <span class="feed-card__pill feed-card__pill--intent${post.intent === "Request" ? " is-request" : ""}">${post.intent}</span>
+      <span class="feed-card__pill feed-card__pill--category">${escapeHtml(post.category)}</span>
+      <span class="feed-card__pill feed-card__pill--intent${post.intent === "Request" ? " is-request" : ""}">${escapeHtml(post.intent)}</span>
       ${post.urgent ? '<span class="feed-card__alert" aria-hidden="true">!</span>' : ""}
     </div>
-    <h3 class="feed-card__title">${post.title}</h3>
-    <p class="feed-card__description">${post.description}</p>
-    <div class="feed-card__location">${post.location}</div>
+    <h3 class="feed-card__title">${escapeHtml(post.title)}</h3>
+    <p class="feed-card__description">${escapeHtml(post.description)}</p>
+    <div class="feed-card__location">${escapeHtml(post.location)}</div>
   `;
 
   card.addEventListener("click", () => navigateToPost(post));
@@ -426,13 +435,13 @@ function createConversationRow(item, isActive = false) {
   row.setAttribute("role", "button");
   row.setAttribute("aria-label", `Open conversation with ${item.name}`);
   row.innerHTML = `
-    <div class="avatar tiny">${item.initials}</div>
+    <div class="avatar tiny">${escapeHtml(item.initials)}</div>
     <div class="conversation-meta">
-      <strong>${item.name}</strong>
-      <div class="conversation-preview">${item.preview}</div>
+      <strong>${escapeHtml(item.name)}</strong>
+      <div class="conversation-preview">${escapeHtml(item.preview)}</div>
     </div>
     <div>
-      <div class="conversation-time">${item.time}</div>
+      <div class="conversation-time">${escapeHtml(item.time)}</div>
       ${item.unread ? '<div class="unread-dot"></div>' : ""}
     </div>
   `;
@@ -538,11 +547,11 @@ function createProfilePost(post) {
   card.setAttribute("aria-label", `${post.title}, open details`);
   card.innerHTML = `
     <div class="profile-post-card__header">
-      <span class="profile-post-card__tag">${post.category}</span>
-      <span class="profile-post-card__status${statusLabel === "Urgent" || statusLabel === "Request" ? " is-request" : ""}">${statusLabel}</span>
+      <span class="profile-post-card__tag">${escapeHtml(post.category)}</span>
+      <span class="profile-post-card__status${statusLabel === "Urgent" || statusLabel === "Request" ? " is-request" : ""}">${escapeHtml(statusLabel)}</span>
     </div>
-    <h3 class="profile-post-card__title">${post.title}</h3>
-    <p class="profile-post-card__meta">${post.description || `${post.intent} in ${post.location}`}</p>
+    <h3 class="profile-post-card__title">${escapeHtml(post.title)}</h3>
+    <p class="profile-post-card__meta">${escapeHtml(post.description || `${post.intent} in ${post.location}`)}</p>
   `;
 
   card.addEventListener("click", () => {
