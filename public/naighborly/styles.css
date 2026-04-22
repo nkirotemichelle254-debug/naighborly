@@ -2501,7 +2501,8 @@ textarea {
 
   .app-nav,
   .home-screen .home-nav,
-  .inbox-app .bottom-nav {
+  .inbox-app .bottom-nav,
+  .flow-actions {
     left: 0;
     transform: none;
     width: 100%;
@@ -2525,11 +2526,15 @@ textarea {
 
   .create-step.active,
   .details-content,
-  .profile-content,
-  .flow-actions {
+  .profile-content {
     width: min(100%, 780px);
     margin-left: auto;
     margin-right: auto;
+  }
+
+  .flow-actions {
+    padding-left: max(24px, calc((100% - 780px) / 2));
+    padding-right: max(24px, calc((100% - 780px) / 2));
   }
 
   .select-card-stack,
