@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Naighborly | Create Post</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&family=Syne:wght@500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body class="page-body mobile-app-body">
+    <div class="page-shell app-shell">
+      <main class="single-frame-layout app-layout">
+        <section class="device-frame web-frame app-frame">
+          <div class="app-surface app-screen create-screen" data-create-flow>
+            <div class="flow-header">
+              <header class="flow-topbar">
+                <a class="topbar-back" href="home.html" data-flow-back aria-label="Go back">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path
+                      d="M15 5L8 12L15 19"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                    />
+                  </svg>
+                </a>
+                <h1>Create Post</h1>
+              </header>
+
+              <div class="flow-progress" aria-label="Create post progress">
+                <span class="flow-progress__segment active" data-step-pill="1"></span>
+                <span class="flow-progress__segment" data-step-pill="2"></span>
+                <span class="flow-progress__segment" data-step-pill="3"></span>
+              </div>
+            </div>
+
+            <div class="create-scroll-region">
+              <section class="create-step active" data-step="1">
+                <div class="flow-copy">
+                  <h2>What is this?</h2>
+                  <p>Choose the category that best describes your post</p>
+                </div>
+
+                <div class="select-card-stack">
+                  <button
+                    class="select-card select-card--charcoal"
+                    data-choice-group="category"
+                    data-value="item"
+                    type="button"
+                    aria-pressed="false"
+                  >
+                    <span class="select-card__emoji" aria-hidden="true">&#128230;</span>
+                    <span class="select-card__title">Item</span>
+                    <span class="select-card__description">Physical goods or products</span>
+                  </button>
+
+                  <button
+                    class="select-card select-card--blue"
+                    data-choice-group="category"
+                    data-value="service"
+                    type="button"
+                    aria-pressed="false"
+                  >
+                    <span class="select-card__emoji" aria-hidden="true">&#128736;</span>
+                    <span class="select-card__title">Service</span>
+                    <span class="select-card__description">Skills or services offered</span>
+                  </button>
+
+                  <button
+                    class="select-card select-card--gold"
+                    data-choice-group="category"
+                    data-value="swap"
+                    type="button"
+                    aria-pressed="false"
+                  >
+                    <span class="select-card__emoji" aria-hidden="true">&#129309;</span>
+                    <span class="select-card__title">Swap</span>
+                    <span class="select-card__description">Exchange one thing for another</span>
+                  </button>
+                </div>
+              </section>
+
+            <section class="create-step" data-step="2">
+              <div class="flow-copy">
+                <h2>What do you want to do?</h2>
+                <p>Tell your neighbors if you are offering help or asking for it</p>
+              </div>
+
+              <div class="intent-card-stack">
+                <button
+                  class="intent-select"
+                  data-choice-group="intent"
+                  data-value="offer"
+                  type="button"
+                  aria-pressed="false"
+                >
+                  <span class="intent-select__eyebrow">Share with the community</span>
+                  <span class="intent-select__title">Offer</span>
+                  <span class="intent-select__description">You have something useful to give, lend, or do.</span>
+                </button>
+
+                <button
+                  class="intent-select intent-select--request"
+                  data-choice-group="intent"
+                  data-value="request"
+                  type="button"
+                  aria-pressed="false"
+                >
+                  <span class="intent-select__eyebrow">Ask for support</span>
+                  <span class="intent-select__title">Request</span>
+                  <span class="intent-select__description">Let trusted neighbors know what you need.</span>
+                </button>
+              </div>
+            </section>
+
+            <section class="create-step" data-step="3">
+              <div class="flow-copy">
+                <h2>Post details</h2>
+                <p>Add information about your post</p>
+              </div>
+
+              <form class="create-form" novalidate>
+                <div class="form-group">
+                  <label class="form-label" for="create-photo-input">
+                    Photos <em data-photo-requirement>*required for item offers</em>
+                  </label>
+                  <label class="upload-panel" for="create-photo-input">
+                    <input
+                      class="visually-hidden"
+                      id="create-photo-input"
+                      data-photo-input
+                      type="file"
+                      accept="image/*"
+                      multiple
+                    />
+                    <span class="upload-panel__icon" aria-hidden="true">
+                      <svg viewBox="0 0 24 24">
+                        <path
+                          d="M8 7H6.5A2.5 2.5 0 0 0 4 9.5V16A2.5 2.5 0 0 0 6.5 18.5H17.5A2.5 2.5 0 0 0 20 16V9.5A2.5 2.5 0 0 0 17.5 7H16L14.8 5.5H9.2L8 7Z"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-linejoin="round"
+                          stroke-width="1.8"
+                        />
+                        <circle
+                          cx="12"
+                          cy="12.5"
+                          r="3"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="1.8"
+                        />
+                      </svg>
+                    </span>
+                    <span class="upload-panel__text" data-photo-text>Click to upload photos</span>
+                  </label>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="create-title">Title</label>
+                  <input id="create-title" type="text" placeholder="E.g., Office chair available" data-create-title />
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="create-description">Description</label>
+                  <textarea
+                    id="create-description"
+                    placeholder="Provide more details..."
+                    data-create-description
+                  ></textarea>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="create-location">Location</label>
+                  <input id="create-location" type="text" placeholder="E.g., Westlands" data-create-location />
+                </div>
+
+                <label class="contact-panel" for="create-allow-calls">
+                  <div class="contact-panel__copy">
+                    <strong>Allow phone calls</strong>
+                    <p>Only switch this on if you want a Call button on your post.</p>
+                  </div>
+                  <input class="visually-hidden" id="create-allow-calls" type="checkbox" data-call-toggle />
+                  <span class="toggle-switch" aria-hidden="true">
+                    <span></span>
+                  </span>
+                </label>
+
+                <div class="form-group" data-call-field hidden>
+                  <label class="form-label" for="create-phone">Phone number</label>
+                  <input
+                    id="create-phone"
+                    type="tel"
+                    inputmode="tel"
+                    autocomplete="tel"
+                    placeholder="E.g., +254700123456"
+                    data-call-phone
+                  />
+                </div>
+
+                <label class="urgent-panel" for="create-urgent">
+                  <div class="urgent-panel__copy">
+                    <strong>Mark as Urgent</strong>
+                    <p>Your post will stand out with a red border and alert icon</p>
+                  </div>
+                  <input class="visually-hidden" id="create-urgent" type="checkbox" data-urgent-toggle />
+                  <span class="toggle-switch" aria-hidden="true">
+                    <span></span>
+                  </span>
+                </label>
+              </form>
+            </section>
+            </div>
+
+            <div class="flow-actions flow-actions--single" data-flow-actions>
+              <button class="secondary-action" data-prev-step type="button" hidden>Back</button>
+              <button class="primary-action kitenge-button" data-next-step type="button">Continue</button>
+            </div>
+
+            <nav class="bottom-nav app-nav" aria-label="Primary">
+              <a class="nav-item" href="home.html">
+                <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true">
+                  <path
+                    d="M4 10.5L12 4L20 10.5V19A1 1 0 0 1 19 20H15V14H9V20H5A1 1 0 0 1 4 19V10.5Z"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="1.8"
+                  />
+                </svg>
+                <span>Home</span>
+              </a>
+              <a class="nav-plus active" href="create.html" aria-current="page" aria-label="Create a post">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path
+                    d="M12 5V19M5 12H19"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-linecap="round"
+                    stroke-width="2.2"
+                  />
+                </svg>
+              </a>
+              <a class="nav-item" href="inbox.html">
+                <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true">
+                  <path
+                    d="M5 7.5C5 6.12 6.12 5 7.5 5H16.5C17.88 5 19 6.12 19 7.5V14.5C19 15.88 17.88 17 16.5 17H9L5 20V7.5Z"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="1.8"
+                  />
+                </svg>
+                <span>Messages</span>
+              </a>
+              <a class="nav-item" href="profile.html">
+                <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true">
+                  <path
+                    d="M17 19A5 5 0 0 0 12 14A5 5 0 0 0 7 19"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-linecap="round"
+                    stroke-width="1.8"
+                  />
+                  <circle
+                    cx="12"
+                    cy="8"
+                    r="3"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                  />
+                </svg>
+                <span>Profile</span>
+              </a>
+            </nav>
+          </div>
+        </section>
+      </main>
+    </div>
+    <script src="app.js"></script>
+  </body>
+</html>

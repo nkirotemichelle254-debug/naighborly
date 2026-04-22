@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Naighborly | Post Details</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&family=Syne:wght@500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body class="page-body mobile-app-body">
+    <div class="page-shell app-shell">
+      <main class="single-frame-layout app-layout">
+        <section class="device-frame web-frame app-frame">
+          <div class="app-surface app-screen details-screen" data-details-page>
+            <div class="details-sticky-header">
+              <header class="flow-topbar flow-topbar--details">
+                <a class="topbar-back" href="home.html" aria-label="Back to home">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path
+                      d="M15 5L8 12L15 19"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                    />
+                  </svg>
+                </a>
+                <h1>Post Details</h1>
+              </header>
+            </div>
+
+            <div class="details-content" id="details-content">
+              <section class="pattern-banner">
+                <p>Built for everyday exchange in Nairobi</p>
+                <strong>Share, swap, and support your community</strong>
+              </section>
+
+              <section class="details-photo-strip" id="details-photo-strip" hidden>
+                <div class="details-photo-grid" id="details-photo-grid"></div>
+              </section>
+
+              <article class="details-hero-card feed-card feed-card--charcoal" id="details-hero-card">
+                <div class="feed-card__tags">
+                  <span class="feed-card__pill feed-card__pill--category" id="details-type">Item</span>
+                  <span class="feed-card__pill feed-card__pill--intent" id="details-intent">Offer</span>
+                  <span class="feed-card__alert" id="details-alert" hidden aria-hidden="true">!</span>
+                </div>
+                <h2 class="feed-card__title" id="details-title">Office chair available</h2>
+                <p class="feed-card__description" id="details-description">Good condition, free pick up</p>
+                <div class="feed-card__location" id="details-location">Westlands</div>
+              </article>
+
+              <article class="surface-panel owner-panel">
+                <div class="owner-panel__main">
+                  <div class="owner-avatar" id="details-owner-initials">SK</div>
+                  <div>
+                    <strong id="details-owner">Sarah Kamau</strong>
+                    <p id="details-owner-meta">Community member in Westlands</p>
+                  </div>
+                </div>
+                <span class="trust-chip">Trusted neighbor</span>
+              </article>
+
+              <article class="surface-panel details-meta-panel">
+                <div class="meta-item">
+                  <span>Category</span>
+                  <strong id="details-category-meta">Item</strong>
+                </div>
+                <div class="meta-item">
+                  <span>Intent</span>
+                  <strong id="details-intent-meta">Offer</strong>
+                </div>
+                <div class="meta-item">
+                  <span>Posted</span>
+                  <strong id="details-time">10 mins ago</strong>
+                </div>
+                <div class="meta-item">
+                  <span>Neighborhood</span>
+                  <strong id="details-area">Westlands</strong>
+                </div>
+              </article>
+
+              <article class="surface-panel details-actions-panel">
+                <h2>Reach out safely</h2>
+                <p>Start with a message, confirm the item or service, then agree on a public meetup point.</p>
+                <div class="details-action-row">
+                  <a class="primary-action kitenge-button" id="details-message-link" href="inbox.html">Message</a>
+                  <a class="secondary-action" id="details-call-link" href="tel:+254700000000">Call</a>
+                </div>
+              </article>
+
+              <article class="safety-panel">
+                <strong>Community tip</strong>
+                <p id="details-note">
+                  Meet in a public place, inspect the item first, and use in-app messages to keep arrangements clear.
+                </p>
+              </article>
+            </div>
+
+            <nav class="bottom-nav app-nav" aria-label="Primary">
+              <a class="nav-item active" href="home.html">
+                <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true">
+                  <path
+                    d="M4 10.5L12 4L20 10.5V19A1 1 0 0 1 19 20H15V14H9V20H5A1 1 0 0 1 4 19V10.5Z"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="1.8"
+                  />
+                </svg>
+                <span>Home</span>
+              </a>
+              <a class="nav-plus" href="create.html" aria-label="Create a post">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path
+                    d="M12 5V19M5 12H19"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-linecap="round"
+                    stroke-width="2.2"
+                  />
+                </svg>
+              </a>
+              <a class="nav-item" href="inbox.html">
+                <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true">
+                  <path
+                    d="M5 7.5C5 6.12 6.12 5 7.5 5H16.5C17.88 5 19 6.12 19 7.5V14.5C19 15.88 17.88 17 16.5 17H9L5 20V7.5Z"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="1.8"
+                  />
+                </svg>
+                <span>Messages</span>
+              </a>
+              <a class="nav-item" href="profile.html">
+                <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true">
+                  <path
+                    d="M17 19A5 5 0 0 0 12 14A5 5 0 0 0 7 19"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-linecap="round"
+                    stroke-width="1.8"
+                  />
+                  <circle
+                    cx="12"
+                    cy="8"
+                    r="3"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                  />
+                </svg>
+                <span>Profile</span>
+              </a>
+            </nav>
+          </div>
+        </section>
+      </main>
+    </div>
+    <script src="app.js"></script>
+  </body>
+</html>
