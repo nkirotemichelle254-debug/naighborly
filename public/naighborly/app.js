@@ -573,6 +573,22 @@ function renderConversationThread(thread) {
   renderThreadMessages(mobileThreadMessages, thread.messages, Math.min(thread.messages.length, 3));
 }
 
+function persistThreadMessage(thread, text) {
+  const messageText = String(text || "").trim().slice(0, 500);
+  if (!thread || !messageText) return false;
+  const updatedThread = {
+    ...thread,
+    preview: messageText,
+    time: "Now",
+    unread: false,
+    messages: [...thread.messages, { sender: "sent", text: messageText }],
+  };
+  const storedThreads = readStoredThreads().filter((item) => item.id !== updatedThread.id);
+  writeStoredThreads([updatedThread, ...storedThreads]);
+  renderConversations(updatedThread.id);
+  return true;
+}
+
 function updateConversationQuery(thread) {
   const url = new URL(window.location.href);
   url.searchParams.set("thread", thread.id);
@@ -621,6 +637,24 @@ function renderConversations(selectedThreadId = "") {
 
   renderConversationThread(activeThread);
   updateConversationQuery(activeThread);
+  const messageBox = document.querySelector(".message-box");
+  if (messageBox && !messageBox.dataset.bound) {
+    messageBox.dataset.bound = "true";
+    messageBox.addEventListener("submit", (event) => event.preventDefault());
+    const input = messageBox.querySelector("input");
+    const button = messageBox.querySelector("button");
+    const send = () => {
+      const latestThread = getConversationThreads().find((thread) => thread.id === new URLSearchParams(window.location.search).get("thread"));
+      if (persistThreadMessage(latestThread || activeThread, input?.value)) input.value = "";
+    };
+    button?.addEventListener("click", send);
+    input?.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        send();
+      }
+    });
+  }
 }
 
 function createProfilePost(post) {
