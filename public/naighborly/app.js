@@ -354,6 +354,47 @@ function getPostById(postId) {
   return getAllFeedPosts().find((post) => post.id === normalizedId) || null;
 }
 
+function getDeletedPostIds() {
+  return new Set(safeReadArray(DELETED_POSTS_KEY).map(String));
+}
+
+function isOwnedPost(post) {
+  return post?.owner === CURRENT_USER.name;
+}
+
+function readFavoriteIds() {
+  return safeReadArray(FAVORITES_KEY).map(String);
+}
+
+function isFavoritePost(postId) {
+  return readFavoriteIds().includes(String(postId));
+}
+
+function toggleFavoritePost(postId) {
+  const id = String(postId || "");
+  if (!id) return false;
+  const favorites = readFavoriteIds();
+  const nextFavorites = favorites.includes(id) ? favorites.filter((item) => item !== id) : [id, ...favorites];
+  return safeWriteArray(FAVORITES_KEY, nextFavorites);
+}
+
+function upsertOwnedPost(postPatch) {
+  const post = normalizePost(postPatch);
+  if (!post || !isOwnedPost(post)) return false;
+  const storedPosts = readStoredPosts().filter((item) => item.id !== post.id);
+  return writeStoredPosts([post, ...storedPosts]);
+}
+
+function deletePost(postId) {
+  const id = String(postId || "");
+  const post = getPostById(id);
+  if (!post || !isOwnedPost(post)) return false;
+  writeStoredPosts(readStoredPosts().filter((item) => item.id !== id));
+  safeWriteArray(DELETED_POSTS_KEY, [...getDeletedPostIds(), id]);
+  safeWriteArray(FAVORITES_KEY, readFavoriteIds().filter((item) => item !== id));
+  return true;
+}
+
 function readFilesAsDataUrls(fileList) {
   const files = [...(fileList || [])].slice(0, MAX_PHOTOS);
   if (!files.length) return Promise.resolve([]);
