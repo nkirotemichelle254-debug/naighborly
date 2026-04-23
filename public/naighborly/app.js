@@ -337,6 +337,9 @@ function validatePostDraft({ title, description, location, allowCalls, phone, ph
   if (photoList.some((file) => !file.type.startsWith("image/") || file.size > MAX_PHOTO_BYTES)) {
     return { valid: false, message: "Choose image files under 2.5MB each." };
   }
+  if (photoList.reduce((total, file) => total + file.size, 0) > MAX_PHOTO_STORAGE_BYTES) {
+    return { valid: false, message: "Use fewer photos so the post can be saved on this device." };
+  }
 
   return { valid: true, message: "" };
 }
@@ -354,6 +357,10 @@ function readFilesAsDataUrls(fileList) {
   const invalidFile = files.find((file) => !file.type.startsWith("image/") || file.size > MAX_PHOTO_BYTES);
   if (invalidFile) {
     return Promise.reject(new Error("Photos must be images under 2.5MB each."));
+  }
+
+  if (files.reduce((total, file) => total + file.size, 0) > MAX_PHOTO_STORAGE_BYTES) {
+    return Promise.reject(new Error("Photo selection is too large to save locally."));
   }
 
   return Promise.all(
@@ -390,7 +397,7 @@ function readStoredPosts() {
 }
 
 function writeStoredPosts(posts) {
-  safeWriteArray(STORAGE_KEY, posts.map(normalizePost).filter(Boolean));
+  return safeWriteArray(STORAGE_KEY, posts.map(normalizePost).filter(Boolean));
 }
 
 function getAllFeedPosts() {
