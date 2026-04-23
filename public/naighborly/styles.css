@@ -2515,6 +2515,7 @@ textarea {
   .app-nav,
   .home-screen .home-nav,
   .inbox-app .bottom-nav,
+  .mobile-message-box,
   .flow-actions {
     left: 0;
     transform: none;
