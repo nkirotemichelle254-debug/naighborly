@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Naighborly | Login</title>
+    <title>Naighborly | Sign Up</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -17,25 +17,28 @@
       <section class="auth-panel auth-panel-single">
         <div class="brand-hero auth-hero">
           <h1>Naighborly</h1>
-          <p>Share. Connect. Thrive together.</p>
+          <p>Join trusted exchange across your neighborhood.</p>
         </div>
-        <form class="auth-form" action="#" data-login-form>
-          <h2>Welcome Back</h2>
-          <p class="auth-note" data-auth-note>Browse freely, then sign in when you want to post, save, or message.</p>
+        <form class="auth-form" action="#" data-signup-form>
+          <h2>Create account</h2>
+          <p class="auth-note" data-auth-note>Browse freely, then sign up when you are ready to post, save, or message.</p>
+          <label>
+            <span>Name</span>
+            <input type="text" placeholder="Michael Heri" data-auth-name />
+          </label>
           <label>
             <span>Email</span>
             <input type="email" placeholder="john@example.com" data-auth-email />
           </label>
           <label>
             <span>Password</span>
-            <input type="password" placeholder="Enter your password" />
+            <input type="password" placeholder="Create a password" />
           </label>
           <p class="form-error" data-auth-error></p>
-          <button class="pill-button auth-submit-button" type="submit">Sign In</button>
+          <button class="pill-button auth-submit-button" type="submit">Sign Up</button>
           <p class="auth-footnote">
-            Don't have an account? <a href="signup.html">Sign Up</a>
+            Already have an account? <a href="index.html">Sign In</a>
           </p>
-          <p class="auth-footnote"><a href="home.html?guest=1">Continue as guest</a></p>
         </form>
       </section>
     </main>
