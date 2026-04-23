@@ -30,11 +30,28 @@
   box-sizing: border-box;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   margin: 0;
   font-family: "Plus Jakarta Sans", sans-serif;
   color: var(--ink);
   background: var(--surface);
+  animation: pageFadeIn 220ms ease-out both;
+}
+
+@keyframes pageFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 h1,
