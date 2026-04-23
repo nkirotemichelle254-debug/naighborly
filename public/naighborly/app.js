@@ -536,7 +536,15 @@ function readStoredThreads() {
 }
 
 function writeStoredThreads(threads) {
-  return safeWriteArray(THREADS_KEY, threads.map((thread) => buildConversationFromPost(getPostById(thread.postId), thread)).filter(Boolean));
+  return safeWriteArray(
+    THREADS_KEY,
+    threads
+      .map((thread) => {
+        const post = getPostById(thread.postId);
+        return post ? buildConversationFromPost(post, thread) : null;
+      })
+      .filter(Boolean),
+  );
 }
 
 function ensureThreadForPost(postId) {
@@ -546,7 +554,7 @@ function ensureThreadForPost(postId) {
   const existing = storedThreads.find((thread) => thread.postId === post.id);
   if (existing) return buildConversationFromPost(post, existing);
   const newThread = buildConversationFromPost(post, { id: `thread-${post.id}`, time: "New" });
-  writeStoredThreads([newThread, ...storedThreads]);
+  if (!writeStoredThreads([newThread, ...storedThreads])) return null;
   return newThread;
 }
 
