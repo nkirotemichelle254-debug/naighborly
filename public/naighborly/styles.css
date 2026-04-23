@@ -2497,7 +2497,7 @@ textarea {
   }
 
   .app-screen {
-    min-height: 860px;
+    min-height: 100vh;
   }
 
   .app-nav,
@@ -2518,7 +2518,10 @@ textarea {
   .home-screen .home-feed {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 18px;
-    padding: 8px 24px 28px;
+    width: min(100%, 980px);
+    margin-left: auto;
+    margin-right: auto;
+    padding: 8px 24px 40px;
   }
 
   .home-feed .feed-card {
@@ -2536,6 +2539,7 @@ textarea {
   .flow-actions {
     padding-left: max(24px, calc((100% - 780px) / 2));
     padding-right: max(24px, calc((100% - 780px) / 2));
+    bottom: 80px;
   }
 
   .select-card-stack,
