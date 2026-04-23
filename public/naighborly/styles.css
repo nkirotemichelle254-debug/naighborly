@@ -292,7 +292,7 @@ textarea {
 .home-screen {
   position: relative;
   min-height: 100vh;
-  padding-bottom: 112px;
+  padding-bottom: 128px;
   background: var(--home-cream);
   color: var(--home-ink);
   font-family: "Plus Jakarta Sans", sans-serif;
@@ -309,7 +309,7 @@ textarea {
 
 .home-content {
   flex: 1;
-  padding-bottom: 12px;
+  padding-bottom: 18px;
 }
 
 .home-hero {
@@ -1038,7 +1038,7 @@ textarea {
   gap: 0;
   min-height: 100vh;
   background: var(--home-cream);
-  padding-bottom: 88px;
+  padding-bottom: 112px;
 }
 
 .inbox-pane,
@@ -1064,6 +1064,7 @@ textarea {
   display: flex;
   flex-direction: column;
   padding-top: 10px;
+  padding-bottom: 18px;
 }
 
 .mobile-thread-preview {
@@ -1169,7 +1170,8 @@ textarea {
   display: grid;
   grid-template-columns: 1fr auto;
   gap: 8px;
-  padding: 0 16px 14px;
+  padding: 0 16px max(14px, env(safe-area-inset-bottom));
+  background: linear-gradient(180deg, rgba(253, 248, 241, 0) 0%, rgba(253, 248, 241, 0.96) 34%, rgba(253, 248, 241, 1) 100%);
 }
 
 .message-box button {
@@ -1506,7 +1508,18 @@ textarea {
   .mobile-thread-preview {
     display: block;
     padding-top: 10px;
+    padding-bottom: 96px;
     border-top: 1px solid var(--line);
+  }
+
+  .mobile-message-box {
+    position: fixed;
+    left: 50%;
+    bottom: 72px;
+    z-index: 5;
+    width: min(100%, var(--mobile-frame-width));
+    transform: translateX(-50%);
+    padding-top: 18px;
   }
 
   .home-frame {
@@ -1537,7 +1550,7 @@ textarea {
 
 .app-screen {
   min-height: 100vh;
-  padding-bottom: 112px;
+  padding-bottom: 128px;
   background: var(--home-cream);
   color: var(--home-ink);
   font-family: "Plus Jakarta Sans", sans-serif;
@@ -2072,7 +2085,7 @@ textarea {
 
 .details-content {
   padding-top: 24px;
-  padding-bottom: 24px;
+  padding-bottom: 36px;
 }
 
 .details-photo-strip {
@@ -2313,7 +2326,7 @@ textarea {
 
 .profile-content {
   padding-top: 24px;
-  padding-bottom: 24px;
+  padding-bottom: 36px;
 }
 
 .profile-stats,
@@ -2496,12 +2509,13 @@ textarea {
   }
 
   .app-screen {
-    min-height: 860px;
+    min-height: 100vh;
   }
 
   .app-nav,
   .home-screen .home-nav,
   .inbox-app .bottom-nav,
+  .mobile-message-box,
   .flow-actions {
     left: 0;
     transform: none;
@@ -2517,7 +2531,10 @@ textarea {
   .home-screen .home-feed {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 18px;
-    padding: 8px 24px 28px;
+    width: min(100%, 980px);
+    margin-left: auto;
+    margin-right: auto;
+    padding: 8px 24px 40px;
   }
 
   .home-feed .feed-card {
@@ -2535,6 +2552,7 @@ textarea {
   .flow-actions {
     padding-left: max(24px, calc((100% - 780px) / 2));
     padding-right: max(24px, calc((100% - 780px) / 2));
+    bottom: 80px;
   }
 
   .select-card-stack,

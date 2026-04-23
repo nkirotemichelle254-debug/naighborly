@@ -1,4 +1,14 @@
 const STORAGE_KEY = "naighborly-user-posts";
+const THREADS_KEY = "naighborly-message-threads";
+const DRAFT_KEY = "naighborly-create-draft";
+const MAX_PHOTOS = 4;
+const MAX_PHOTO_BYTES = 2.5 * 1024 * 1024;
+const POST_LIMITS = {
+  title: 80,
+  description: 700,
+  location: 48,
+  phone: 18,
+};
 const CURRENT_USER = {
   name: "Michael Heri",
   initials: "MH",
@@ -203,7 +213,7 @@ const conversations = [
 ];
 
 function slugify(value) {
-  return value
+  return String(value || "")
     .toLowerCase()
     .trim()
     .replace(/[^a-z0-9]+/g, "-")
@@ -240,13 +250,91 @@ function getToneForCategory(category) {
   return "charcoal";
 }
 
+function safeReadArray(key) {
+  try {
+    const raw = window.localStorage.getItem(key);
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function safeWriteArray(key, items) {
+  try {
+    window.localStorage.setItem(key, JSON.stringify(Array.isArray(items) ? items : []));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function normalizePost(post) {
+  if (!post || typeof post !== "object") return null;
+  const title = String(post.title || "Untitled post").trim().slice(0, POST_LIMITS.title);
+  const category = formatLabel(post.category || "Item") || "Item";
+  const intent = formatLabel(post.intent || "Offer") || "Offer";
+  const owner = String(post.owner || CURRENT_USER.name).trim() || CURRENT_USER.name;
+  const id = String(post.id || slugify(title) || `post-${Date.now()}`).trim();
+
+  return {
+    id,
+    title,
+    description: String(post.description || "").trim().slice(0, POST_LIMITS.description),
+    details: String(post.details || post.description || "").trim().slice(0, POST_LIMITS.description),
+    category,
+    intent,
+    location: String(post.location || "Nairobi").trim().slice(0, POST_LIMITS.location),
+    tone: post.tone || getToneForCategory(category),
+    width: post.width || "100%",
+    photos: Array.isArray(post.photos) ? post.photos.filter(Boolean).slice(0, MAX_PHOTOS) : [],
+    urgent: Boolean(post.urgent),
+    owner,
+    ownerInitials: post.ownerInitials || getInitials(owner),
+    time: post.time || "Just now",
+    allowCalls: Boolean(post.allowCalls),
+    phone: String(post.phone || "").trim().slice(0, POST_LIMITS.phone),
+    note: post.note || "Confirm the exact item, service, or swap terms before meeting in person.",
+    status: post.status,
+  };
+}
+
+function validatePostDraft({ title, description, location, allowCalls, phone, photos, photosRequired }) {
+  const trimmedTitle = String(title || "").trim();
+  const trimmedDescription = String(description || "").trim();
+  const trimmedLocation = String(location || "").trim();
+  const trimmedPhone = String(phone || "").trim();
+  const photoList = [...(photos || [])];
+
+  if (trimmedTitle.length < 4) return { valid: false, message: "Add a clear title with at least 4 characters." };
+  if (trimmedDescription.length < 12) return { valid: false, message: "Add a short description with at least 12 characters." };
+  if (trimmedLocation.length < 2) return { valid: false, message: "Add a neighborhood or pickup area." };
+  if (allowCalls && !/^\+?[0-9\s-]{7,18}$/.test(trimmedPhone)) {
+    return { valid: false, message: "Add a valid phone number or switch calls off." };
+  }
+  if (photosRequired && !photoList.length) return { valid: false, message: "Add at least one photo for item offers." };
+  if (photoList.length > MAX_PHOTOS) return { valid: false, message: "Add up to 4 photos only." };
+  if (photoList.some((file) => !file.type.startsWith("image/") || file.size > MAX_PHOTO_BYTES)) {
+    return { valid: false, message: "Choose image files under 2.5MB each." };
+  }
+
+  return { valid: true, message: "" };
+}
+
 function getPostById(postId) {
-  return getAllFeedPosts().find((post) => post.id === postId) || null;
+  const normalizedId = String(postId || "").trim();
+  if (!normalizedId) return null;
+  return getAllFeedPosts().find((post) => post.id === normalizedId) || null;
 }
 
 function readFilesAsDataUrls(fileList) {
-  const files = [...(fileList || [])].slice(0, 4);
+  const files = [...(fileList || [])].slice(0, MAX_PHOTOS);
   if (!files.length) return Promise.resolve([]);
+
+  const invalidFile = files.find((file) => !file.type.startsWith("image/") || file.size > MAX_PHOTO_BYTES);
+  if (invalidFile) {
+    return Promise.reject(new Error("Photos must be images under 2.5MB each."));
+  }
 
   return Promise.all(
     files.map(
@@ -262,7 +350,7 @@ function readFilesAsDataUrls(fileList) {
 }
 
 function getUserPosts(userName = CURRENT_USER.name) {
-  const ownedPosts = [...readStoredPosts(), ...basePosts].filter((post) => post.owner === userName);
+  const ownedPosts = getAllFeedPosts().filter((post) => post.owner === userName);
   const seenIds = new Set();
 
   return ownedPosts
@@ -278,25 +366,20 @@ function getUserPosts(userName = CURRENT_USER.name) {
 }
 
 function readStoredPosts() {
-  try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    const parsed = raw ? JSON.parse(raw) : [];
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return [];
-  }
+  return safeReadArray(STORAGE_KEY).map(normalizePost).filter(Boolean);
 }
 
 function writeStoredPosts(posts) {
-  try {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(posts));
-  } catch {
-    // Ignore storage errors in restricted browser contexts.
-  }
+  safeWriteArray(STORAGE_KEY, posts.map(normalizePost).filter(Boolean));
 }
 
 function getAllFeedPosts() {
-  return [...readStoredPosts(), ...basePosts];
+  const seenIds = new Set();
+  return [...readStoredPosts(), ...basePosts.map(normalizePost).filter(Boolean)].filter((post) => {
+    if (!post.id || seenIds.has(post.id)) return false;
+    seenIds.add(post.id);
+    return true;
+  });
 }
 
 function getProfilePosts() {
@@ -379,6 +462,7 @@ function setupHomeSearch() {
 }
 
 function buildConversationFromPost(post, overrides = {}) {
+  const safeMessages = Array.isArray(overrides.messages) ? overrides.messages : [];
   return {
     id: overrides.id || `thread-${post.id}`,
     postId: post.id,
@@ -388,7 +472,9 @@ function buildConversationFromPost(post, overrides = {}) {
     time: overrides.time || post.time || "Now",
     unread: Boolean(overrides.unread),
     messages:
-      overrides.messages ||
+      safeMessages.length
+        ? safeMessages
+        :
       [
         {
           sender: "received",
@@ -407,8 +493,31 @@ function buildConversationFromPost(post, overrides = {}) {
   };
 }
 
+function readStoredThreads() {
+  return safeReadArray(THREADS_KEY).filter((thread) => thread?.id && thread?.postId);
+}
+
+function writeStoredThreads(threads) {
+  safeWriteArray(THREADS_KEY, threads);
+}
+
+function ensureThreadForPost(postId) {
+  const post = getPostById(postId);
+  if (!post) return null;
+  const storedThreads = readStoredThreads();
+  const existing = storedThreads.find((thread) => thread.postId === post.id);
+  if (existing) return buildConversationFromPost(post, existing);
+  const newThread = buildConversationFromPost(post, { id: `thread-${post.id}`, time: "New" });
+  writeStoredThreads([newThread, ...storedThreads]);
+  return newThread;
+}
+
 function getConversationThreads() {
-  const threads = conversations
+  const storedThreads = readStoredThreads();
+  const seedThreads = conversations.filter(
+    (thread) => !storedThreads.some((storedThread) => storedThread.postId === thread.postId),
+  );
+  const threads = [...storedThreads, ...seedThreads]
     .map((thread) => {
       const post = getPostById(thread.postId);
       return post ? buildConversationFromPost(post, thread) : null;
@@ -419,10 +528,8 @@ function getConversationThreads() {
   const postId = params.get("post");
 
   if (postId && !threads.some((thread) => thread.postId === postId)) {
-    const post = getPostById(postId);
-    if (post) {
-      threads.unshift(buildConversationFromPost(post, { time: "New" }));
-    }
+    const thread = ensureThreadForPost(postId);
+    if (thread) threads.unshift(thread);
   }
 
   return threads;
@@ -488,6 +595,22 @@ function renderConversationThread(thread) {
   renderThreadMessages(mobileThreadMessages, thread.messages, Math.min(thread.messages.length, 3));
 }
 
+function persistThreadMessage(thread, text) {
+  const messageText = String(text || "").trim().slice(0, 500);
+  if (!thread || !messageText) return false;
+  const updatedThread = {
+    ...thread,
+    preview: messageText,
+    time: "Now",
+    unread: false,
+    messages: [...thread.messages, { sender: "sent", text: messageText }],
+  };
+  const storedThreads = readStoredThreads().filter((item) => item.id !== updatedThread.id);
+  writeStoredThreads([updatedThread, ...storedThreads]);
+  renderConversations(updatedThread.id);
+  return true;
+}
+
 function updateConversationQuery(thread) {
   const url = new URL(window.location.href);
   url.searchParams.set("thread", thread.id);
@@ -536,6 +659,24 @@ function renderConversations(selectedThreadId = "") {
 
   renderConversationThread(activeThread);
   updateConversationQuery(activeThread);
+  const messageBox = document.querySelector(".message-box");
+  if (messageBox && !messageBox.dataset.bound) {
+    messageBox.dataset.bound = "true";
+    messageBox.addEventListener("submit", (event) => event.preventDefault());
+    const input = messageBox.querySelector("input");
+    const button = messageBox.querySelector("button");
+    const send = () => {
+      const latestThread = getConversationThreads().find((thread) => thread.id === new URLSearchParams(window.location.search).get("thread"));
+      if (persistThreadMessage(latestThread || activeThread, input?.value)) input.value = "";
+    };
+    button?.addEventListener("click", send);
+    input?.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        send();
+      }
+    });
+  }
 }
 
 function createProfilePost(post) {
@@ -627,6 +768,13 @@ function setupCreateFlows() {
     const urgentToggle = flow.querySelector("[data-urgent-toggle]");
     let currentStep = 1;
 
+    [
+      [titleInput, POST_LIMITS.title],
+      [descriptionInput, POST_LIMITS.description],
+      [locationInput, POST_LIMITS.location],
+      [phoneInput, POST_LIMITS.phone],
+    ].forEach(([field, limit]) => field?.setAttribute("maxlength", String(limit)));
+
     function getSelectedValue(group) {
       return flow.querySelector(`[data-choice-group="${group}"].is-selected`)?.dataset.value || "";
     }
@@ -636,17 +784,51 @@ function setupCreateFlows() {
     }
 
     function isFinalStepValid() {
-      const hasCoreText =
-        Boolean(titleInput?.value.trim()) &&
-        Boolean(descriptionInput?.value.trim()) &&
-        Boolean(locationInput?.value.trim());
+      const hasCoreText = validatePostDraft({
+        title: titleInput?.value,
+        description: descriptionInput?.value,
+        location: locationInput?.value,
+        allowCalls: callToggle?.checked,
+        phone: phoneInput?.value,
+        photos: photoInput?.files,
+        photosRequired: photosAreRequired(),
+      }).valid;
       if (!hasCoreText) return false;
+      return true;
+    }
 
-      const hasPhoneIfNeeded = !callToggle?.checked || Boolean(phoneInput?.value.trim());
-      if (!hasPhoneIfNeeded) return false;
+    function readDraft() {
+      try {
+        return JSON.parse(window.localStorage.getItem(DRAFT_KEY) || "{}");
+      } catch {
+        return {};
+      }
+    }
 
-      if (!photosAreRequired()) return true;
-      return Boolean(photoInput?.files?.length);
+    function writeDraft() {
+      const draft = {
+        category: getSelectedValue("category"),
+        intent: getSelectedValue("intent"),
+        title: titleInput?.value || "",
+        description: descriptionInput?.value || "",
+        location: locationInput?.value || "",
+        allowCalls: Boolean(callToggle?.checked),
+        phone: phoneInput?.value || "",
+        urgent: Boolean(urgentToggle?.checked),
+      };
+      try {
+        window.localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+      } catch {
+        // Ignore draft persistence errors.
+      }
+    }
+
+    function clearDraft() {
+      try {
+        window.localStorage.removeItem(DRAFT_KEY);
+      } catch {
+        // Ignore storage errors.
+      }
     }
 
     function syncPhotoLabel() {
@@ -726,14 +908,25 @@ function setupCreateFlows() {
         button.setAttribute("aria-pressed", "true");
         syncPhotoRequirement();
         syncActionState();
+        writeDraft();
       });
     });
 
     [titleInput, descriptionInput, locationInput, phoneInput].forEach((field) => {
-      field?.addEventListener("input", syncActionState);
+      field?.addEventListener("input", () => {
+        syncActionState();
+        writeDraft();
+      });
     });
 
     photoInput?.addEventListener("change", () => {
+      const invalidFile = [...(photoInput.files || [])].find(
+        (file) => !file.type.startsWith("image/") || file.size > MAX_PHOTO_BYTES,
+      );
+      if (invalidFile) {
+        photoInput.value = "";
+        window.alert("Choose image files under 2.5MB each. You can add up to 4 photos.");
+      }
       syncPhotoLabel();
       syncActionState();
     });
@@ -741,6 +934,11 @@ function setupCreateFlows() {
     callToggle?.addEventListener("change", () => {
       syncCallField();
       syncActionState();
+      writeDraft();
+    });
+
+    urgentToggle?.addEventListener("change", () => {
+      writeDraft();
     });
 
     backLink?.addEventListener("click", (event) => {
@@ -762,6 +960,20 @@ function setupCreateFlows() {
 
       const category = formatLabel(getSelectedValue("category"));
       const intent = formatLabel(getSelectedValue("intent"));
+      const validation = validatePostDraft({
+        title: titleInput.value,
+        description: descriptionInput.value,
+        location: locationInput.value,
+        allowCalls: callToggle?.checked,
+        phone: phoneInput?.value,
+        photos: photoInput?.files,
+        photosRequired: photosAreRequired(),
+      });
+      if (!validation.valid) {
+        window.alert(validation.message);
+        syncActionState();
+        return;
+      }
       const existingStoredPosts = readStoredPosts();
       const baseId = slugify(titleInput.value) || `post-${Date.now()}`;
       const allPostIds = new Set(getAllFeedPosts().map((post) => post.id));
@@ -799,6 +1011,7 @@ function setupCreateFlows() {
         };
 
         writeStoredPosts([newPost, ...existingStoredPosts]);
+        clearDraft();
         window.location.href = "home.html?published=1";
       } catch {
         nextButton.textContent = originalButtonText;
@@ -806,6 +1019,16 @@ function setupCreateFlows() {
         window.alert("We could not save the photos for this post. Try fewer or smaller images.");
       }
     });
+
+    const draft = readDraft();
+    if (draft.category) flow.querySelector(`[data-choice-group="category"][data-value="${draft.category}"]`)?.click();
+    if (draft.intent) flow.querySelector(`[data-choice-group="intent"][data-value="${draft.intent}"]`)?.click();
+    if (titleInput) titleInput.value = draft.title || "";
+    if (descriptionInput) descriptionInput.value = draft.description || "";
+    if (locationInput) locationInput.value = draft.location || "";
+    if (callToggle) callToggle.checked = Boolean(draft.allowCalls);
+    if (phoneInput) phoneInput.value = draft.phone || "";
+    if (urgentToggle) urgentToggle.checked = Boolean(draft.urgent);
 
     syncPhotoLabel();
     syncPhotoRequirement();
