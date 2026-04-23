@@ -1365,6 +1365,7 @@ function setupHomeStatus() {
 renderFeeds();
 renderConversations();
 renderProfilePosts();
+renderSavedPosts();
 setupCreateFlows();
 renderDetailsPage();
 setupHomeSearch();
