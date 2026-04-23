@@ -1538,7 +1538,7 @@ textarea {
 
 .app-screen {
   min-height: 100vh;
-  padding-bottom: 112px;
+  padding-bottom: 128px;
   background: var(--home-cream);
   color: var(--home-ink);
   font-family: "Plus Jakarta Sans", sans-serif;
@@ -2073,7 +2073,7 @@ textarea {
 
 .details-content {
   padding-top: 24px;
-  padding-bottom: 24px;
+  padding-bottom: 36px;
 }
 
 .details-photo-strip {
@@ -2314,7 +2314,7 @@ textarea {
 
 .profile-content {
   padding-top: 24px;
-  padding-bottom: 24px;
+  padding-bottom: 36px;
 }
 
 .profile-stats,
