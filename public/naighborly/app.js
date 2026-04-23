@@ -299,6 +299,28 @@ function normalizePost(post) {
   };
 }
 
+function validatePostDraft({ title, description, location, allowCalls, phone, photos, photosRequired }) {
+  const trimmedTitle = String(title || "").trim();
+  const trimmedDescription = String(description || "").trim();
+  const trimmedLocation = String(location || "").trim();
+  const trimmedPhone = String(phone || "").trim();
+  const photoList = [...(photos || [])];
+
+  if (trimmedTitle.length < 4) return { valid: false, message: "Add a clear title with at least 4 characters." };
+  if (trimmedDescription.length < 12) return { valid: false, message: "Add a short description with at least 12 characters." };
+  if (trimmedLocation.length < 2) return { valid: false, message: "Add a neighborhood or pickup area." };
+  if (allowCalls && !/^\+?[0-9\s-]{7,18}$/.test(trimmedPhone)) {
+    return { valid: false, message: "Add a valid phone number or switch calls off." };
+  }
+  if (photosRequired && !photoList.length) return { valid: false, message: "Add at least one photo for item offers." };
+  if (photoList.length > MAX_PHOTOS) return { valid: false, message: "Add up to 4 photos only." };
+  if (photoList.some((file) => !file.type.startsWith("image/") || file.size > MAX_PHOTO_BYTES)) {
+    return { valid: false, message: "Choose image files under 2.5MB each." };
+  }
+
+  return { valid: true, message: "" };
+}
+
 function getPostById(postId) {
   const normalizedId = String(postId || "").trim();
   if (!normalizedId) return null;
