@@ -816,6 +816,13 @@ function setupCreateFlows() {
     const phoneInput = flow.querySelector("[data-call-phone]");
     const urgentToggle = flow.querySelector("[data-urgent-toggle]");
     let currentStep = 1;
+    const fieldMap = {
+      photos: photoInput?.closest(".form-group"),
+      title: titleInput?.closest(".form-group"),
+      description: descriptionInput?.closest(".form-group"),
+      location: locationInput?.closest(".form-group"),
+      phone: phoneInput?.closest(".form-group"),
+    };
 
     [
       [titleInput, POST_LIMITS.title],
@@ -844,6 +851,26 @@ function setupCreateFlows() {
       }).valid;
       if (!hasCoreText) return false;
       return true;
+    }
+
+    function clearErrors() {
+      Object.values(fieldMap).forEach((group) => {
+        group?.classList.remove("has-error");
+        group?.querySelector(".form-error")?.remove();
+      });
+    }
+
+    function showError(validation) {
+      clearErrors();
+      if (!validation?.field || !fieldMap[validation.field]) return;
+      const group = fieldMap[validation.field];
+      const error = document.createElement("p");
+      error.className = "form-error";
+      error.textContent = validation.message;
+      group.classList.add("has-error");
+      group.appendChild(error);
+      group.querySelector("input, textarea")?.focus({ preventScroll: true });
+      group.scrollIntoView({ block: "center", behavior: "smooth" });
     }
 
     function readDraft() {
@@ -952,6 +979,8 @@ function setupCreateFlows() {
 
     [titleInput, descriptionInput, locationInput, phoneInput].forEach((field) => {
       field?.addEventListener("input", () => {
+        field.closest(".form-group")?.classList.remove("has-error");
+        field.closest(".form-group")?.querySelector(".form-error")?.remove();
         syncActionState();
         writeDraft();
       });
@@ -969,7 +998,7 @@ function setupCreateFlows() {
       });
       if (!validation.valid) {
         photoInput.value = "";
-        window.alert(validation.message);
+        showError(validation);
       }
       syncPhotoLabel();
       syncActionState();
@@ -1014,7 +1043,7 @@ function setupCreateFlows() {
         photosRequired: photosAreRequired(),
       });
       if (!validation.valid) {
-        window.alert(validation.message);
+        showError(validation);
         syncActionState();
         return;
       }
@@ -1027,6 +1056,7 @@ function setupCreateFlows() {
 
       nextButton.disabled = true;
       nextButton.classList.add("is-disabled");
+      nextButton.classList.add("is-loading");
       nextButton.textContent = "Publishing...";
 
       try {
@@ -1061,8 +1091,9 @@ function setupCreateFlows() {
         window.location.href = `details.html?post=${encodeURIComponent(postId)}&published=1`;
       } catch {
         nextButton.textContent = originalButtonText;
+        nextButton.classList.remove("is-loading");
         syncActionState();
-        window.alert("We could not save the photos for this post. Try fewer or smaller images.");
+        showError({ field: "photos", message: "We could not save this post. Try fewer or smaller images." });
       }
     });
 
