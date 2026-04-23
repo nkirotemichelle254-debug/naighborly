@@ -847,11 +847,8 @@ function setupCreateFlows() {
     }
 
     function readDraft() {
-      try {
-        return JSON.parse(window.localStorage.getItem(DRAFT_KEY) || "{}");
-      } catch {
-        return {};
-      }
+      const draft = safeReadJson(DRAFT_KEY, {});
+      return draft && typeof draft === "object" ? draft : {};
     }
 
     function writeDraft() {
@@ -865,19 +862,11 @@ function setupCreateFlows() {
         phone: phoneInput?.value || "",
         urgent: Boolean(urgentToggle?.checked),
       };
-      try {
-        window.localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
-      } catch {
-        // Ignore draft persistence errors.
-      }
+      safeWriteJson(DRAFT_KEY, draft);
     }
 
     function clearDraft() {
-      try {
-        window.localStorage.removeItem(DRAFT_KEY);
-      } catch {
-        // Ignore storage errors.
-      }
+      safeRemoveItem(DRAFT_KEY);
     }
 
     function syncPhotoLabel() {
@@ -969,12 +958,18 @@ function setupCreateFlows() {
     });
 
     photoInput?.addEventListener("change", () => {
-      const invalidFile = [...(photoInput.files || [])].find(
-        (file) => !file.type.startsWith("image/") || file.size > MAX_PHOTO_BYTES,
-      );
-      if (invalidFile) {
+      const validation = validatePostDraft({
+        title: titleInput?.value || "Draft title",
+        description: descriptionInput?.value || "Draft description text",
+        location: locationInput?.value || "Nairobi",
+        allowCalls: false,
+        phone: "",
+        photos: photoInput.files,
+        photosRequired: false,
+      });
+      if (!validation.valid) {
         photoInput.value = "";
-        window.alert("Choose image files under 2.5MB each. You can add up to 4 photos.");
+        window.alert(validation.message);
       }
       syncPhotoLabel();
       syncActionState();
@@ -1059,9 +1054,11 @@ function setupCreateFlows() {
               : "Confirm the exact item, service, or swap terms before meeting in person.",
         };
 
-        writeStoredPosts([newPost, ...existingStoredPosts]);
+        if (!writeStoredPosts([newPost, ...existingStoredPosts])) {
+          throw new Error("Post could not be saved locally.");
+        }
         clearDraft();
-        window.location.href = "home.html?published=1";
+        window.location.href = `details.html?post=${encodeURIComponent(postId)}&published=1`;
       } catch {
         nextButton.textContent = originalButtonText;
         syncActionState();
