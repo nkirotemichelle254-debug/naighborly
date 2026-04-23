@@ -489,7 +489,11 @@ function setupHomeSearch() {
 }
 
 function buildConversationFromPost(post, overrides = {}) {
-  const safeMessages = Array.isArray(overrides.messages) ? overrides.messages : [];
+  const safeMessages = Array.isArray(overrides.messages)
+    ? overrides.messages
+        .filter((message) => message && ["sent", "received"].includes(message.sender) && String(message.text || "").trim())
+        .map((message) => ({ sender: message.sender, text: String(message.text).trim().slice(0, 500) }))
+    : [];
   return {
     id: overrides.id || `thread-${post.id}`,
     postId: post.id,
@@ -521,11 +525,18 @@ function buildConversationFromPost(post, overrides = {}) {
 }
 
 function readStoredThreads() {
-  return safeReadArray(THREADS_KEY).filter((thread) => thread?.id && thread?.postId);
+  return safeReadArray(THREADS_KEY)
+    .filter((thread) => thread?.id && thread?.postId)
+    .map((thread) => ({
+      ...thread,
+      id: String(thread.id),
+      postId: String(thread.postId),
+      messages: Array.isArray(thread.messages) ? thread.messages : [],
+    }));
 }
 
 function writeStoredThreads(threads) {
-  safeWriteArray(THREADS_KEY, threads);
+  return safeWriteArray(THREADS_KEY, threads.map((thread) => buildConversationFromPost(getPostById(thread.postId), thread)).filter(Boolean));
 }
 
 function ensureThreadForPost(postId) {
@@ -633,7 +644,10 @@ function persistThreadMessage(thread, text) {
     messages: [...thread.messages, { sender: "sent", text: messageText }],
   };
   const storedThreads = readStoredThreads().filter((item) => item.id !== updatedThread.id);
-  writeStoredThreads([updatedThread, ...storedThreads]);
+  if (!writeStoredThreads([updatedThread, ...storedThreads])) {
+    window.alert("This message could not be saved on this device.");
+    return false;
+  }
   renderConversations(updatedThread.id);
   return true;
 }
