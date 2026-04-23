@@ -1,6 +1,8 @@
 const STORAGE_KEY = "naighborly-user-posts";
 const THREADS_KEY = "naighborly-message-threads";
 const DRAFT_KEY = "naighborly-create-draft";
+const FAVORITES_KEY = "naighborly-favorite-posts";
+const DELETED_POSTS_KEY = "naighborly-deleted-posts";
 const MAX_PHOTOS = 4;
 const MAX_PHOTO_BYTES = 2.5 * 1024 * 1024;
 const MAX_PHOTO_STORAGE_BYTES = 7 * 1024 * 1024;
@@ -297,6 +299,8 @@ function normalizePost(post) {
     ? post.photos.filter((src) => typeof src === "string" && src.startsWith("data:image/")).slice(0, MAX_PHOTOS)
     : [];
 
+  const status = ["Live", "Resolved", "Unavailable"].includes(post.status) ? post.status : "Live";
+
   return {
     id,
     title,
@@ -315,7 +319,7 @@ function normalizePost(post) {
     allowCalls: Boolean(post.allowCalls),
     phone: String(post.phone || "").trim().slice(0, POST_LIMITS.phone),
     note: post.note || "Confirm the exact item, service, or swap terms before meeting in person.",
-    status: post.status,
+    status,
   };
 }
 
