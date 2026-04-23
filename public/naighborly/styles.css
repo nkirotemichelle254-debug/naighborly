@@ -560,6 +560,18 @@ textarea {
   color: var(--home-request);
 }
 
+.feed-card__pill--status {
+  background: rgba(16, 24, 40, 0.18);
+  color: inherit;
+}
+
+.feed-card__saved {
+  margin-left: auto;
+  color: var(--mustard);
+  font-size: 1rem;
+  line-height: 1;
+}
+
 .feed-card__alert {
   margin-left: auto;
   width: 32px;
@@ -2317,6 +2329,62 @@ textarea {
   display: grid;
   gap: 12px;
   margin-top: 16px;
+}
+
+.save-action {
+  width: 100%;
+  margin-top: 12px;
+}
+
+.owner-controls,
+.edit-post-form {
+  display: grid;
+  gap: 14px;
+  padding: 20px;
+}
+
+.owner-controls[hidden],
+.edit-post-form[hidden] {
+  display: none;
+}
+
+.owner-controls h2,
+.edit-post-form h2 {
+  margin: 0;
+  font-family: "Syne", sans-serif;
+  font-size: 1.45rem;
+}
+
+.owner-action-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.danger-action {
+  min-height: 56px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--danger-soft);
+  color: var(--home-request);
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.edit-post-form input,
+.edit-post-form textarea {
+  width: 100%;
+  border: 1px solid #e6ddd1;
+  border-radius: 16px;
+  padding: 14px 16px;
+  background: rgba(255, 255, 255, 0.95);
+  color: var(--home-ink);
+}
+
+.edit-post-form textarea {
+  min-height: 120px;
+  resize: vertical;
 }
 
 .details-action-row--single {
