@@ -3,6 +3,7 @@ const THREADS_KEY = "naighborly-message-threads";
 const DRAFT_KEY = "naighborly-create-draft";
 const MAX_PHOTOS = 4;
 const MAX_PHOTO_BYTES = 2.5 * 1024 * 1024;
+const MAX_PHOTO_STORAGE_BYTES = 7 * 1024 * 1024;
 const POST_LIMITS = {
   title: 80,
   description: 700,
@@ -251,31 +252,50 @@ function getToneForCategory(category) {
 }
 
 function safeReadArray(key) {
+  const parsed = safeReadJson(key, []);
+  return Array.isArray(parsed) ? parsed : [];
+}
+
+function safeReadJson(key, fallback = null) {
   try {
     const raw = window.localStorage.getItem(key);
-    const parsed = raw ? JSON.parse(raw) : [];
-    return Array.isArray(parsed) ? parsed : [];
+    return raw ? JSON.parse(raw) : fallback;
   } catch {
-    return [];
+    return fallback;
   }
 }
 
-function safeWriteArray(key, items) {
+function safeWriteJson(key, value) {
   try {
-    window.localStorage.setItem(key, JSON.stringify(Array.isArray(items) ? items : []));
+    window.localStorage.setItem(key, JSON.stringify(value));
     return true;
   } catch {
     return false;
   }
 }
 
+function safeWriteArray(key, items) {
+  return safeWriteJson(key, Array.isArray(items) ? items : []);
+}
+
+function safeRemoveItem(key) {
+  try {
+    window.localStorage.removeItem(key);
+  } catch {
+    // Ignore unavailable storage.
+  }
+}
+
 function normalizePost(post) {
   if (!post || typeof post !== "object") return null;
   const title = String(post.title || "Untitled post").trim().slice(0, POST_LIMITS.title);
-  const category = formatLabel(post.category || "Item") || "Item";
-  const intent = formatLabel(post.intent || "Offer") || "Offer";
+  const category = ["Item", "Service", "Swap"].includes(formatLabel(post.category)) ? formatLabel(post.category) : "Item";
+  const intent = ["Offer", "Request"].includes(formatLabel(post.intent)) ? formatLabel(post.intent) : "Offer";
   const owner = String(post.owner || CURRENT_USER.name).trim() || CURRENT_USER.name;
   const id = String(post.id || slugify(title) || `post-${Date.now()}`).trim();
+  const photos = Array.isArray(post.photos)
+    ? post.photos.filter((src) => typeof src === "string" && src.startsWith("data:image/")).slice(0, MAX_PHOTOS)
+    : [];
 
   return {
     id,
@@ -287,7 +307,7 @@ function normalizePost(post) {
     location: String(post.location || "Nairobi").trim().slice(0, POST_LIMITS.location),
     tone: post.tone || getToneForCategory(category),
     width: post.width || "100%",
-    photos: Array.isArray(post.photos) ? post.photos.filter(Boolean).slice(0, MAX_PHOTOS) : [],
+    photos,
     urgent: Boolean(post.urgent),
     owner,
     ownerInitials: post.ownerInitials || getInitials(owner),
@@ -317,6 +337,9 @@ function validatePostDraft({ title, description, location, allowCalls, phone, ph
   if (photoList.some((file) => !file.type.startsWith("image/") || file.size > MAX_PHOTO_BYTES)) {
     return { valid: false, message: "Choose image files under 2.5MB each." };
   }
+  if (photoList.reduce((total, file) => total + file.size, 0) > MAX_PHOTO_STORAGE_BYTES) {
+    return { valid: false, message: "Use fewer photos so the post can be saved on this device." };
+  }
 
   return { valid: true, message: "" };
 }
@@ -334,6 +357,10 @@ function readFilesAsDataUrls(fileList) {
   const invalidFile = files.find((file) => !file.type.startsWith("image/") || file.size > MAX_PHOTO_BYTES);
   if (invalidFile) {
     return Promise.reject(new Error("Photos must be images under 2.5MB each."));
+  }
+
+  if (files.reduce((total, file) => total + file.size, 0) > MAX_PHOTO_STORAGE_BYTES) {
+    return Promise.reject(new Error("Photo selection is too large to save locally."));
   }
 
   return Promise.all(
@@ -370,7 +397,7 @@ function readStoredPosts() {
 }
 
 function writeStoredPosts(posts) {
-  safeWriteArray(STORAGE_KEY, posts.map(normalizePost).filter(Boolean));
+  return safeWriteArray(STORAGE_KEY, posts.map(normalizePost).filter(Boolean));
 }
 
 function getAllFeedPosts() {
@@ -462,7 +489,11 @@ function setupHomeSearch() {
 }
 
 function buildConversationFromPost(post, overrides = {}) {
-  const safeMessages = Array.isArray(overrides.messages) ? overrides.messages : [];
+  const safeMessages = Array.isArray(overrides.messages)
+    ? overrides.messages
+        .filter((message) => message && ["sent", "received"].includes(message.sender) && String(message.text || "").trim())
+        .map((message) => ({ sender: message.sender, text: String(message.text).trim().slice(0, 500) }))
+    : [];
   return {
     id: overrides.id || `thread-${post.id}`,
     postId: post.id,
@@ -494,11 +525,26 @@ function buildConversationFromPost(post, overrides = {}) {
 }
 
 function readStoredThreads() {
-  return safeReadArray(THREADS_KEY).filter((thread) => thread?.id && thread?.postId);
+  return safeReadArray(THREADS_KEY)
+    .filter((thread) => thread?.id && thread?.postId)
+    .map((thread) => ({
+      ...thread,
+      id: String(thread.id),
+      postId: String(thread.postId),
+      messages: Array.isArray(thread.messages) ? thread.messages : [],
+    }));
 }
 
 function writeStoredThreads(threads) {
-  safeWriteArray(THREADS_KEY, threads);
+  return safeWriteArray(
+    THREADS_KEY,
+    threads
+      .map((thread) => {
+        const post = getPostById(thread.postId);
+        return post ? buildConversationFromPost(post, thread) : null;
+      })
+      .filter(Boolean),
+  );
 }
 
 function ensureThreadForPost(postId) {
@@ -508,7 +554,7 @@ function ensureThreadForPost(postId) {
   const existing = storedThreads.find((thread) => thread.postId === post.id);
   if (existing) return buildConversationFromPost(post, existing);
   const newThread = buildConversationFromPost(post, { id: `thread-${post.id}`, time: "New" });
-  writeStoredThreads([newThread, ...storedThreads]);
+  if (!writeStoredThreads([newThread, ...storedThreads])) return null;
   return newThread;
 }
 
@@ -606,7 +652,10 @@ function persistThreadMessage(thread, text) {
     messages: [...thread.messages, { sender: "sent", text: messageText }],
   };
   const storedThreads = readStoredThreads().filter((item) => item.id !== updatedThread.id);
-  writeStoredThreads([updatedThread, ...storedThreads]);
+  if (!writeStoredThreads([updatedThread, ...storedThreads])) {
+    window.alert("This message could not be saved on this device.");
+    return false;
+  }
   renderConversations(updatedThread.id);
   return true;
 }
@@ -798,11 +847,8 @@ function setupCreateFlows() {
     }
 
     function readDraft() {
-      try {
-        return JSON.parse(window.localStorage.getItem(DRAFT_KEY) || "{}");
-      } catch {
-        return {};
-      }
+      const draft = safeReadJson(DRAFT_KEY, {});
+      return draft && typeof draft === "object" ? draft : {};
     }
 
     function writeDraft() {
@@ -816,19 +862,11 @@ function setupCreateFlows() {
         phone: phoneInput?.value || "",
         urgent: Boolean(urgentToggle?.checked),
       };
-      try {
-        window.localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
-      } catch {
-        // Ignore draft persistence errors.
-      }
+      safeWriteJson(DRAFT_KEY, draft);
     }
 
     function clearDraft() {
-      try {
-        window.localStorage.removeItem(DRAFT_KEY);
-      } catch {
-        // Ignore storage errors.
-      }
+      safeRemoveItem(DRAFT_KEY);
     }
 
     function syncPhotoLabel() {
@@ -920,12 +958,18 @@ function setupCreateFlows() {
     });
 
     photoInput?.addEventListener("change", () => {
-      const invalidFile = [...(photoInput.files || [])].find(
-        (file) => !file.type.startsWith("image/") || file.size > MAX_PHOTO_BYTES,
-      );
-      if (invalidFile) {
+      const validation = validatePostDraft({
+        title: titleInput?.value || "Draft title",
+        description: descriptionInput?.value || "Draft description text",
+        location: locationInput?.value || "Nairobi",
+        allowCalls: false,
+        phone: "",
+        photos: photoInput.files,
+        photosRequired: false,
+      });
+      if (!validation.valid) {
         photoInput.value = "";
-        window.alert("Choose image files under 2.5MB each. You can add up to 4 photos.");
+        window.alert(validation.message);
       }
       syncPhotoLabel();
       syncActionState();
@@ -1010,9 +1054,11 @@ function setupCreateFlows() {
               : "Confirm the exact item, service, or swap terms before meeting in person.",
         };
 
-        writeStoredPosts([newPost, ...existingStoredPosts]);
+        if (!writeStoredPosts([newPost, ...existingStoredPosts])) {
+          throw new Error("Post could not be saved locally.");
+        }
         clearDraft();
-        window.location.href = "home.html?published=1";
+        window.location.href = `details.html?post=${encodeURIComponent(postId)}&published=1`;
       } catch {
         nextButton.textContent = originalButtonText;
         syncActionState();
