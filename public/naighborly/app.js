@@ -1,4 +1,14 @@
 const STORAGE_KEY = "naighborly-user-posts";
+const THREADS_KEY = "naighborly-message-threads";
+const DRAFT_KEY = "naighborly-create-draft";
+const MAX_PHOTOS = 4;
+const MAX_PHOTO_BYTES = 2.5 * 1024 * 1024;
+const POST_LIMITS = {
+  title: 80,
+  description: 700,
+  location: 48,
+  phone: 18,
+};
 const CURRENT_USER = {
   name: "Michael Heri",
   initials: "MH",
@@ -203,7 +213,7 @@ const conversations = [
 ];
 
 function slugify(value) {
-  return value
+  return String(value || "")
     .toLowerCase()
     .trim()
     .replace(/[^a-z0-9]+/g, "-")
@@ -240,13 +250,69 @@ function getToneForCategory(category) {
   return "charcoal";
 }
 
+function safeReadArray(key) {
+  try {
+    const raw = window.localStorage.getItem(key);
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function safeWriteArray(key, items) {
+  try {
+    window.localStorage.setItem(key, JSON.stringify(Array.isArray(items) ? items : []));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function normalizePost(post) {
+  if (!post || typeof post !== "object") return null;
+  const title = String(post.title || "Untitled post").trim().slice(0, POST_LIMITS.title);
+  const category = formatLabel(post.category || "Item") || "Item";
+  const intent = formatLabel(post.intent || "Offer") || "Offer";
+  const owner = String(post.owner || CURRENT_USER.name).trim() || CURRENT_USER.name;
+  const id = String(post.id || slugify(title) || `post-${Date.now()}`).trim();
+
+  return {
+    id,
+    title,
+    description: String(post.description || "").trim().slice(0, POST_LIMITS.description),
+    details: String(post.details || post.description || "").trim().slice(0, POST_LIMITS.description),
+    category,
+    intent,
+    location: String(post.location || "Nairobi").trim().slice(0, POST_LIMITS.location),
+    tone: post.tone || getToneForCategory(category),
+    width: post.width || "100%",
+    photos: Array.isArray(post.photos) ? post.photos.filter(Boolean).slice(0, MAX_PHOTOS) : [],
+    urgent: Boolean(post.urgent),
+    owner,
+    ownerInitials: post.ownerInitials || getInitials(owner),
+    time: post.time || "Just now",
+    allowCalls: Boolean(post.allowCalls),
+    phone: String(post.phone || "").trim().slice(0, POST_LIMITS.phone),
+    note: post.note || "Confirm the exact item, service, or swap terms before meeting in person.",
+    status: post.status,
+  };
+}
+
 function getPostById(postId) {
-  return getAllFeedPosts().find((post) => post.id === postId) || null;
+  const normalizedId = String(postId || "").trim();
+  if (!normalizedId) return null;
+  return getAllFeedPosts().find((post) => post.id === normalizedId) || null;
 }
 
 function readFilesAsDataUrls(fileList) {
-  const files = [...(fileList || [])].slice(0, 4);
+  const files = [...(fileList || [])].slice(0, MAX_PHOTOS);
   if (!files.length) return Promise.resolve([]);
+
+  const invalidFile = files.find((file) => !file.type.startsWith("image/") || file.size > MAX_PHOTO_BYTES);
+  if (invalidFile) {
+    return Promise.reject(new Error("Photos must be images under 2.5MB each."));
+  }
 
   return Promise.all(
     files.map(
