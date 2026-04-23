@@ -447,8 +447,9 @@ function writeStoredPosts(posts) {
 
 function getAllFeedPosts() {
   const seenIds = new Set();
+  const deletedIds = getDeletedPostIds();
   return [...readStoredPosts(), ...basePosts.map(normalizePost).filter(Boolean)].filter((post) => {
-    if (!post.id || seenIds.has(post.id)) return false;
+    if (!post.id || deletedIds.has(post.id) || seenIds.has(post.id)) return false;
     seenIds.add(post.id);
     return true;
   });
