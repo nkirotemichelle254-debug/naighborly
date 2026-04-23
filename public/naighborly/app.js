@@ -326,19 +326,19 @@ function validatePostDraft({ title, description, location, allowCalls, phone, ph
   const trimmedPhone = String(phone || "").trim();
   const photoList = [...(photos || [])];
 
-  if (trimmedTitle.length < 4) return { valid: false, message: "Add a clear title with at least 4 characters." };
-  if (trimmedDescription.length < 12) return { valid: false, message: "Add a short description with at least 12 characters." };
-  if (trimmedLocation.length < 2) return { valid: false, message: "Add a neighborhood or pickup area." };
+  if (trimmedTitle.length < 4) return { valid: false, field: "title", message: "Use at least 4 characters so neighbors understand the post." };
+  if (trimmedDescription.length < 12) return { valid: false, field: "description", message: "Add at least 12 characters with the condition, timing, or context." };
+  if (trimmedLocation.length < 2) return { valid: false, field: "location", message: "Add a neighborhood or pickup area in Nairobi." };
   if (allowCalls && !/^\+?[0-9\s-]{7,18}$/.test(trimmedPhone)) {
-    return { valid: false, message: "Add a valid phone number or switch calls off." };
+    return { valid: false, field: "phone", message: "Enter a reachable number, or switch phone calls off." };
   }
-  if (photosRequired && !photoList.length) return { valid: false, message: "Add at least one photo for item offers." };
-  if (photoList.length > MAX_PHOTOS) return { valid: false, message: "Add up to 4 photos only." };
+  if (photosRequired && !photoList.length) return { valid: false, field: "photos", message: "Item offers need at least one photo so neighbors can inspect it first." };
+  if (photoList.length > MAX_PHOTOS) return { valid: false, field: "photos", message: "Choose up to 4 photos only." };
   if (photoList.some((file) => !file.type.startsWith("image/") || file.size > MAX_PHOTO_BYTES)) {
-    return { valid: false, message: "Choose image files under 2.5MB each." };
+    return { valid: false, field: "photos", message: "Each upload must be an image under 2.5MB." };
   }
   if (photoList.reduce((total, file) => total + file.size, 0) > MAX_PHOTO_STORAGE_BYTES) {
-    return { valid: false, message: "Use fewer photos so the post can be saved on this device." };
+    return { valid: false, field: "photos", message: "Use fewer photos so the post can be saved on this device." };
   }
 
   return { valid: true, message: "" };
