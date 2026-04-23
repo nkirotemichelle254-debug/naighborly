@@ -3,6 +3,7 @@ const THREADS_KEY = "naighborly-message-threads";
 const DRAFT_KEY = "naighborly-create-draft";
 const MAX_PHOTOS = 4;
 const MAX_PHOTO_BYTES = 2.5 * 1024 * 1024;
+const MAX_PHOTO_STORAGE_BYTES = 7 * 1024 * 1024;
 const POST_LIMITS = {
   title: 80,
   description: 700,
@@ -251,31 +252,50 @@ function getToneForCategory(category) {
 }
 
 function safeReadArray(key) {
+  const parsed = safeReadJson(key, []);
+  return Array.isArray(parsed) ? parsed : [];
+}
+
+function safeReadJson(key, fallback = null) {
   try {
     const raw = window.localStorage.getItem(key);
-    const parsed = raw ? JSON.parse(raw) : [];
-    return Array.isArray(parsed) ? parsed : [];
+    return raw ? JSON.parse(raw) : fallback;
   } catch {
-    return [];
+    return fallback;
   }
 }
 
-function safeWriteArray(key, items) {
+function safeWriteJson(key, value) {
   try {
-    window.localStorage.setItem(key, JSON.stringify(Array.isArray(items) ? items : []));
+    window.localStorage.setItem(key, JSON.stringify(value));
     return true;
   } catch {
     return false;
   }
 }
 
+function safeWriteArray(key, items) {
+  return safeWriteJson(key, Array.isArray(items) ? items : []);
+}
+
+function safeRemoveItem(key) {
+  try {
+    window.localStorage.removeItem(key);
+  } catch {
+    // Ignore unavailable storage.
+  }
+}
+
 function normalizePost(post) {
   if (!post || typeof post !== "object") return null;
   const title = String(post.title || "Untitled post").trim().slice(0, POST_LIMITS.title);
-  const category = formatLabel(post.category || "Item") || "Item";
-  const intent = formatLabel(post.intent || "Offer") || "Offer";
+  const category = ["Item", "Service", "Swap"].includes(formatLabel(post.category)) ? formatLabel(post.category) : "Item";
+  const intent = ["Offer", "Request"].includes(formatLabel(post.intent)) ? formatLabel(post.intent) : "Offer";
   const owner = String(post.owner || CURRENT_USER.name).trim() || CURRENT_USER.name;
   const id = String(post.id || slugify(title) || `post-${Date.now()}`).trim();
+  const photos = Array.isArray(post.photos)
+    ? post.photos.filter((src) => typeof src === "string" && src.startsWith("data:image/")).slice(0, MAX_PHOTOS)
+    : [];
 
   return {
     id,
@@ -287,7 +307,7 @@ function normalizePost(post) {
     location: String(post.location || "Nairobi").trim().slice(0, POST_LIMITS.location),
     tone: post.tone || getToneForCategory(category),
     width: post.width || "100%",
-    photos: Array.isArray(post.photos) ? post.photos.filter(Boolean).slice(0, MAX_PHOTOS) : [],
+    photos,
     urgent: Boolean(post.urgent),
     owner,
     ownerInitials: post.ownerInitials || getInitials(owner),
