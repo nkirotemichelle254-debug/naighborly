@@ -746,6 +746,13 @@ function setupCreateFlows() {
     const urgentToggle = flow.querySelector("[data-urgent-toggle]");
     let currentStep = 1;
 
+    [
+      [titleInput, POST_LIMITS.title],
+      [descriptionInput, POST_LIMITS.description],
+      [locationInput, POST_LIMITS.location],
+      [phoneInput, POST_LIMITS.phone],
+    ].forEach(([field, limit]) => field?.setAttribute("maxlength", String(limit)));
+
     function getSelectedValue(group) {
       return flow.querySelector(`[data-choice-group="${group}"].is-selected`)?.dataset.value || "";
     }
@@ -755,17 +762,51 @@ function setupCreateFlows() {
     }
 
     function isFinalStepValid() {
-      const hasCoreText =
-        Boolean(titleInput?.value.trim()) &&
-        Boolean(descriptionInput?.value.trim()) &&
-        Boolean(locationInput?.value.trim());
+      const hasCoreText = validatePostDraft({
+        title: titleInput?.value,
+        description: descriptionInput?.value,
+        location: locationInput?.value,
+        allowCalls: callToggle?.checked,
+        phone: phoneInput?.value,
+        photos: photoInput?.files,
+        photosRequired: photosAreRequired(),
+      }).valid;
       if (!hasCoreText) return false;
+      return true;
+    }
 
-      const hasPhoneIfNeeded = !callToggle?.checked || Boolean(phoneInput?.value.trim());
-      if (!hasPhoneIfNeeded) return false;
+    function readDraft() {
+      try {
+        return JSON.parse(window.localStorage.getItem(DRAFT_KEY) || "{}");
+      } catch {
+        return {};
+      }
+    }
 
-      if (!photosAreRequired()) return true;
-      return Boolean(photoInput?.files?.length);
+    function writeDraft() {
+      const draft = {
+        category: getSelectedValue("category"),
+        intent: getSelectedValue("intent"),
+        title: titleInput?.value || "",
+        description: descriptionInput?.value || "",
+        location: locationInput?.value || "",
+        allowCalls: Boolean(callToggle?.checked),
+        phone: phoneInput?.value || "",
+        urgent: Boolean(urgentToggle?.checked),
+      };
+      try {
+        window.localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+      } catch {
+        // Ignore draft persistence errors.
+      }
+    }
+
+    function clearDraft() {
+      try {
+        window.localStorage.removeItem(DRAFT_KEY);
+      } catch {
+        // Ignore storage errors.
+      }
     }
 
     function syncPhotoLabel() {
@@ -845,14 +886,25 @@ function setupCreateFlows() {
         button.setAttribute("aria-pressed", "true");
         syncPhotoRequirement();
         syncActionState();
+        writeDraft();
       });
     });
 
     [titleInput, descriptionInput, locationInput, phoneInput].forEach((field) => {
-      field?.addEventListener("input", syncActionState);
+      field?.addEventListener("input", () => {
+        syncActionState();
+        writeDraft();
+      });
     });
 
     photoInput?.addEventListener("change", () => {
+      const invalidFile = [...(photoInput.files || [])].find(
+        (file) => !file.type.startsWith("image/") || file.size > MAX_PHOTO_BYTES,
+      );
+      if (invalidFile) {
+        photoInput.value = "";
+        window.alert("Choose image files under 2.5MB each. You can add up to 4 photos.");
+      }
       syncPhotoLabel();
       syncActionState();
     });
@@ -860,6 +912,11 @@ function setupCreateFlows() {
     callToggle?.addEventListener("change", () => {
       syncCallField();
       syncActionState();
+      writeDraft();
+    });
+
+    urgentToggle?.addEventListener("change", () => {
+      writeDraft();
     });
 
     backLink?.addEventListener("click", (event) => {
@@ -881,6 +938,20 @@ function setupCreateFlows() {
 
       const category = formatLabel(getSelectedValue("category"));
       const intent = formatLabel(getSelectedValue("intent"));
+      const validation = validatePostDraft({
+        title: titleInput.value,
+        description: descriptionInput.value,
+        location: locationInput.value,
+        allowCalls: callToggle?.checked,
+        phone: phoneInput?.value,
+        photos: photoInput?.files,
+        photosRequired: photosAreRequired(),
+      });
+      if (!validation.valid) {
+        window.alert(validation.message);
+        syncActionState();
+        return;
+      }
       const existingStoredPosts = readStoredPosts();
       const baseId = slugify(titleInput.value) || `post-${Date.now()}`;
       const allPostIds = new Set(getAllFeedPosts().map((post) => post.id));
@@ -918,6 +989,7 @@ function setupCreateFlows() {
         };
 
         writeStoredPosts([newPost, ...existingStoredPosts]);
+        clearDraft();
         window.location.href = "home.html?published=1";
       } catch {
         nextButton.textContent = originalButtonText;
@@ -925,6 +997,16 @@ function setupCreateFlows() {
         window.alert("We could not save the photos for this post. Try fewer or smaller images.");
       }
     });
+
+    const draft = readDraft();
+    if (draft.category) flow.querySelector(`[data-choice-group="category"][data-value="${draft.category}"]`)?.click();
+    if (draft.intent) flow.querySelector(`[data-choice-group="intent"][data-value="${draft.intent}"]`)?.click();
+    if (titleInput) titleInput.value = draft.title || "";
+    if (descriptionInput) descriptionInput.value = draft.description || "";
+    if (locationInput) locationInput.value = draft.location || "";
+    if (callToggle) callToggle.checked = Boolean(draft.allowCalls);
+    if (phoneInput) phoneInput.value = draft.phone || "";
+    if (urgentToggle) urgentToggle.checked = Boolean(draft.urgent);
 
     syncPhotoLabel();
     syncPhotoRequirement();
