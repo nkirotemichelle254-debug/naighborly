@@ -1218,6 +1218,9 @@ function renderDetailsPage() {
   const actionRow = page.querySelector(".details-action-row");
   const photoStrip = document.getElementById("details-photo-strip");
   const photoGrid = document.getElementById("details-photo-grid");
+  const ownerPanel = document.getElementById("details-owner-controls");
+  const editForm = document.getElementById("details-edit-form");
+  const favoriteButton = document.getElementById("details-favorite-button");
 
   if (heroCard) {
     heroCard.className = `details-hero-card feed-card feed-card--${post.tone}${post.urgent ? " is-urgent" : ""}`;
@@ -1279,6 +1282,59 @@ function renderDetailsPage() {
       callLink.href = `tel:${post.phone}`;
     }
   }
+
+  setupDetailsOwnership(post, { ownerPanel, editForm, favoriteButton });
+}
+
+function setupDetailsOwnership(post, { ownerPanel, editForm, favoriteButton }) {
+  if (favoriteButton) {
+    favoriteButton.textContent = isFavoritePost(post.id) ? "Saved" : "Save post";
+    favoriteButton.setAttribute("aria-pressed", String(isFavoritePost(post.id)));
+    favoriteButton.onclick = () => {
+      toggleFavoritePost(post.id);
+      renderDetailsPage();
+    };
+  }
+
+  if (!ownerPanel || !editForm) return;
+  ownerPanel.hidden = !isOwnedPost(post);
+  if (!isOwnedPost(post)) return;
+
+  ownerPanel.querySelector("[data-edit-post]").onclick = () => {
+    editForm.hidden = !editForm.hidden;
+  };
+  ownerPanel.querySelector("[data-toggle-resolved]").textContent = post.status === "Resolved" ? "Mark live" : "Mark resolved";
+  ownerPanel.querySelector("[data-toggle-resolved]").onclick = () => {
+    upsertOwnedPost({ ...post, status: post.status === "Resolved" ? "Live" : "Resolved" });
+    renderDetailsPage();
+  };
+  ownerPanel.querySelector("[data-toggle-unavailable]").textContent = post.status === "Unavailable" ? "Mark live" : "Mark unavailable";
+  ownerPanel.querySelector("[data-toggle-unavailable]").onclick = () => {
+    upsertOwnedPost({ ...post, status: post.status === "Unavailable" ? "Live" : "Unavailable" });
+    renderDetailsPage();
+  };
+  ownerPanel.querySelector("[data-delete-post]").onclick = () => {
+    if (!window.confirm("Delete this post from your prototype?")) return;
+    if (deletePost(post.id)) window.location.href = "profile.html?deleted=1";
+  };
+
+  editForm.querySelector("[data-edit-title]").value = post.title;
+  editForm.querySelector("[data-edit-description]").value = post.description;
+  editForm.querySelector("[data-edit-location]").value = post.location;
+  editForm.onsubmit = (event) => {
+    event.preventDefault();
+    const title = editForm.querySelector("[data-edit-title]").value;
+    const description = editForm.querySelector("[data-edit-description]").value;
+    const location = editForm.querySelector("[data-edit-location]").value;
+    const validation = validatePostDraft({ title, description, location, allowCalls: post.allowCalls, phone: post.phone, photos: [], photosRequired: false });
+    if (!validation.valid) {
+      editForm.querySelector("[data-edit-error]").textContent = validation.message;
+      return;
+    }
+    upsertOwnedPost({ ...post, title, description, details: description, location, time: "Updated now" });
+    editForm.hidden = true;
+    renderDetailsPage();
+  };
 }
 
 function setupLoginForms() {
