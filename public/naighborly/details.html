@@ -93,6 +93,35 @@
                   <a class="primary-action kitenge-button" id="details-message-link" href="inbox.html">Message</a>
                   <a class="secondary-action" id="details-call-link" href="tel:+254700000000">Call</a>
                 </div>
+                <button class="secondary-action save-action" id="details-favorite-button" type="button">Save post</button>
+              </article>
+
+              <article class="surface-panel owner-controls" id="details-owner-controls" hidden>
+                <h2>Manage your post</h2>
+                <div class="owner-action-grid">
+                  <button class="secondary-action" data-edit-post type="button">Edit</button>
+                  <button class="secondary-action" data-toggle-resolved type="button">Mark resolved</button>
+                  <button class="secondary-action" data-toggle-unavailable type="button">Mark unavailable</button>
+                  <button class="danger-action" data-delete-post type="button">Delete</button>
+                </div>
+              </article>
+
+              <form class="surface-panel edit-post-form" id="details-edit-form" hidden>
+                <h2>Edit post</h2>
+                <label class="form-group">
+                  <span class="form-label">Title</span>
+                  <input type="text" data-edit-title />
+                </label>
+                <label class="form-group">
+                  <span class="form-label">Description</span>
+                  <textarea data-edit-description></textarea>
+                </label>
+                <label class="form-group">
+                  <span class="form-label">Location</span>
+                  <input type="text" data-edit-location />
+                </label>
+                <p class="form-error" data-edit-error></p>
+                <button class="primary-action kitenge-button" type="submit">Save changes</button>
               </article>
 
               <article class="safety-panel">

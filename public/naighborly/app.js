@@ -1,6 +1,8 @@
 const STORAGE_KEY = "naighborly-user-posts";
 const THREADS_KEY = "naighborly-message-threads";
 const DRAFT_KEY = "naighborly-create-draft";
+const FAVORITES_KEY = "naighborly-favorite-posts";
+const DELETED_POSTS_KEY = "naighborly-deleted-posts";
 const MAX_PHOTOS = 4;
 const MAX_PHOTO_BYTES = 2.5 * 1024 * 1024;
 const MAX_PHOTO_STORAGE_BYTES = 7 * 1024 * 1024;
@@ -297,6 +299,8 @@ function normalizePost(post) {
     ? post.photos.filter((src) => typeof src === "string" && src.startsWith("data:image/")).slice(0, MAX_PHOTOS)
     : [];
 
+  const status = ["Live", "Resolved", "Unavailable"].includes(post.status) ? post.status : "Live";
+
   return {
     id,
     title,
@@ -315,7 +319,7 @@ function normalizePost(post) {
     allowCalls: Boolean(post.allowCalls),
     phone: String(post.phone || "").trim().slice(0, POST_LIMITS.phone),
     note: post.note || "Confirm the exact item, service, or swap terms before meeting in person.",
-    status: post.status,
+    status,
   };
 }
 
@@ -348,6 +352,47 @@ function getPostById(postId) {
   const normalizedId = String(postId || "").trim();
   if (!normalizedId) return null;
   return getAllFeedPosts().find((post) => post.id === normalizedId) || null;
+}
+
+function getDeletedPostIds() {
+  return new Set(safeReadArray(DELETED_POSTS_KEY).map(String));
+}
+
+function isOwnedPost(post) {
+  return post?.owner === CURRENT_USER.name;
+}
+
+function readFavoriteIds() {
+  return safeReadArray(FAVORITES_KEY).map(String);
+}
+
+function isFavoritePost(postId) {
+  return readFavoriteIds().includes(String(postId));
+}
+
+function toggleFavoritePost(postId) {
+  const id = String(postId || "");
+  if (!id) return false;
+  const favorites = readFavoriteIds();
+  const nextFavorites = favorites.includes(id) ? favorites.filter((item) => item !== id) : [id, ...favorites];
+  return safeWriteArray(FAVORITES_KEY, nextFavorites);
+}
+
+function upsertOwnedPost(postPatch) {
+  const post = normalizePost(postPatch);
+  if (!post || !isOwnedPost(post)) return false;
+  const storedPosts = readStoredPosts().filter((item) => item.id !== post.id);
+  return writeStoredPosts([post, ...storedPosts]);
+}
+
+function deletePost(postId) {
+  const id = String(postId || "");
+  const post = getPostById(id);
+  if (!post || !isOwnedPost(post)) return false;
+  writeStoredPosts(readStoredPosts().filter((item) => item.id !== id));
+  safeWriteArray(DELETED_POSTS_KEY, [...getDeletedPostIds(), id]);
+  safeWriteArray(FAVORITES_KEY, readFavoriteIds().filter((item) => item !== id));
+  return true;
 }
 
 function readFilesAsDataUrls(fileList) {
@@ -402,8 +447,9 @@ function writeStoredPosts(posts) {
 
 function getAllFeedPosts() {
   const seenIds = new Set();
+  const deletedIds = getDeletedPostIds();
   return [...readStoredPosts(), ...basePosts.map(normalizePost).filter(Boolean)].filter((post) => {
-    if (!post.id || seenIds.has(post.id)) return false;
+    if (!post.id || deletedIds.has(post.id) || seenIds.has(post.id)) return false;
     seenIds.add(post.id);
     return true;
   });
@@ -428,6 +474,8 @@ function createPostCard(post) {
     <div class="feed-card__tags">
       <span class="feed-card__pill feed-card__pill--category">${escapeHtml(post.category)}</span>
       <span class="feed-card__pill feed-card__pill--intent${post.intent === "Request" ? " is-request" : ""}">${escapeHtml(post.intent)}</span>
+      ${post.status !== "Live" ? `<span class="feed-card__pill feed-card__pill--status">${escapeHtml(post.status)}</span>` : ""}
+      ${isFavoritePost(post.id) ? '<span class="feed-card__saved" aria-label="Saved post">★</span>' : ""}
       ${post.urgent ? '<span class="feed-card__alert" aria-hidden="true">!</span>' : ""}
     </div>
     <h3 class="feed-card__title">${escapeHtml(post.title)}</h3>
@@ -797,6 +845,23 @@ function renderProfilePosts() {
   });
 }
 
+function renderSavedPosts() {
+  const root = document.getElementById("profile-saved-posts");
+  if (!root) return;
+  const posts = readFavoriteIds().map(getPostById).filter(Boolean);
+  root.innerHTML = "";
+  if (!posts.length) {
+    root.innerHTML = `
+      <article class="feed-empty-state profile-empty-state">
+        <strong>No saved posts yet</strong>
+        <p>Save useful posts from their details page and they will appear here.</p>
+      </article>
+    `;
+    return;
+  }
+  posts.forEach((post) => root.appendChild(createProfilePost(post)));
+}
+
 function setupCreateFlows() {
   document.querySelectorAll("[data-create-flow]").forEach((flow) => {
     const steps = [...flow.querySelectorAll(".create-step")];
@@ -1153,6 +1218,9 @@ function renderDetailsPage() {
   const actionRow = page.querySelector(".details-action-row");
   const photoStrip = document.getElementById("details-photo-strip");
   const photoGrid = document.getElementById("details-photo-grid");
+  const ownerPanel = document.getElementById("details-owner-controls");
+  const editForm = document.getElementById("details-edit-form");
+  const favoriteButton = document.getElementById("details-favorite-button");
 
   if (heroCard) {
     heroCard.className = `details-hero-card feed-card feed-card--${post.tone}${post.urgent ? " is-urgent" : ""}`;
@@ -1214,6 +1282,59 @@ function renderDetailsPage() {
       callLink.href = `tel:${post.phone}`;
     }
   }
+
+  setupDetailsOwnership(post, { ownerPanel, editForm, favoriteButton });
+}
+
+function setupDetailsOwnership(post, { ownerPanel, editForm, favoriteButton }) {
+  if (favoriteButton) {
+    favoriteButton.textContent = isFavoritePost(post.id) ? "Saved" : "Save post";
+    favoriteButton.setAttribute("aria-pressed", String(isFavoritePost(post.id)));
+    favoriteButton.onclick = () => {
+      toggleFavoritePost(post.id);
+      renderDetailsPage();
+    };
+  }
+
+  if (!ownerPanel || !editForm) return;
+  ownerPanel.hidden = !isOwnedPost(post);
+  if (!isOwnedPost(post)) return;
+
+  ownerPanel.querySelector("[data-edit-post]").onclick = () => {
+    editForm.hidden = !editForm.hidden;
+  };
+  ownerPanel.querySelector("[data-toggle-resolved]").textContent = post.status === "Resolved" ? "Mark live" : "Mark resolved";
+  ownerPanel.querySelector("[data-toggle-resolved]").onclick = () => {
+    upsertOwnedPost({ ...post, status: post.status === "Resolved" ? "Live" : "Resolved" });
+    renderDetailsPage();
+  };
+  ownerPanel.querySelector("[data-toggle-unavailable]").textContent = post.status === "Unavailable" ? "Mark live" : "Mark unavailable";
+  ownerPanel.querySelector("[data-toggle-unavailable]").onclick = () => {
+    upsertOwnedPost({ ...post, status: post.status === "Unavailable" ? "Live" : "Unavailable" });
+    renderDetailsPage();
+  };
+  ownerPanel.querySelector("[data-delete-post]").onclick = () => {
+    if (!window.confirm("Delete this post from your prototype?")) return;
+    if (deletePost(post.id)) window.location.href = "profile.html?deleted=1";
+  };
+
+  editForm.querySelector("[data-edit-title]").value = post.title;
+  editForm.querySelector("[data-edit-description]").value = post.description;
+  editForm.querySelector("[data-edit-location]").value = post.location;
+  editForm.onsubmit = (event) => {
+    event.preventDefault();
+    const title = editForm.querySelector("[data-edit-title]").value;
+    const description = editForm.querySelector("[data-edit-description]").value;
+    const location = editForm.querySelector("[data-edit-location]").value;
+    const validation = validatePostDraft({ title, description, location, allowCalls: post.allowCalls, phone: post.phone, photos: [], photosRequired: false });
+    if (!validation.valid) {
+      editForm.querySelector("[data-edit-error]").textContent = validation.message;
+      return;
+    }
+    upsertOwnedPost({ ...post, title, description, details: description, location, time: "Updated now" });
+    editForm.hidden = true;
+    renderDetailsPage();
+  };
 }
 
 function setupLoginForms() {
@@ -1244,6 +1365,7 @@ function setupHomeStatus() {
 renderFeeds();
 renderConversations();
 renderProfilePosts();
+renderSavedPosts();
 setupCreateFlows();
 renderDetailsPage();
 setupHomeSearch();
