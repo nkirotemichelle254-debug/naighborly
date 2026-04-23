@@ -2623,11 +2623,11 @@ textarea {
 
   .home-screen .home-feed {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 18px;
-    width: min(100%, 980px);
+    gap: 22px;
+    width: min(100%, 1040px);
     margin-left: auto;
     margin-right: auto;
-    padding: 8px 24px 40px;
+    padding: 14px 32px 56px;
   }
 
   .home-feed .feed-card {
@@ -2637,14 +2637,14 @@ textarea {
   .create-step.active,
   .details-content,
   .profile-content {
-    width: min(100%, 780px);
+    width: min(calc(100% - 64px), 780px);
     margin-left: auto;
     margin-right: auto;
   }
 
   .flow-actions {
-    padding-left: max(24px, calc((100% - 780px) / 2));
-    padding-right: max(24px, calc((100% - 780px) / 2));
+    padding-left: max(32px, calc((100% - 780px) / 2));
+    padding-right: max(32px, calc((100% - 780px) / 2));
     bottom: 80px;
   }
 
@@ -2685,7 +2685,7 @@ textarea {
   }
 
   .details-content {
-    width: min(100%, 900px);
+    width: min(calc(100% - 96px), 900px);
   }
 
   .details-meta-panel {
@@ -2693,7 +2693,7 @@ textarea {
   }
 
   .profile-content {
-    width: min(100%, 920px);
+    width: min(calc(100% - 96px), 920px);
   }
 
   .profile-posts-grid {
