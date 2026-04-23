@@ -1170,7 +1170,8 @@ textarea {
   display: grid;
   grid-template-columns: 1fr auto;
   gap: 8px;
-  padding: 0 16px 14px;
+  padding: 0 16px max(14px, env(safe-area-inset-bottom));
+  background: linear-gradient(180deg, rgba(253, 248, 241, 0) 0%, rgba(253, 248, 241, 0.96) 34%, rgba(253, 248, 241, 1) 100%);
 }
 
 .message-box button {
@@ -1507,7 +1508,18 @@ textarea {
   .mobile-thread-preview {
     display: block;
     padding-top: 10px;
+    padding-bottom: 96px;
     border-top: 1px solid var(--line);
+  }
+
+  .mobile-message-box {
+    position: fixed;
+    left: 50%;
+    bottom: 72px;
+    z-index: 5;
+    width: min(100%, var(--mobile-frame-width));
+    transform: translateX(-50%);
+    padding-top: 18px;
   }
 
   .home-frame {
