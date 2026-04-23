@@ -292,7 +292,7 @@ textarea {
 .home-screen {
   position: relative;
   min-height: 100vh;
-  padding-bottom: 112px;
+  padding-bottom: 128px;
   background: var(--home-cream);
   color: var(--home-ink);
   font-family: "Plus Jakarta Sans", sans-serif;
@@ -309,7 +309,7 @@ textarea {
 
 .home-content {
   flex: 1;
-  padding-bottom: 12px;
+  padding-bottom: 18px;
 }
 
 .home-hero {
@@ -1038,7 +1038,7 @@ textarea {
   gap: 0;
   min-height: 100vh;
   background: var(--home-cream);
-  padding-bottom: 88px;
+  padding-bottom: 112px;
 }
 
 .inbox-pane,
@@ -1064,6 +1064,7 @@ textarea {
   display: flex;
   flex-direction: column;
   padding-top: 10px;
+  padding-bottom: 18px;
 }
 
 .mobile-thread-preview {
