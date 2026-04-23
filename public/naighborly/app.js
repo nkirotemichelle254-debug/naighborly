@@ -845,6 +845,23 @@ function renderProfilePosts() {
   });
 }
 
+function renderSavedPosts() {
+  const root = document.getElementById("profile-saved-posts");
+  if (!root) return;
+  const posts = readFavoriteIds().map(getPostById).filter(Boolean);
+  root.innerHTML = "";
+  if (!posts.length) {
+    root.innerHTML = `
+      <article class="feed-empty-state profile-empty-state">
+        <strong>No saved posts yet</strong>
+        <p>Save useful posts from their details page and they will appear here.</p>
+      </article>
+    `;
+    return;
+  }
+  posts.forEach((post) => root.appendChild(createProfilePost(post)));
+}
+
 function setupCreateFlows() {
   document.querySelectorAll("[data-create-flow]").forEach((flow) => {
     const steps = [...flow.querySelectorAll(".create-step")];
