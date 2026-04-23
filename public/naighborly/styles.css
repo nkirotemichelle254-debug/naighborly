@@ -2768,3 +2768,63 @@ textarea {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
+
+.auth-note {
+  margin: 10px 0 18px;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.auth-submit-button {
+  width: 100%;
+  margin-top: 18px;
+  background: var(--navy);
+  color: var(--white);
+}
+
+.profile-signout {
+  margin-top: 10px;
+  border: 0;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.82);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.profile-edit-form {
+  display: grid;
+  gap: 14px;
+}
+
+.profile-edit-form[hidden] {
+  display: none;
+}
+
+.profile-edit-form input,
+.profile-edit-form textarea,
+.edit-post-form input,
+.edit-post-form textarea {
+  width: 100%;
+  border: 1px solid #e4ddd3;
+  border-radius: 12px;
+  background: var(--white);
+  color: var(--ink);
+}
+
+.profile-edit-form input,
+.edit-post-form input {
+  min-height: 44px;
+  padding: 0 14px;
+}
+
+.profile-edit-form textarea,
+.edit-post-form textarea {
+  min-height: 104px;
+  padding: 12px 14px;
+  resize: vertical;
+}
+
+.profile-edit-form h2 {
+  margin: 0;
+  font-family: "Syne", sans-serif;
+}

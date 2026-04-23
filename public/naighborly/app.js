@@ -3,6 +3,9 @@ const THREADS_KEY = "naighborly-message-threads";
 const DRAFT_KEY = "naighborly-create-draft";
 const FAVORITES_KEY = "naighborly-favorite-posts";
 const DELETED_POSTS_KEY = "naighborly-deleted-posts";
+const AUTH_KEY = "naighborly-auth-session";
+const PROFILE_KEY = "naighborly-user-profile";
+const STORAGE_PROVIDER_KEY = "localStorage";
 const MAX_PHOTOS = 4;
 const MAX_PHOTO_BYTES = 2.5 * 1024 * 1024;
 const MAX_PHOTO_STORAGE_BYTES = 7 * 1024 * 1024;
@@ -12,10 +15,35 @@ const POST_LIMITS = {
   location: 48,
   phone: 18,
 };
-const CURRENT_USER = {
+const DEFAULT_USER_PROFILE = {
   name: "Michael Heri",
   initials: "MH",
+  email: "michael@example.com",
+  location: "Westlands",
+  bio: "Product designer and community-minded builder creating trusted exchange across Nairobi neighborhoods.",
+  memberSince: "2024",
 };
+
+const storageAdapters = {
+  localStorage: {
+    read(key) {
+      return window.localStorage.getItem(key);
+    },
+    write(key, value) {
+      window.localStorage.setItem(key, value);
+    },
+    remove(key) {
+      storageAdapter.remove(key);
+    },
+    subscribe(callback) {
+      window.addEventListener("storage", callback);
+      return () => window.removeEventListener("storage", callback);
+    },
+  },
+};
+
+const storageAdapter = storageAdapters[STORAGE_PROVIDER_KEY];
+const CURRENT_USER = getCurrentProfile();
 
 const basePosts = [
   {
@@ -260,7 +288,7 @@ function safeReadArray(key) {
 
 function safeReadJson(key, fallback = null) {
   try {
-    const raw = window.localStorage.getItem(key);
+    const raw = storageAdapter.read(key);
     return raw ? JSON.parse(raw) : fallback;
   } catch {
     return fallback;
@@ -269,7 +297,7 @@ function safeReadJson(key, fallback = null) {
 
 function safeWriteJson(key, value) {
   try {
-    window.localStorage.setItem(key, JSON.stringify(value));
+    storageAdapter.write(key, JSON.stringify(value));
     return true;
   } catch {
     return false;
@@ -282,11 +310,101 @@ function safeWriteArray(key, items) {
 
 function safeRemoveItem(key) {
   try {
-    window.localStorage.removeItem(key);
+    storageAdapter.remove(key);
   } catch {
     // Ignore unavailable storage.
   }
 }
+
+function readAuthSession() {
+  const session = safeReadJson(AUTH_KEY, null);
+  return session && typeof session === "object" && session.email ? session : null;
+}
+
+function isSignedIn() {
+  return Boolean(readAuthSession());
+}
+
+function getCurrentProfile() {
+  const storedProfile = safeReadJson(PROFILE_KEY, {});
+  const session = readAuthSession();
+  const profile = storedProfile && typeof storedProfile === "object" ? storedProfile : {};
+  const name = String(profile.name || DEFAULT_USER_PROFILE.name).trim() || DEFAULT_USER_PROFILE.name;
+  return {
+    ...DEFAULT_USER_PROFILE,
+    ...profile,
+    email: session?.email || profile.email || DEFAULT_USER_PROFILE.email,
+    name,
+    initials: getInitials(name),
+    location: String(profile.location || DEFAULT_USER_PROFILE.location).trim() || DEFAULT_USER_PROFILE.location,
+    bio: String(profile.bio || DEFAULT_USER_PROFILE.bio).trim() || DEFAULT_USER_PROFILE.bio,
+    memberSince: String(profile.memberSince || DEFAULT_USER_PROFILE.memberSince),
+  };
+}
+
+function saveCurrentProfile(profilePatch) {
+  const nextProfile = getCurrentProfile();
+  const name = String(profilePatch.name || nextProfile.name).trim().slice(0, 60) || nextProfile.name;
+  const profile = {
+    ...nextProfile,
+    ...profilePatch,
+    name,
+    initials: getInitials(name),
+    location: String(profilePatch.location || nextProfile.location).trim().slice(0, POST_LIMITS.location),
+    bio: String(profilePatch.bio || nextProfile.bio).trim().slice(0, 220),
+  };
+  return safeWriteJson(PROFILE_KEY, profile);
+}
+
+function signInPrototype({ email, name }) {
+  const safeEmail = String(email || "").trim().toLowerCase();
+  if (!safeEmail.includes("@")) return false;
+  const profileName = String(name || getCurrentProfile().name).trim() || DEFAULT_USER_PROFILE.name;
+  safeWriteJson(AUTH_KEY, { email: safeEmail, provider: "prototype", signedInAt: new Date().toISOString() });
+  saveCurrentProfile({ ...getCurrentProfile(), email: safeEmail, name: profileName });
+  return true;
+}
+
+function signOutPrototype() {
+  safeRemoveItem(AUTH_KEY);
+  window.location.href = "home.html?guest=1";
+}
+
+function getNextUrl(fallback = "home.html?welcome=1") {
+  const next = new URLSearchParams(window.location.search).get("next");
+  return next && !next.startsWith("http") ? next : fallback;
+}
+
+function requireMembership(feature = "use this feature") {
+  if (isSignedIn()) return true;
+  const next = encodeURIComponent(`${window.location.pathname.split("/").pop() || "home.html"}${window.location.search}`);
+  window.location.href = `index.html?next=${next}&reason=${encodeURIComponent(feature)}`;
+  return false;
+}
+
+function guardProtectedPage() {
+  const page = window.location.pathname.split("/").pop();
+  if (["create.html", "inbox.html", "profile.html"].includes(page) && !isSignedIn()) {
+    requireMembership(page === "create.html" ? "post" : page === "inbox.html" ? "message" : "manage your profile");
+  }
+}
+
+const backendClient = {
+  provider: STORAGE_PROVIDER_KEY,
+  auth: { readSession: readAuthSession, signIn: signInPrototype, signOut: signOutPrototype },
+  profiles: { current: getCurrentProfile, save: saveCurrentProfile },
+  posts: { list: () => getAllFeedPosts(), getById: getPostById, save: upsertOwnedPost, delete: deletePost },
+  messages: { listThreads: getConversationThreads, ensureThread: ensureThreadForPost, send: persistThreadMessage },
+  realtime: {
+    subscribeToMessages(callback) {
+      return storageAdapter.subscribe((event) => {
+        if (event.key === THREADS_KEY) callback(getConversationThreads());
+      });
+    },
+  },
+};
+
+window.NaighborlyBackend = backendClient;
 
 function normalizePost(post) {
   if (!post || typeof post !== "object") return null;
@@ -691,6 +809,7 @@ function renderConversationThread(thread) {
 
 function persistThreadMessage(thread, text) {
   const messageText = String(text || "").trim().slice(0, 500);
+  if (!requireMembership("send messages")) return false;
   if (!thread || !messageText) return false;
   const updatedThread = {
     ...thread,
@@ -1266,6 +1385,12 @@ function renderDetailsPage() {
     messageLink.textContent =
       post.intent === "Request" ? "Offer help" : post.category === "Swap" ? "Start swap" : "Message";
     messageLink.href = `inbox.html?post=${encodeURIComponent(post.id)}`;
+    messageLink.addEventListener("click", (event) => {
+      if (!isSignedIn()) {
+        event.preventDefault();
+        requireMembership("message neighbors");
+      }
+    });
   }
 
   if (callLink) {
@@ -1280,6 +1405,12 @@ function renderDetailsPage() {
       callLink.textContent =
         post.category === "Swap" ? "Call owner" : post.intent === "Request" ? "Call now" : "Call";
       callLink.href = `tel:${post.phone}`;
+      callLink.addEventListener("click", (event) => {
+        if (!isSignedIn()) {
+          event.preventDefault();
+          requireMembership("contact neighbors");
+        }
+      });
     }
   }
 
@@ -1291,6 +1422,7 @@ function setupDetailsOwnership(post, { ownerPanel, editForm, favoriteButton }) {
     favoriteButton.textContent = isFavoritePost(post.id) ? "Saved" : "Save post";
     favoriteButton.setAttribute("aria-pressed", String(isFavoritePost(post.id)));
     favoriteButton.onclick = () => {
+      if (!requireMembership("save posts")) return;
       toggleFavoritePost(post.id);
       renderDetailsPage();
     };
@@ -1338,11 +1470,92 @@ function setupDetailsOwnership(post, { ownerPanel, editForm, favoriteButton }) {
 }
 
 function setupLoginForms() {
-  document.querySelectorAll("[data-login-form]").forEach((form) => {
+  document.querySelectorAll("[data-login-form], [data-signup-form]").forEach((form) => {
+    const emailInput = form.querySelector("[data-auth-email]");
+    const nameInput = form.querySelector("[data-auth-name]");
+    const error = form.querySelector("[data-auth-error]");
     form.addEventListener("submit", (event) => {
       event.preventDefault();
-      window.location.href = "home.html?welcome=1";
+      const email = emailInput?.value || "";
+      const name = nameInput?.value || getCurrentProfile().name;
+      if (!signInPrototype({ email, name })) {
+        if (error) error.textContent = "Enter a valid email address to continue.";
+        return;
+      }
+      window.location.href = getNextUrl();
     });
+  });
+}
+
+function setupMembershipChrome() {
+  const signedIn = isSignedIn();
+  const profile = getCurrentProfile();
+  document.querySelectorAll(".profile-chip").forEach((chip) => {
+    chip.textContent = signedIn ? profile.initials : "Join";
+    chip.href = signedIn ? "profile.html" : `index.html?next=profile.html`;
+    chip.setAttribute("aria-label", signedIn ? "Open profile" : "Sign up or log in");
+  });
+  document.querySelectorAll('a[href="create.html"], a[href="inbox.html"], a[href="profile.html"]').forEach((link) => {
+    link.addEventListener("click", (event) => {
+      if (signedIn) return;
+      event.preventDefault();
+      const href = link.getAttribute("href") || "home.html";
+      window.location.href = `index.html?next=${encodeURIComponent(href)}&reason=member`;
+    });
+  });
+}
+
+function setupAuthPageCopy() {
+  const reason = new URLSearchParams(window.location.search).get("reason");
+  const note = document.querySelector("[data-auth-note]");
+  if (note && reason) {
+    note.textContent = "You can keep browsing as a guest, but membership is needed to post, save, message, or manage a profile.";
+  }
+}
+
+function renderProfileIdentity() {
+  const root = document.querySelector("[data-profile-page]");
+  if (!root) return;
+  const profile = getCurrentProfile();
+  const setText = (selector, value) => {
+    const node = root.querySelector(selector);
+    if (node) node.textContent = value;
+  };
+  setText("[data-profile-avatar]", profile.initials);
+  setText("[data-profile-name]", profile.name);
+  setText("[data-profile-bio]", profile.bio);
+  setText("[data-profile-location]", profile.location);
+  setText("[data-profile-member-since]", `Neighbor since ${profile.memberSince}`);
+  setText("[data-profile-about]", profile.bio);
+}
+
+function setupProfileEditing() {
+  const root = document.querySelector("[data-profile-page]");
+  if (!root) return;
+  const form = document.getElementById("profile-edit-form");
+  const button = root.querySelector("[data-edit-profile]");
+  const signOut = root.querySelector("[data-sign-out]");
+  const error = root.querySelector("[data-profile-error]");
+  const profile = getCurrentProfile();
+  if (root.querySelector("[data-profile-edit-name]")) root.querySelector("[data-profile-edit-name]").value = profile.name;
+  if (root.querySelector("[data-profile-edit-location]")) root.querySelector("[data-profile-edit-location]").value = profile.location;
+  if (root.querySelector("[data-profile-edit-bio]")) root.querySelector("[data-profile-edit-bio]").value = profile.bio;
+  button?.addEventListener("click", () => {
+    form.hidden = !form.hidden;
+  });
+  signOut?.addEventListener("click", signOutPrototype);
+  form?.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const name = root.querySelector("[data-profile-edit-name]").value;
+    const location = root.querySelector("[data-profile-edit-location]").value;
+    const bio = root.querySelector("[data-profile-edit-bio]").value;
+    if (name.trim().length < 2 || location.trim().length < 2 || bio.trim().length < 12) {
+      if (error) error.textContent = "Add your name, neighborhood, and a short bio so neighbors can trust the profile.";
+      return;
+    }
+    saveCurrentProfile({ name, location, bio });
+    form.hidden = true;
+    renderProfileIdentity();
   });
 }
 
@@ -1352,7 +1565,9 @@ function setupHomeStatus() {
     ? "Your post is live. Neighbors can now discover it from the home feed."
     : params.get("welcome")
       ? "Welcome back. Your neighborhood feed is ready."
-      : "";
+      : params.get("guest")
+        ? "You are browsing as a guest. Sign up or log in when you want to post, save, or message."
+        : "";
 
   if (!message) return;
 
@@ -1362,6 +1577,7 @@ function setupHomeStatus() {
   banner.textContent = message;
 }
 
+guardProtectedPage();
 renderFeeds();
 renderConversations();
 renderProfilePosts();
@@ -1370,4 +1586,8 @@ setupCreateFlows();
 renderDetailsPage();
 setupHomeSearch();
 setupLoginForms();
+setupMembershipChrome();
+setupAuthPageCopy();
+renderProfileIdentity();
+setupProfileEditing();
 setupHomeStatus();
