@@ -328,7 +328,7 @@ function readFilesAsDataUrls(fileList) {
 }
 
 function getUserPosts(userName = CURRENT_USER.name) {
-  const ownedPosts = [...readStoredPosts(), ...basePosts].filter((post) => post.owner === userName);
+  const ownedPosts = getAllFeedPosts().filter((post) => post.owner === userName);
   const seenIds = new Set();
 
   return ownedPosts
@@ -344,25 +344,20 @@ function getUserPosts(userName = CURRENT_USER.name) {
 }
 
 function readStoredPosts() {
-  try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    const parsed = raw ? JSON.parse(raw) : [];
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return [];
-  }
+  return safeReadArray(STORAGE_KEY).map(normalizePost).filter(Boolean);
 }
 
 function writeStoredPosts(posts) {
-  try {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(posts));
-  } catch {
-    // Ignore storage errors in restricted browser contexts.
-  }
+  safeWriteArray(STORAGE_KEY, posts.map(normalizePost).filter(Boolean));
 }
 
 function getAllFeedPosts() {
-  return [...readStoredPosts(), ...basePosts];
+  const seenIds = new Set();
+  return [...readStoredPosts(), ...basePosts.map(normalizePost).filter(Boolean)].filter((post) => {
+    if (!post.id || seenIds.has(post.id)) return false;
+    seenIds.add(post.id);
+    return true;
+  });
 }
 
 function getProfilePosts() {
@@ -445,6 +440,7 @@ function setupHomeSearch() {
 }
 
 function buildConversationFromPost(post, overrides = {}) {
+  const safeMessages = Array.isArray(overrides.messages) ? overrides.messages : [];
   return {
     id: overrides.id || `thread-${post.id}`,
     postId: post.id,
@@ -454,7 +450,9 @@ function buildConversationFromPost(post, overrides = {}) {
     time: overrides.time || post.time || "Now",
     unread: Boolean(overrides.unread),
     messages:
-      overrides.messages ||
+      safeMessages.length
+        ? safeMessages
+        :
       [
         {
           sender: "received",
@@ -473,8 +471,31 @@ function buildConversationFromPost(post, overrides = {}) {
   };
 }
 
+function readStoredThreads() {
+  return safeReadArray(THREADS_KEY).filter((thread) => thread?.id && thread?.postId);
+}
+
+function writeStoredThreads(threads) {
+  safeWriteArray(THREADS_KEY, threads);
+}
+
+function ensureThreadForPost(postId) {
+  const post = getPostById(postId);
+  if (!post) return null;
+  const storedThreads = readStoredThreads();
+  const existing = storedThreads.find((thread) => thread.postId === post.id);
+  if (existing) return buildConversationFromPost(post, existing);
+  const newThread = buildConversationFromPost(post, { id: `thread-${post.id}`, time: "New" });
+  writeStoredThreads([newThread, ...storedThreads]);
+  return newThread;
+}
+
 function getConversationThreads() {
-  const threads = conversations
+  const storedThreads = readStoredThreads();
+  const seedThreads = conversations.filter(
+    (thread) => !storedThreads.some((storedThread) => storedThread.postId === thread.postId),
+  );
+  const threads = [...storedThreads, ...seedThreads]
     .map((thread) => {
       const post = getPostById(thread.postId);
       return post ? buildConversationFromPost(post, thread) : null;
@@ -485,10 +506,8 @@ function getConversationThreads() {
   const postId = params.get("post");
 
   if (postId && !threads.some((thread) => thread.postId === postId)) {
-    const post = getPostById(postId);
-    if (post) {
-      threads.unshift(buildConversationFromPost(post, { time: "New" }));
-    }
+    const thread = ensureThreadForPost(postId);
+    if (thread) threads.unshift(thread);
   }
 
   return threads;
