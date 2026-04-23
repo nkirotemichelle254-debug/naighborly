@@ -474,6 +474,8 @@ function createPostCard(post) {
     <div class="feed-card__tags">
       <span class="feed-card__pill feed-card__pill--category">${escapeHtml(post.category)}</span>
       <span class="feed-card__pill feed-card__pill--intent${post.intent === "Request" ? " is-request" : ""}">${escapeHtml(post.intent)}</span>
+      ${post.status !== "Live" ? `<span class="feed-card__pill feed-card__pill--status">${escapeHtml(post.status)}</span>` : ""}
+      ${isFavoritePost(post.id) ? '<span class="feed-card__saved" aria-label="Saved post">★</span>' : ""}
       ${post.urgent ? '<span class="feed-card__alert" aria-hidden="true">!</span>' : ""}
     </div>
     <h3 class="feed-card__title">${escapeHtml(post.title)}</h3>
