@@ -2123,20 +2123,7 @@ textarea {
   }
 }
 
-.app-nav {
-  position: fixed;
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: min(100%, var(--mobile-frame-width));
-  z-index: 4;
-  align-items: end;
-  padding: 10px 18px 12px;
-  background: rgba(255, 255, 255, 0.96);
-  border-top: 1px solid var(--home-line);
-  backdrop-filter: blur(10px);
-}
-
+.app-nav,
 .home-nav,
 .inbox-app .bottom-nav {
   position: fixed;
@@ -2144,9 +2131,29 @@ textarea {
   left: 50%;
   transform: translateX(-50%);
   width: min(100%, var(--mobile-frame-width));
-  z-index: 4;
+  z-index: 50;
+  align-items: end;
+  padding: 10px 18px calc(12px + env(safe-area-inset-bottom, 0px));
   background: rgba(255, 255, 255, 0.96);
+  border-top: 1px solid var(--home-line);
   backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+/* Reserve space so scrolling content is never hidden behind the fixed nav */
+.home-screen .home-content,
+.app-screen .details-content,
+.app-screen .create-step.active,
+.app-screen .profile-content,
+.inbox-app .conversation-list,
+.inbox-app .thread-messages {
+  padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px));
+}
+
+/* Keep the inbox message box above the fixed nav */
+.inbox-app .thread-pane .message-box,
+.inbox-app .mobile-message-box {
+  margin-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
 }
 
 .app-nav .nav-item,
