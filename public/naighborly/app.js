@@ -639,10 +639,52 @@ function renderFeeds(filterValue = "") {
       return;
     }
 
-    posts.forEach((post) => {
+    const AD_INTERVAL = 5;
+    posts.forEach((post, index) => {
       target.appendChild(createPostCard(post));
+      if ((index + 1) % AD_INTERVAL === 0 && index !== posts.length - 1) {
+        target.appendChild(createAdSlot(Math.floor(index / AD_INTERVAL)));
+      }
     });
   });
+}
+
+function createAdSlot(slotIndex = 0) {
+  const ads = [
+    {
+      tag: "Sponsored",
+      title: "Grow your duka with M-PESA Pay Bill",
+      body: "Accept payments instantly and keep your neighbours coming back.",
+      cta: "Learn more",
+    },
+    {
+      tag: "Sponsored",
+      title: "Solar lighting for every home",
+      body: "Affordable plans from KSh 800/month. Install in under an hour.",
+      cta: "Get a quote",
+    },
+    {
+      tag: "Sponsored",
+      title: "Fresh groceries, delivered today",
+      body: "Order from local mama mbogas and get same-day delivery.",
+      cta: "Shop now",
+    },
+  ];
+  const ad = ads[slotIndex % ads.length];
+  const slot = document.createElement("aside");
+  slot.className = "feed-ad-slot";
+  slot.setAttribute("role", "complementary");
+  slot.setAttribute("aria-label", "Sponsored");
+  slot.innerHTML = `
+    <div class="feed-ad-slot__header">
+      <span class="feed-ad-slot__tag">${escapeHtml(ad.tag)}</span>
+      <span class="feed-ad-slot__hint">Ad</span>
+    </div>
+    <h3 class="feed-ad-slot__title">${escapeHtml(ad.title)}</h3>
+    <p class="feed-ad-slot__body">${escapeHtml(ad.body)}</p>
+    <button type="button" class="feed-ad-slot__cta">${escapeHtml(ad.cta)}</button>
+  `;
+  return slot;
 }
 
 function setupHomeSearch() {
