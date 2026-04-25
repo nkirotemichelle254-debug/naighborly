@@ -14,7 +14,7 @@ export default function Profile() {
     if (!isSignedIn) navigate("/login?next=/profile", { replace: true });
   }, [isSignedIn, navigate]);
 
-  const myPosts = useMemo(() => posts.filter((p) => p.owner === profile.name), [posts, profile.name]);
+  const myPosts = useMemo(() => posts.filter((p) => p.ownerId === profile.id), [posts, profile.id]);
   const liveCount = myPosts.filter((p) => !p.resolved).length;
   const urgentCount = myPosts.filter((p) => p.urgent).length;
   const savedPosts = useMemo(() => posts.filter((p) => favorites.includes(p.id)), [posts, favorites]);
@@ -24,11 +24,17 @@ export default function Profile() {
   const [location, setLocation] = useState(profile.location);
   const [bio, setBio] = useState(profile.bio);
 
-  const saveProfile = () => {
+  const saveProfile = async () => {
     if (name.trim().length < 2) return toast({ title: "Add a name", variant: "destructive" });
-    updateProfile({ name: name.trim(), location: location.trim(), bio: bio.trim() });
+    const { error } = await updateProfile({ name: name.trim(), location: location.trim(), bio: bio.trim() });
+    if (error) return toast({ title: "Could not save", description: error, variant: "destructive" });
     setEditing(false);
     toast({ title: "Profile updated" });
+  };
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/home");
   };
 
   return (

@@ -70,11 +70,16 @@ export default function Details() {
               {post.intent}
             </span>
             {post.urgent && <span className="feed-card__pill" style={{ background: "hsl(var(--destructive))", color: "hsl(var(--destructive-foreground))" }}>Urgent</span>}
+            {post.resolved && <span className="feed-card__pill" style={{ background: "hsl(var(--muted))", color: "hsl(var(--muted-foreground))" }}>Resolved</span>}
           </div>
           <h2 className="feed-card__title text-2xl">{post.title}</h2>
           <p className="feed-card__description">{post.description}</p>
           <div className="feed-card__location">{post.location}</div>
         </article>
+
+        {post.imageUrl && (
+          <img src={post.imageUrl} alt={post.title} className="w-full rounded-2xl object-cover max-h-80 border border-border" />
+        )}
 
         <article className="rounded-2xl border border-border bg-card p-5 flex items-center gap-4">
           <div className="size-12 rounded-full bg-accent text-accent-foreground inline-flex items-center justify-center font-display font-bold">
