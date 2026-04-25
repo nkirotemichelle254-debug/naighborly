@@ -4,11 +4,16 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/context/AuthContext";
+import { PostsProvider } from "@/context/PostsContext";
+import { MessagesProvider } from "@/context/MessagesContext";
 import AppLayout from "@/components/layout/AppLayout";
 import Login from "@/pages/Login";
 import Signup from "@/pages/Signup";
 import Home from "@/pages/Home";
-import ComingSoon from "@/pages/ComingSoon";
+import Create from "@/pages/Create";
+import Details from "@/pages/Details";
+import Inbox from "@/pages/Inbox";
+import Profile from "@/pages/Profile";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -23,38 +28,30 @@ function LegacyRedirect() {
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route element={<AppLayout />}>
-              <Route path="/" element={<Navigate to="/home" replace />} />
-              <Route path="/home" element={<Home />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/signup" element={<Signup />} />
-              <Route
-                path="/create"
-                element={<ComingSoon title="Create a post" description="Posting form is being migrated next." />}
-              />
-              <Route
-                path="/inbox"
-                element={<ComingSoon title="Messages" description="Inbox is being migrated next." />}
-              />
-              <Route
-                path="/profile"
-                element={<ComingSoon title="Profile" description="Profile is being migrated next." />}
-              />
-              <Route
-                path="/post/:id"
-                element={<ComingSoon title="Post details" description="Details screen is being migrated next." />}
-              />
-            </Route>
-            <Route path="/legacy" element={<LegacyRedirect />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
+      <PostsProvider>
+        <MessagesProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <Routes>
+                <Route element={<AppLayout />}>
+                  <Route path="/" element={<Navigate to="/home" replace />} />
+                  <Route path="/home" element={<Home />} />
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/signup" element={<Signup />} />
+                  <Route path="/create" element={<Create />} />
+                  <Route path="/inbox" element={<Inbox />} />
+                  <Route path="/profile" element={<Profile />} />
+                  <Route path="/post/:id" element={<Details />} />
+                </Route>
+                <Route path="/legacy" element={<LegacyRedirect />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </BrowserRouter>
+          </TooltipProvider>
+        </MessagesProvider>
+      </PostsProvider>
     </AuthProvider>
   </QueryClientProvider>
 );
