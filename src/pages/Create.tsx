@@ -195,6 +195,19 @@ export default function Create() {
                 />
               </label>
 
+              <label className="grid gap-1.5">
+                <span className="text-sm font-medium">Photo (optional)</span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  className="rounded-xl border border-input bg-card px-4 py-3 text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-primary file:px-3 file:py-1.5 file:text-primary-foreground file:font-semibold"
+                />
+                {imagePreview && (
+                  <img src={imagePreview} alt="Preview" className="mt-2 max-h-48 rounded-xl object-cover" />
+                )}
+              </label>
+
               <label className="flex items-start justify-between gap-4 rounded-xl border border-border bg-card p-4">
                 <div>
                   <strong className="block">Allow phone calls</strong>
@@ -245,8 +258,8 @@ export default function Create() {
               Back
             </button>
           )}
-          <button onClick={goNext} className="pill-button flex-1">
-            {step === 3 ? "Publish post" : "Continue"}
+          <button onClick={goNext} disabled={busy} className="pill-button flex-1 disabled:opacity-60">
+            {busy ? "Publishing…" : step === 3 ? "Publish post" : "Continue"}
           </button>
         </div>
       </main>
