@@ -65,10 +65,7 @@ export default function Profile() {
               {editing ? "Cancel" : "Edit Profile"}
             </button>
             <button
-              onClick={() => {
-                signOut();
-                navigate("/home");
-              }}
+              onClick={handleSignOut}
               className="pill-button"
               data-variant="ghost"
               style={{ color: "hsl(var(--primary-foreground))", borderColor: "hsl(var(--primary-foreground) / 0.4)" }}
