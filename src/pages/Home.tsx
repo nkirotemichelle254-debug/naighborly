@@ -1,8 +1,9 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { Search } from "lucide-react";
-import { AD_SLOTS, SEED_POSTS, type Post } from "@/data/posts";
+import { AD_SLOTS, type Post } from "@/data/posts";
 import { useAuth } from "@/context/AuthContext";
+import { usePosts } from "@/context/PostsContext";
 
 const AD_INTERVAL = 5;
 
@@ -43,15 +44,16 @@ function AdCard({ index }: { index: number }) {
 
 export default function Home() {
   const { profile, isSignedIn } = useAuth();
+  const { posts: allPosts } = usePosts();
   const [query, setQuery] = useState("");
 
   const posts = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return SEED_POSTS;
-    return SEED_POSTS.filter((p) =>
+    if (!q) return allPosts;
+    return allPosts.filter((p) =>
       [p.title, p.description, p.category, p.intent, p.location].join(" ").toLowerCase().includes(q),
     );
-  }, [query]);
+  }, [query, allPosts]);
 
   const items: Array<{ kind: "post"; post: Post } | { kind: "ad"; index: number }> = [];
   posts.forEach((post, i) => {
