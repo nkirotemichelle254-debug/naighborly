@@ -30,24 +30,25 @@ export default function Details() {
     );
   }
 
-  const isOwner = isSignedIn && post.owner === profile.name;
+  const isOwner = isSignedIn && post.ownerId === profile.id;
   const fav = isFavorite(post.id);
 
-  const handleMessage = () => {
+  const handleMessage = async () => {
     if (!isSignedIn) return navigate(`/login?next=/post/${post.id}`);
-    const thread = ensureThreadForPost(post.id, post.owner, post.ownerInitials);
-    navigate(`/inbox?thread=${thread.id}`);
+    if (!post.ownerId) return;
+    const thread = await ensureThreadForPost(post.id, post.ownerId, post.owner);
+    if (thread) navigate(`/inbox?thread=${thread.id}`);
   };
 
-  const handleSaveEdit = () => {
-    updatePost(post.id, { title: title.trim(), description: description.trim(), details: description.trim(), location: location.trim() });
+  const handleSaveEdit = async () => {
+    await updatePost(post.id, { title: title.trim(), description: description.trim(), location: location.trim() });
     setEditing(false);
     toast({ title: "Post updated" });
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (!confirm("Delete this post?")) return;
-    deletePost(post.id);
+    await deletePost(post.id);
     toast({ title: "Post deleted" });
     navigate("/home");
   };
