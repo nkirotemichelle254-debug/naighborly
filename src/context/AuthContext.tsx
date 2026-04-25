@@ -134,7 +134,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const updateProfile = useCallback(
     async (patch: Partial<Pick<UserProfile, "name" | "location" | "bio" | "avatarUrl">>) => {
       if (!user) return { error: "Not signed in" };
-      const dbPatch: Record<string, unknown> = {};
+      const dbPatch: {
+        display_name?: string;
+        neighborhood?: string;
+        bio?: string;
+        avatar_url?: string | null;
+      } = {};
       if (patch.name !== undefined) dbPatch.display_name = patch.name.trim();
       if (patch.location !== undefined) dbPatch.neighborhood = patch.location.trim();
       if (patch.bio !== undefined) dbPatch.bio = patch.bio.trim();

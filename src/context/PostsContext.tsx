@@ -179,7 +179,7 @@ export function PostsProvider({ children }: { children: ReactNode }) {
 
   const updatePost = useCallback(
     async (id: string, patch: Partial<Pick<Post, "title" | "description" | "location" | "resolved">>) => {
-      const dbPatch: Record<string, unknown> = {};
+      const dbPatch: { title?: string; description?: string; location?: string; resolved?: boolean } = {};
       if (patch.title !== undefined) dbPatch.title = patch.title;
       if (patch.description !== undefined) dbPatch.description = patch.description;
       if (patch.location !== undefined) dbPatch.location = patch.location;
