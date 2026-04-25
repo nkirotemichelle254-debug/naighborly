@@ -13,12 +13,14 @@ export interface Post {
   tone: PostTone;
   owner: string;
   ownerInitials: string;
+  ownerId?: string;
   time: string;
   allowCalls: boolean;
   phone: string;
   note: string;
   urgent?: boolean;
   resolved?: boolean;
+  imageUrl?: string | null;
 }
 
 export const SEED_POSTS: Post[] = [

@@ -35,7 +35,22 @@ export default function Create() {
   const [allowCalls, setAllowCalls] = useState(false);
   const [phone, setPhone] = useState("");
   const [urgent, setUrgent] = useState(false);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] ?? null;
+    setImageFile(file);
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => setImagePreview(reader.result as string);
+      reader.readAsDataURL(file);
+    } else {
+      setImagePreview(null);
+    }
+  };
 
   const goBack = () => {
     if (step > 1) setStep(step - 1);
@@ -50,14 +65,15 @@ export default function Create() {
     setStep(step + 1);
   };
 
-  const submit = () => {
+  const submit = async () => {
     if (title.trim().length < 4) return setError("Title needs at least 4 characters");
     if (description.trim().length < 12) return setError("Add at least 12 characters of description");
     if (location.trim().length < 2) return setError("Add a neighborhood");
     if (allowCalls && !/^\+?[0-9\s-]{7,18}$/.test(phone.trim()))
       return setError("Enter a reachable phone or switch calls off");
 
-    const post = createPost({
+    setBusy(true);
+    const post = await createPost({
       title,
       description,
       category: category!,
@@ -66,8 +82,13 @@ export default function Create() {
       allowCalls,
       phone,
       urgent,
-      owner: profile.name,
+      imageFile,
     });
+    setBusy(false);
+    if (!post) {
+      setError("Could not publish. Please try again.");
+      return;
+    }
     toast({ title: "Post created", description: "Your post is live in the feed." });
     navigate(`/post/${post.id}`);
   };
@@ -174,6 +195,19 @@ export default function Create() {
                 />
               </label>
 
+              <label className="grid gap-1.5">
+                <span className="text-sm font-medium">Photo (optional)</span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  className="rounded-xl border border-input bg-card px-4 py-3 text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-primary file:px-3 file:py-1.5 file:text-primary-foreground file:font-semibold"
+                />
+                {imagePreview && (
+                  <img src={imagePreview} alt="Preview" className="mt-2 max-h-48 rounded-xl object-cover" />
+                )}
+              </label>
+
               <label className="flex items-start justify-between gap-4 rounded-xl border border-border bg-card p-4">
                 <div>
                   <strong className="block">Allow phone calls</strong>
@@ -224,8 +258,8 @@ export default function Create() {
               Back
             </button>
           )}
-          <button onClick={goNext} className="pill-button flex-1">
-            {step === 3 ? "Publish post" : "Continue"}
+          <button onClick={goNext} disabled={busy} className="pill-button flex-1 disabled:opacity-60">
+            {busy ? "Publishing…" : step === 3 ? "Publish post" : "Continue"}
           </button>
         </div>
       </main>
