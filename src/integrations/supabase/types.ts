@@ -14,16 +14,208 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      favorites: {
+        Row: {
+          created_at: string
+          post_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          post_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          post_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "favorites_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      messages: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          sender_id: string
+          thread_id: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          id?: string
+          sender_id: string
+          thread_id: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          sender_id?: string
+          thread_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_thread_id_fkey"
+            columns: ["thread_id"]
+            isOneToOne: false
+            referencedRelation: "threads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      posts: {
+        Row: {
+          allow_calls: boolean
+          category: Database["public"]["Enums"]["post_category"]
+          created_at: string
+          description: string
+          id: string
+          image_url: string | null
+          intent: Database["public"]["Enums"]["post_intent"]
+          location: string
+          note: string | null
+          owner_id: string
+          phone: string | null
+          resolved: boolean
+          title: string
+          updated_at: string
+          urgent: boolean
+        }
+        Insert: {
+          allow_calls?: boolean
+          category: Database["public"]["Enums"]["post_category"]
+          created_at?: string
+          description: string
+          id?: string
+          image_url?: string | null
+          intent: Database["public"]["Enums"]["post_intent"]
+          location?: string
+          note?: string | null
+          owner_id: string
+          phone?: string | null
+          resolved?: boolean
+          title: string
+          updated_at?: string
+          urgent?: boolean
+        }
+        Update: {
+          allow_calls?: boolean
+          category?: Database["public"]["Enums"]["post_category"]
+          created_at?: string
+          description?: string
+          id?: string
+          image_url?: string | null
+          intent?: Database["public"]["Enums"]["post_intent"]
+          location?: string
+          note?: string | null
+          owner_id?: string
+          phone?: string | null
+          resolved?: boolean
+          title?: string
+          updated_at?: string
+          urgent?: boolean
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          created_at: string
+          display_name: string
+          email: string | null
+          id: string
+          neighborhood: string | null
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string
+          display_name?: string
+          email?: string | null
+          id: string
+          neighborhood?: string | null
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string
+          display_name?: string
+          email?: string | null
+          id?: string
+          neighborhood?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      threads: {
+        Row: {
+          created_at: string
+          id: string
+          post_id: string | null
+          preview: string | null
+          unread_for_a: boolean
+          unread_for_b: boolean
+          updated_at: string
+          user_a: string
+          user_b: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          post_id?: string | null
+          preview?: string | null
+          unread_for_a?: boolean
+          unread_for_b?: boolean
+          updated_at?: string
+          user_a: string
+          user_b: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          post_id?: string | null
+          preview?: string | null
+          unread_for_a?: boolean
+          unread_for_b?: boolean
+          updated_at?: string
+          user_a?: string
+          user_b?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "threads_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      is_thread_participant: {
+        Args: { _thread_id: string; _user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      post_category: "Item" | "Service" | "Swap"
+      post_intent: "Offer" | "Request"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +342,9 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      post_category: ["Item", "Service", "Swap"],
+      post_intent: ["Offer", "Request"],
+    },
   },
 } as const
