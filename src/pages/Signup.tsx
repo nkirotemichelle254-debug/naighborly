@@ -20,10 +20,15 @@ export default function Signup() {
     if (!email.includes("@")) return setError("Please enter a valid email.");
     if (password.length < 6) return setError("Password must be at least 6 characters.");
     setBusy(true);
-    const { error: err } = await signUpWithEmail(email, password, name);
+    const { error: err, needsEmailConfirmation } = await signUpWithEmail(email, password, name);
     setBusy(false);
     if (err) {
       setError(err);
+      return;
+    }
+    if (needsEmailConfirmation) {
+      toast({ title: "Check your email", description: "Confirm your email address, then sign in to Naighborly." });
+      navigate(`/login?email=${encodeURIComponent(email.trim())}`, { replace: true });
       return;
     }
     toast({ title: "Account created", description: "You're signed in. Welcome to Naighborly!" });

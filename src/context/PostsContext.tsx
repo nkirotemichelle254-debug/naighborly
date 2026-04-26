@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
-import type { Post, PostCategory, PostIntent, PostTone } from "@/data/posts";
+import { SEED_POSTS, type Post, type PostCategory, type PostIntent, type PostTone } from "@/data/posts";
 
 function getInitials(name: string) {
   return (
@@ -32,7 +32,7 @@ function timeAgo(iso: string): string {
   return new Date(iso).toLocaleDateString();
 }
 
-interface PostRowWithProfile {
+interface PostRow {
   id: string;
   owner_id: string;
   title: string;
@@ -47,11 +47,10 @@ interface PostRowWithProfile {
   resolved: boolean;
   note: string | null;
   created_at: string;
-  profiles?: { display_name: string | null } | null;
 }
 
-function rowToPost(r: PostRowWithProfile): Post {
-  const owner = r.profiles?.display_name ?? "Neighbor";
+function rowToPost(r: PostRow, ownerNames = new Map<string, string>()): Post {
+  const owner = ownerNames.get(r.owner_id) ?? "Neighbor";
   return {
     id: r.id,
     title: r.title,
@@ -108,13 +107,17 @@ export function PostsProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   const refresh = useCallback(async () => {
-    const { data, error } = await supabase
-      .from("posts")
-      .select("*, profiles:owner_id(display_name)")
-      .order("created_at", { ascending: false });
-    if (!error && data) {
-      setPosts(data.map((row) => rowToPost(row as unknown as PostRowWithProfile)));
+    const { data, error } = await supabase.from("posts").select("*").order("created_at", { ascending: false });
+    if (error || !data || data.length === 0) {
+      setPosts(SEED_POSTS);
+      return;
     }
+
+    const rows = data as PostRow[];
+    const ownerIds = Array.from(new Set(rows.map((row) => row.owner_id)));
+    const { data: profiles } = await supabase.from("profiles").select("id, display_name").in("id", ownerIds);
+    const ownerNames = new Map((profiles ?? []).map((p) => [p.id, p.display_name ?? "Neighbor"]));
+    setPosts(rows.map((row) => rowToPost(row, ownerNames)));
   }, []);
 
   const refreshFavorites = useCallback(async () => {
@@ -166,12 +169,13 @@ export function PostsProvider({ children }: { children: ReactNode }) {
           urgent: draft.urgent,
           image_url: imageUrl,
         })
-        .select("*, profiles:owner_id(display_name)")
+        .select("*")
         .single();
 
       if (error || !data) return null;
-      const post = rowToPost(data as unknown as PostRowWithProfile);
-      setPosts((prev) => [post, ...prev]);
+      const ownerName = user.user_metadata?.full_name ?? user.user_metadata?.display_name ?? user.email?.split("@")[0] ?? "Neighbor";
+      const post = rowToPost(data as PostRow, new Map([[user.id, ownerName]]));
+      setPosts((prev) => [post, ...prev.filter((p) => !SEED_POSTS.some((seed) => seed.id === p.id))]);
       return post;
     },
     [user],

@@ -8,8 +8,9 @@ export default function Login() {
   const [params] = useSearchParams();
   const next = params.get("next") || "/home";
   const reason = params.get("reason");
+  const initialEmail = params.get("email") || "";
 
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(initialEmail);
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
@@ -50,9 +51,11 @@ export default function Login() {
       <form onSubmit={handleSubmit} className="px-6 py-8 max-w-md mx-auto">
         <h2 className="text-2xl font-bold">Welcome back</h2>
         <p className="mt-2 text-sm text-muted-foreground">
-          {reason
-            ? `Sign in to ${reason}.`
-            : "Browse freely, then sign in when you want to post, save, or message."}
+          {initialEmail
+            ? "We sent a confirmation link. After confirming your email, sign in here."
+            : reason
+              ? `Sign in to ${reason}.`
+              : "Browse freely, then sign in when you want to post, save, or message."}
         </p>
 
         <button

@@ -61,6 +61,9 @@
 
     --radius: 0.875rem;
 
+    /* Pattern asset */
+    --pattern-asset: url("/naighborly-legacy/kitenge-pattern.jpg");
+
     /* Mobile frame */
     --mobile-frame-width: 480px;
   }
@@ -143,7 +146,8 @@
     text-align: center;
     color: hsl(var(--primary-foreground));
     background:
-      linear-gradient(hsl(var(--primary-deep) / 0.55), hsl(var(--primary-deep) / 0.55)),
+      linear-gradient(hsl(var(--primary-deep) / 0.48), hsl(var(--primary-deep) / 0.56)),
+      var(--pattern-asset) center/240px auto repeat,
       linear-gradient(135deg, hsl(var(--primary)), hsl(var(--secondary)));
     padding: 28px 20px;
   }
@@ -281,6 +285,25 @@
     color: hsl(var(--foreground));
   }
   .search-input input::placeholder { color: hsl(var(--muted-foreground)); }
+
+  /* Kitenge pattern surfaces */
+  .kitenge-header {
+    color: hsl(var(--primary-foreground));
+    background:
+      linear-gradient(hsl(var(--primary-deep) / 0.46), hsl(var(--primary-deep) / 0.58)),
+      var(--pattern-asset) center/240px auto repeat,
+      linear-gradient(135deg, hsl(var(--primary)), hsl(var(--secondary)));
+  }
+
+  .kitenge-header .search-input {
+    background: hsl(var(--card) / 0.94);
+    color: hsl(var(--foreground));
+    border-color: hsl(var(--primary-foreground) / 0.24);
+  }
+
+  .kitenge-header .text-muted-foreground {
+    color: hsl(var(--primary-foreground) / 0.82);
+  }
 
   /* Profile chip */
   .profile-chip {

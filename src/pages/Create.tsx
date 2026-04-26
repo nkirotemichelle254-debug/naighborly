@@ -19,12 +19,12 @@ const INTENTS: { value: PostIntent; eyebrow: string; title: string; description:
 
 export default function Create() {
   const navigate = useNavigate();
-  const { isSignedIn, profile } = useAuth();
+  const { isSignedIn, loading, profile } = useAuth();
   const { createPost } = usePosts();
 
   useEffect(() => {
-    if (!isSignedIn) navigate("/login?next=/create", { replace: true });
-  }, [isSignedIn, navigate]);
+    if (!loading && !isSignedIn) navigate("/login?next=/create", { replace: true });
+  }, [isSignedIn, loading, navigate]);
 
   const [step, setStep] = useState(1);
   const [category, setCategory] = useState<PostCategory | null>(null);
