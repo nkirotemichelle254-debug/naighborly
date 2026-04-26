@@ -6,7 +6,7 @@ import { useMessages } from "@/context/MessagesContext";
 
 export default function Inbox() {
   const navigate = useNavigate();
-  const { isSignedIn } = useAuth();
+  const { isSignedIn, loading } = useAuth();
   const { threads, sendMessage, markRead } = useMessages();
   const [params, setParams] = useSearchParams();
   const initialThread = params.get("thread");
@@ -16,8 +16,8 @@ export default function Inbox() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!isSignedIn) navigate("/login?next=/inbox", { replace: true });
-  }, [isSignedIn, navigate]);
+    if (!loading && !isSignedIn) navigate("/login?next=/inbox", { replace: true });
+  }, [isSignedIn, loading, navigate]);
 
   useEffect(() => {
     if (activeId) markRead(activeId);

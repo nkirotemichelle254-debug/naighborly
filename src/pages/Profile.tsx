@@ -7,12 +7,12 @@ import { toast } from "@/hooks/use-toast";
 
 export default function Profile() {
   const navigate = useNavigate();
-  const { isSignedIn, profile, signOut, updateProfile } = useAuth();
+  const { isSignedIn, loading, profile, signOut, updateProfile } = useAuth();
   const { posts, favorites } = usePosts();
 
   useEffect(() => {
-    if (!isSignedIn) navigate("/login?next=/profile", { replace: true });
-  }, [isSignedIn, navigate]);
+    if (!loading && !isSignedIn) navigate("/login?next=/profile", { replace: true });
+  }, [isSignedIn, loading, navigate]);
 
   const myPosts = useMemo(() => posts.filter((p) => p.ownerId === profile.id), [posts, profile.id]);
   const liveCount = myPosts.filter((p) => !p.resolved).length;

@@ -36,17 +36,22 @@ function getInitials(name: string) {
   );
 }
 
+interface AuthResult {
+  error?: string;
+  needsEmailConfirmation?: boolean;
+}
+
 interface AuthContextValue {
   session: Session | null;
   user: User | null;
   profile: UserProfile;
   isSignedIn: boolean;
   loading: boolean;
-  signInWithEmail: (email: string, password: string) => Promise<{ error?: string }>;
-  signUpWithEmail: (email: string, password: string, name: string) => Promise<{ error?: string }>;
-  signInWithGoogle: () => Promise<{ error?: string }>;
+  signInWithEmail: (email: string, password: string) => Promise<AuthResult>;
+  signUpWithEmail: (email: string, password: string, name: string) => Promise<AuthResult>;
+  signInWithGoogle: () => Promise<AuthResult>;
   signOut: () => Promise<void>;
-  updateProfile: (patch: Partial<Pick<UserProfile, "name" | "location" | "bio" | "avatarUrl">>) => Promise<{ error?: string }>;
+  updateProfile: (patch: Partial<Pick<UserProfile, "name" | "location" | "bio" | "avatarUrl">>) => Promise<AuthResult>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -73,29 +78,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // 1. Subscribe FIRST to avoid missing events
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+    const applySession = (nextSession: Session | null) => {
       setSession(nextSession);
       setUser(nextSession?.user ?? null);
       if (nextSession?.user) {
-        // Defer DB call to avoid deadlock inside listener
         setTimeout(() => {
           loadProfile(nextSession.user!).then(setProfile);
         }, 0);
       } else {
         setProfile(FALLBACK_PROFILE);
       }
+    };
+
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+      applySession(nextSession);
+      setLoading(false);
     });
 
-    // 2. Then check existing session
     supabase.auth.getSession().then(({ data }) => {
-      setSession(data.session);
-      setUser(data.session?.user ?? null);
-      if (data.session?.user) {
-        loadProfile(data.session.user).then(setProfile).finally(() => setLoading(false));
-      } else {
-        setLoading(false);
-      }
+      applySession(data.session);
+      setLoading(false);
     });
 
     return () => sub.subscription.unsubscribe();
@@ -103,12 +105,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signInWithEmail = useCallback(async (email: string, password: string) => {
     const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
-    return error ? { error: error.message } : {};
+    if (!error) return {};
+    if (error.message.toLowerCase().includes("email not confirmed")) {
+      return { error: "Please confirm your email before signing in. Check your inbox for the Naighborly confirmation link." };
+    }
+    return { error: error.message };
   }, []);
 
   const signUpWithEmail = useCallback(async (email: string, password: string, name: string) => {
     const redirectUrl = `${window.location.origin}/`;
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email: email.trim(),
       password,
       options: {
@@ -116,7 +122,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         data: { display_name: name.trim(), full_name: name.trim() },
       },
     });
-    return error ? { error: error.message } : {};
+    if (error) return { error: error.message };
+    return { needsEmailConfirmation: !data.session };
   }, []);
 
   const signInWithGoogle = useCallback(async () => {
