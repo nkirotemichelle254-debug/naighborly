@@ -192,15 +192,15 @@
     pointer-events: none;
     background: linear-gradient(180deg, transparent 60%, hsl(var(--foreground) / 0.04));
   }
-  .feed-card--charcoal {
+  .feed-card.feed-card--charcoal {
     background: hsl(var(--tone-charcoal));
     color: hsl(var(--primary-foreground));
   }
-  .feed-card--blue {
+  .feed-card.feed-card--blue {
     background: hsl(var(--tone-blue));
     color: hsl(var(--primary-foreground));
   }
-  .feed-card--gold {
+  .feed-card.feed-card--gold {
     background: hsl(var(--tone-gold));
     color: hsl(var(--home-ink));
   }
