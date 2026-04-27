@@ -40,16 +40,33 @@ export default function Create() {
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
+  const MAX_IMAGE_BYTES = 5 * 1024 * 1024; // 5MB
+
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] ?? null;
-    setImageFile(file);
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = () => setImagePreview(reader.result as string);
-      reader.readAsDataURL(file);
-    } else {
+    if (!file) {
+      setImageFile(null);
       setImagePreview(null);
+      return;
     }
+    if (!file.type.startsWith("image/")) {
+      toast({ title: "Unsupported file", description: "Please pick an image file (JPG, PNG, WEBP).", variant: "destructive" });
+      e.target.value = "";
+      return;
+    }
+    if (file.size > MAX_IMAGE_BYTES) {
+      toast({
+        title: "Image too large",
+        description: `Max size is 5MB. Yours is ${(file.size / 1024 / 1024).toFixed(1)}MB.`,
+        variant: "destructive",
+      });
+      e.target.value = "";
+      return;
+    }
+    setImageFile(file);
+    const reader = new FileReader();
+    reader.onload = () => setImagePreview(reader.result as string);
+    reader.readAsDataURL(file);
   };
 
   const goBack = () => {
@@ -203,6 +220,7 @@ export default function Create() {
                   onChange={handleImageChange}
                   className="rounded-xl border border-input bg-card px-4 py-3 text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-primary file:px-3 file:py-1.5 file:text-primary-foreground file:font-semibold"
                 />
+                <span className="text-xs text-muted-foreground">JPG, PNG or WEBP. Max 5MB.</span>
                 {imagePreview && (
                   <img src={imagePreview} alt="Preview" className="mt-2 max-h-48 rounded-xl object-cover" />
                 )}
@@ -259,7 +277,7 @@ export default function Create() {
             </button>
           )}
           <button onClick={goNext} disabled={busy} className="pill-button flex-1 disabled:opacity-60">
-            {busy ? "Publishing…" : step === 3 ? "Publish post" : "Continue"}
+            {busy ? (imageFile ? "Uploading image…" : "Publishing…") : step === 3 ? "Publish post" : "Continue"}
           </button>
         </div>
       </main>
