@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type MouseEvent } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Bookmark, Phone, MessageCircle, Trash2 } from "lucide-react";
 import { usePosts } from "@/context/PostsContext";
@@ -60,7 +60,7 @@ export default function Details() {
     toggleFavorite(post.id);
   };
 
-  const handleCall = (e: React.MouseEvent) => {
+  const handleCall = (e: MouseEvent) => {
     if (isDemo) {
       e.preventDefault();
       toast({
