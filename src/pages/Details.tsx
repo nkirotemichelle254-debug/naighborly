@@ -134,6 +134,15 @@ export default function Details() {
           <p className="text-sm text-muted-foreground">{post.details}</p>
         </article>
 
+        {isDemo && (
+          <article className="rounded-2xl border border-dashed border-accent bg-accent/10 p-4 text-sm">
+            <strong className="font-display">Sample post</strong>
+            <p className="text-muted-foreground mt-1">
+              This post is here to show you how Naighborly looks. Create your own to start real conversations.
+            </p>
+          </article>
+        )}
+
         {!isOwner && (
           <article className="rounded-2xl border border-border bg-card p-5 grid gap-3">
             <h2 className="font-display text-lg font-bold">Reach out safely</h2>
@@ -143,13 +152,18 @@ export default function Details() {
                 <MessageCircle className="size-4" /> Message
               </button>
               {post.allowCalls && post.phone && (
-                <a href={`tel:${post.phone}`} className="pill-button gap-2" data-variant="ghost">
+                <a
+                  href={isDemo ? undefined : `tel:${post.phone}`}
+                  onClick={handleCall}
+                  className="pill-button gap-2"
+                  data-variant="ghost"
+                >
                   <Phone className="size-4" /> Call
                 </a>
               )}
             </div>
             <button
-              onClick={() => toggleFavorite(post.id)}
+              onClick={handleSave}
               className="pill-button gap-2"
               data-variant="ghost"
             >
