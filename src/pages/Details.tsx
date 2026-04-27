@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type MouseEvent } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Bookmark, Phone, MessageCircle, Trash2 } from "lucide-react";
 import { usePosts } from "@/context/PostsContext";
@@ -32,12 +32,42 @@ export default function Details() {
 
   const isOwner = isSignedIn && post.ownerId === profile.id;
   const fav = isFavorite(post.id);
+  const isDemo = post.isDemo === true;
 
   const handleMessage = async () => {
+    if (isDemo) {
+      toast({
+        title: "This is a sample post",
+        description: "Create your own post or wait for neighbours to share theirs to start chatting.",
+      });
+      return;
+    }
     if (!isSignedIn) return navigate(`/login?next=/post/${post.id}`);
     if (!post.ownerId) return;
     const thread = await ensureThreadForPost(post.id, post.ownerId, post.owner);
     if (thread) navigate(`/inbox?thread=${thread.id}`);
+  };
+
+  const handleSave = async () => {
+    if (isDemo) {
+      toast({
+        title: "Sample posts can't be saved",
+        description: "Saving works on real neighbour posts. Try creating one!",
+      });
+      return;
+    }
+    if (!isSignedIn) return navigate(`/login?next=/post/${post.id}`);
+    toggleFavorite(post.id);
+  };
+
+  const handleCall = (e: MouseEvent) => {
+    if (isDemo) {
+      e.preventDefault();
+      toast({
+        title: "Sample number",
+        description: "This is a demo contact. Real numbers appear once neighbours post.",
+      });
+    }
   };
 
   const handleSaveEdit = async () => {
@@ -104,6 +134,15 @@ export default function Details() {
           <p className="text-sm text-muted-foreground">{post.details}</p>
         </article>
 
+        {isDemo && (
+          <article className="rounded-2xl border border-dashed border-accent bg-accent/10 p-4 text-sm">
+            <strong className="font-display">Sample post</strong>
+            <p className="text-muted-foreground mt-1">
+              This post is here to show you how Naighborly looks. Create your own to start real conversations.
+            </p>
+          </article>
+        )}
+
         {!isOwner && (
           <article className="rounded-2xl border border-border bg-card p-5 grid gap-3">
             <h2 className="font-display text-lg font-bold">Reach out safely</h2>
@@ -113,13 +152,18 @@ export default function Details() {
                 <MessageCircle className="size-4" /> Message
               </button>
               {post.allowCalls && post.phone && (
-                <a href={`tel:${post.phone}`} className="pill-button gap-2" data-variant="ghost">
+                <a
+                  href={isDemo ? undefined : `tel:${post.phone}`}
+                  onClick={handleCall}
+                  className="pill-button gap-2"
+                  data-variant="ghost"
+                >
                   <Phone className="size-4" /> Call
                 </a>
               )}
             </div>
             <button
-              onClick={() => toggleFavorite(post.id)}
+              onClick={handleSave}
               className="pill-button gap-2"
               data-variant="ghost"
             >

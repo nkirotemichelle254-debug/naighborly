@@ -109,7 +109,7 @@ export function PostsProvider({ children }: { children: ReactNode }) {
   const refresh = useCallback(async () => {
     const { data, error } = await supabase.from("posts").select("*").order("created_at", { ascending: false });
     if (error || !data || data.length === 0) {
-      setPosts(SEED_POSTS);
+      setPosts(SEED_POSTS.map((p) => ({ ...p, isDemo: true })));
       return;
     }
 
