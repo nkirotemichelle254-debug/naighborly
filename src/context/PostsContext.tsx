@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
+import { toast } from "@/hooks/use-toast";
 import { SEED_POSTS, type Post, type PostCategory, type PostIntent, type PostTone } from "@/data/posts";
 
 function getInitials(name: string) {
@@ -106,9 +107,18 @@ export function PostsProvider({ children }: { children: ReactNode }) {
   const [favorites, setFavorites] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const refresh = useCallback(async () => {
+  const fetchAndSet = useCallback(async () => {
     const { data, error } = await supabase.from("posts").select("*").order("created_at", { ascending: false });
-    if (error || !data || data.length === 0) {
+    if (error) {
+      toast({
+        title: "Couldn't load the feed",
+        description: error.message,
+        variant: "destructive",
+      });
+      setPosts(SEED_POSTS.map((p) => ({ ...p, isDemo: true })));
+      return;
+    }
+    if (!data || data.length === 0) {
       setPosts(SEED_POSTS.map((p) => ({ ...p, isDemo: true })));
       return;
     }
@@ -119,6 +129,10 @@ export function PostsProvider({ children }: { children: ReactNode }) {
     const ownerNames = new Map((profiles ?? []).map((p) => [p.id, p.display_name ?? "Neighbor"]));
     setPosts(rows.map((row) => rowToPost(row, ownerNames)));
   }, []);
+
+  const refresh = useCallback(async () => {
+    await fetchAndSet();
+  }, [fetchAndSet]);
 
   const refreshFavorites = useCallback(async () => {
     if (!user) {
@@ -131,8 +145,26 @@ export function PostsProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     setLoading(true);
-    refresh().finally(() => setLoading(false));
-  }, [refresh]);
+    fetchAndSet().finally(() => setLoading(false));
+  }, [fetchAndSet]);
+
+  // Realtime subscription for live feed updates
+  useEffect(() => {
+    const channel = supabase
+      .channel("posts-changes")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "posts" },
+        () => {
+          fetchAndSet();
+        },
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [fetchAndSet]);
 
   useEffect(() => {
     refreshFavorites();
@@ -142,17 +174,26 @@ export function PostsProvider({ children }: { children: ReactNode }) {
 
   const createPost = useCallback(
     async (draft: PostDraft): Promise<Post | null> => {
-      if (!user) return null;
+      if (!user) {
+        toast({ title: "Sign in required", description: "Please log in to create a post.", variant: "destructive" });
+        return null;
+      }
 
       let imageUrl: string | null = null;
       if (draft.imageFile) {
         const ext = draft.imageFile.name.split(".").pop() ?? "jpg";
         const path = `${user.id}/${Date.now()}.${ext}`;
         const { error: upErr } = await supabase.storage.from("post-images").upload(path, draft.imageFile);
-        if (!upErr) {
-          const { data: pub } = supabase.storage.from("post-images").getPublicUrl(path);
-          imageUrl = pub.publicUrl;
+        if (upErr) {
+          toast({
+            title: "Image upload failed",
+            description: upErr.message,
+            variant: "destructive",
+          });
+          return null;
         }
+        const { data: pub } = supabase.storage.from("post-images").getPublicUrl(path);
+        imageUrl = pub.publicUrl;
       }
 
       const { data, error } = await supabase
@@ -172,7 +213,14 @@ export function PostsProvider({ children }: { children: ReactNode }) {
         .select("*")
         .single();
 
-      if (error || !data) return null;
+      if (error || !data) {
+        toast({
+          title: "Couldn't publish post",
+          description: error?.message ?? "Please try again.",
+          variant: "destructive",
+        });
+        return null;
+      }
       const ownerName = user.user_metadata?.full_name ?? user.user_metadata?.display_name ?? user.email?.split("@")[0] ?? "Neighbor";
       const post = rowToPost(data as PostRow, new Map([[user.id, ownerName]]));
       setPosts((prev) => [post, ...prev.filter((p) => !SEED_POSTS.some((seed) => seed.id === p.id))]);
@@ -189,30 +237,53 @@ export function PostsProvider({ children }: { children: ReactNode }) {
       if (patch.location !== undefined) dbPatch.location = patch.location;
       if (patch.resolved !== undefined) dbPatch.resolved = patch.resolved;
       const { error } = await supabase.from("posts").update(dbPatch).eq("id", id);
-      if (!error) {
-        setPosts((prev) => prev.map((p) => (p.id === id ? { ...p, ...patch, details: patch.description ?? p.details } : p)));
+      if (error) {
+        toast({
+          title: "Couldn't update post",
+          description: error.message,
+          variant: "destructive",
+        });
+        return;
       }
+      setPosts((prev) => prev.map((p) => (p.id === id ? { ...p, ...patch, details: patch.description ?? p.details } : p)));
     },
     [],
   );
 
   const deletePost = useCallback(async (id: string) => {
     const { error } = await supabase.from("posts").delete().eq("id", id);
-    if (!error) {
-      setPosts((prev) => prev.filter((p) => p.id !== id));
-      setFavorites((prev) => prev.filter((f) => f !== id));
+    if (error) {
+      toast({
+        title: "Couldn't delete post",
+        description: error.message,
+        variant: "destructive",
+      });
+      return;
     }
+    setPosts((prev) => prev.filter((p) => p.id !== id));
+    setFavorites((prev) => prev.filter((f) => f !== id));
   }, []);
 
   const toggleFavorite = useCallback(
     async (id: string) => {
-      if (!user) return;
+      if (!user) {
+        toast({ title: "Sign in required", description: "Log in to save posts.", variant: "destructive" });
+        return;
+      }
       const isFav = favorites.includes(id);
       if (isFav) {
-        await supabase.from("favorites").delete().eq("user_id", user.id).eq("post_id", id);
+        const { error } = await supabase.from("favorites").delete().eq("user_id", user.id).eq("post_id", id);
+        if (error) {
+          toast({ title: "Couldn't remove favorite", description: error.message, variant: "destructive" });
+          return;
+        }
         setFavorites((prev) => prev.filter((f) => f !== id));
       } else {
-        await supabase.from("favorites").insert({ user_id: user.id, post_id: id });
+        const { error } = await supabase.from("favorites").insert({ user_id: user.id, post_id: id });
+        if (error) {
+          toast({ title: "Couldn't save favorite", description: error.message, variant: "destructive" });
+          return;
+        }
         setFavorites((prev) => [id, ...prev]);
       }
     },
