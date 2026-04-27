@@ -15,6 +15,7 @@ import Details from "@/pages/Details";
 import Inbox from "@/pages/Inbox";
 import Profile from "@/pages/Profile";
 import NotFound from "@/pages/NotFound";
+import UserProfile from "@/pages/UserProfile";
 
 const queryClient = new QueryClient();
 
