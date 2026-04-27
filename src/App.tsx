@@ -15,6 +15,7 @@ import Details from "@/pages/Details";
 import Inbox from "@/pages/Inbox";
 import Profile from "@/pages/Profile";
 import NotFound from "@/pages/NotFound";
+import UserProfile from "@/pages/UserProfile";
 
 const queryClient = new QueryClient();
 
@@ -44,6 +45,7 @@ const App = () => (
                   <Route path="/inbox" element={<Inbox />} />
                   <Route path="/profile" element={<Profile />} />
                   <Route path="/post/:id" element={<Details />} />
+                  <Route path="/user/:id" element={<UserProfile />} />
                 </Route>
                 <Route path="/legacy" element={<LegacyRedirect />} />
                 <Route path="*" element={<NotFound />} />

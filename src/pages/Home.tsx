@@ -1,11 +1,13 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { Search } from "lucide-react";
-import { AD_SLOTS, type Post } from "@/data/posts";
+import { AD_SLOTS, type Post, type PostCategory, type PostIntent } from "@/data/posts";
 import { useAuth } from "@/context/AuthContext";
 import { usePosts } from "@/context/PostsContext";
 
 const AD_INTERVAL = 5;
+const CATEGORY_FILTERS: Array<PostCategory | "All"> = ["All", "Item", "Service", "Swap"];
+const INTENT_FILTERS: Array<PostIntent | "All"> = ["All", "Offer", "Request"];
 
 function FeedCard({ post }: { post: Post }) {
   return (
@@ -13,6 +15,14 @@ function FeedCard({ post }: { post: Post }) {
       to={`/post/${post.id}`}
       className={`feed-card feed-card--${post.tone} ${post.urgent ? "is-urgent" : ""} animate-fade-in`}
     >
+      {post.imageUrl && (
+        <img
+          src={post.imageUrl}
+          alt={post.title}
+          loading="lazy"
+          className="feed-card__thumb"
+        />
+      )}
       <div className="feed-card__tags">
         <span className="feed-card__pill feed-card__pill--category">{post.category}</span>
         <span className={`feed-card__pill feed-card__pill--intent ${post.intent === "Request" ? "is-request" : ""}`}>
@@ -46,14 +56,21 @@ export default function Home() {
   const { profile, isSignedIn } = useAuth();
   const { posts: allPosts } = usePosts();
   const [query, setQuery] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState<PostCategory | "All">("All");
+  const [intentFilter, setIntentFilter] = useState<PostIntent | "All">("All");
 
   const posts = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return allPosts;
-    return allPosts.filter((p) =>
-      [p.title, p.description, p.category, p.intent, p.location].join(" ").toLowerCase().includes(q),
-    );
-  }, [query, allPosts]);
+    return allPosts.filter((p) => {
+      if (categoryFilter !== "All" && p.category !== categoryFilter) return false;
+      if (intentFilter !== "All" && p.intent !== intentFilter) return false;
+      if (!q) return true;
+      return [p.title, p.description, p.category, p.intent, p.location]
+        .join(" ")
+        .toLowerCase()
+        .includes(q);
+    });
+  }, [query, categoryFilter, intentFilter, allPosts]);
 
   const items: Array<{ kind: "post"; post: Post } | { kind: "ad"; index: number }> = [];
   posts.forEach((post, i) => {
@@ -62,6 +79,8 @@ export default function Home() {
       items.push({ kind: "ad", index: Math.floor(i / AD_INTERVAL) });
     }
   });
+
+  const hasActiveFilter = categoryFilter !== "All" || intentFilter !== "All" || query.trim().length > 0;
 
   return (
     <div className="min-h-screen animate-fade-in">
@@ -87,13 +106,58 @@ export default function Home() {
         </label>
       </div>
 
+      <div className="px-5 pt-4 grid gap-2">
+        <div className="flex gap-2 overflow-x-auto -mx-1 px-1 pb-1" role="group" aria-label="Filter by category">
+          {CATEGORY_FILTERS.map((c) => (
+            <button
+              key={c}
+              type="button"
+              onClick={() => setCategoryFilter(c)}
+              data-active={categoryFilter === c}
+              className="filter-chip"
+            >
+              {c}
+            </button>
+          ))}
+        </div>
+        <div className="flex gap-2 overflow-x-auto -mx-1 px-1 pb-1" role="group" aria-label="Filter by intent">
+          {INTENT_FILTERS.map((i) => (
+            <button
+              key={i}
+              type="button"
+              onClick={() => setIntentFilter(i)}
+              data-active={intentFilter === i}
+              className="filter-chip"
+            >
+              {i}
+            </button>
+          ))}
+        </div>
+      </div>
+
       <main className="px-5 py-5 grid gap-4">
         {items.length === 0 && (
           <div className="rounded-2xl border border-border bg-card p-6 text-center">
             <strong className="block font-display">No matching posts yet</strong>
             <p className="text-sm text-muted-foreground mt-1">
-              Try a different search phrase or create a new community post.
+              {hasActiveFilter
+                ? "Try clearing filters or a different search phrase."
+                : "Be the first to share something with your neighbors."}
             </p>
+            {hasActiveFilter && (
+              <button
+                type="button"
+                onClick={() => {
+                  setQuery("");
+                  setCategoryFilter("All");
+                  setIntentFilter("All");
+                }}
+                className="pill-button mt-4"
+                data-variant="ghost"
+              >
+                Clear filters
+              </button>
+            )}
           </div>
         )}
         {items.map((item, i) =>

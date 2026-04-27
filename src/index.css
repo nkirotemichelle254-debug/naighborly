@@ -239,6 +239,36 @@
   .feed-card__location::before {
     content: "📍"; font-size: 0.7rem;
   }
+  .feed-card__thumb {
+    width: calc(100% + 36px);
+    margin: -18px -18px 4px;
+    height: 168px;
+    object-fit: cover;
+    background: hsl(var(--muted));
+  }
+
+  /* Filter chips */
+  .filter-chip {
+    flex-shrink: 0;
+    font-family: "Syne", sans-serif;
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    padding: 8px 16px;
+    border-radius: 999px;
+    background: hsl(var(--card));
+    color: hsl(var(--muted-foreground));
+    border: 1px solid hsl(var(--border));
+    transition: background 160ms ease, color 160ms ease, border-color 160ms ease;
+  }
+  .filter-chip:hover {
+    color: hsl(var(--foreground));
+  }
+  .filter-chip[data-active="true"] {
+    background: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+    border-color: hsl(var(--primary));
+  }
 
   /* Ad slots */
   .feed-ad-slot {
