@@ -220,6 +220,7 @@ export default function Create() {
                   onChange={handleImageChange}
                   className="rounded-xl border border-input bg-card px-4 py-3 text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-primary file:px-3 file:py-1.5 file:text-primary-foreground file:font-semibold"
                 />
+                <span className="text-xs text-muted-foreground">JPG, PNG or WEBP. Max 5MB.</span>
                 {imagePreview && (
                   <img src={imagePreview} alt="Preview" className="mt-2 max-h-48 rounded-xl object-cover" />
                 )}
