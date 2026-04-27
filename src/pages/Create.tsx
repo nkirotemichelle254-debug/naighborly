@@ -276,7 +276,7 @@ export default function Create() {
             </button>
           )}
           <button onClick={goNext} disabled={busy} className="pill-button flex-1 disabled:opacity-60">
-            {busy ? "Publishing…" : step === 3 ? "Publish post" : "Continue"}
+            {busy ? (imageFile ? "Uploading image…" : "Publishing…") : step === 3 ? "Publish post" : "Continue"}
           </button>
         </div>
       </main>
