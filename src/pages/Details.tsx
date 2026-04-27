@@ -111,16 +111,32 @@ export default function Details() {
           <img src={post.imageUrl} alt={post.title} className="w-full rounded-2xl object-cover max-h-80 border border-border" />
         )}
 
-        <article className="rounded-2xl border border-border bg-card p-5 flex items-center gap-4">
-          <div className="size-12 rounded-full bg-accent text-accent-foreground inline-flex items-center justify-center font-display font-bold">
-            {post.ownerInitials}
-          </div>
-          <div className="flex-1">
-            <strong className="block">{post.owner}</strong>
-            <p className="text-sm text-muted-foreground">Community member in {post.location}</p>
-          </div>
-          <span className="text-xs px-2 py-1 rounded-full bg-accent/30 text-accent-foreground font-semibold">Trusted</span>
-        </article>
+        {post.ownerId && !isDemo ? (
+          <Link
+            to={`/user/${post.ownerId}`}
+            className="rounded-2xl border border-border bg-card p-5 flex items-center gap-4 transition-colors hover:bg-accent/10"
+          >
+            <div className="size-12 rounded-full bg-accent text-accent-foreground inline-flex items-center justify-center font-display font-bold">
+              {post.ownerInitials}
+            </div>
+            <div className="flex-1">
+              <strong className="block">{post.owner}</strong>
+              <p className="text-sm text-muted-foreground">View neighbor profile</p>
+            </div>
+            <span className="text-xs px-2 py-1 rounded-full bg-accent/30 text-accent-foreground font-semibold">Trusted</span>
+          </Link>
+        ) : (
+          <article className="rounded-2xl border border-border bg-card p-5 flex items-center gap-4">
+            <div className="size-12 rounded-full bg-accent text-accent-foreground inline-flex items-center justify-center font-display font-bold">
+              {post.ownerInitials}
+            </div>
+            <div className="flex-1">
+              <strong className="block">{post.owner}</strong>
+              <p className="text-sm text-muted-foreground">Community member in {post.location}</p>
+            </div>
+            <span className="text-xs px-2 py-1 rounded-full bg-accent/30 text-accent-foreground font-semibold">Trusted</span>
+          </article>
+        )}
 
         <article className="rounded-2xl border border-border bg-card p-5 grid grid-cols-2 gap-4">
           <div><span className="text-xs text-muted-foreground">Category</span><strong className="block">{post.category}</strong></div>
