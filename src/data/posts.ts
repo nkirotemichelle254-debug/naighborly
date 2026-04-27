@@ -21,6 +21,7 @@ export interface Post {
   urgent?: boolean;
   resolved?: boolean;
   imageUrl?: string | null;
+  isDemo?: boolean;
 }
 
 export const SEED_POSTS: Post[] = [
