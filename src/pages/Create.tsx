@@ -40,16 +40,33 @@ export default function Create() {
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
+  const MAX_IMAGE_BYTES = 5 * 1024 * 1024; // 5MB
+
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] ?? null;
-    setImageFile(file);
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = () => setImagePreview(reader.result as string);
-      reader.readAsDataURL(file);
-    } else {
+    if (!file) {
+      setImageFile(null);
       setImagePreview(null);
+      return;
     }
+    if (!file.type.startsWith("image/")) {
+      toast({ title: "Unsupported file", description: "Please pick an image file (JPG, PNG, WEBP).", variant: "destructive" });
+      e.target.value = "";
+      return;
+    }
+    if (file.size > MAX_IMAGE_BYTES) {
+      toast({
+        title: "Image too large",
+        description: `Max size is 5MB. Yours is ${(file.size / 1024 / 1024).toFixed(1)}MB.`,
+        variant: "destructive",
+      });
+      e.target.value = "";
+      return;
+    }
+    setImageFile(file);
+    const reader = new FileReader();
+    reader.onload = () => setImagePreview(reader.result as string);
+    reader.readAsDataURL(file);
   };
 
   const goBack = () => {
