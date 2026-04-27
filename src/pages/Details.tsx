@@ -32,12 +32,42 @@ export default function Details() {
 
   const isOwner = isSignedIn && post.ownerId === profile.id;
   const fav = isFavorite(post.id);
+  const isDemo = post.isDemo === true;
 
   const handleMessage = async () => {
+    if (isDemo) {
+      toast({
+        title: "This is a sample post",
+        description: "Create your own post or wait for neighbours to share theirs to start chatting.",
+      });
+      return;
+    }
     if (!isSignedIn) return navigate(`/login?next=/post/${post.id}`);
     if (!post.ownerId) return;
     const thread = await ensureThreadForPost(post.id, post.ownerId, post.owner);
     if (thread) navigate(`/inbox?thread=${thread.id}`);
+  };
+
+  const handleSave = async () => {
+    if (isDemo) {
+      toast({
+        title: "Sample posts can't be saved",
+        description: "Saving works on real neighbour posts. Try creating one!",
+      });
+      return;
+    }
+    if (!isSignedIn) return navigate(`/login?next=/post/${post.id}`);
+    toggleFavorite(post.id);
+  };
+
+  const handleCall = (e: React.MouseEvent) => {
+    if (isDemo) {
+      e.preventDefault();
+      toast({
+        title: "Sample number",
+        description: "This is a demo contact. Real numbers appear once neighbours post.",
+      });
+    }
   };
 
   const handleSaveEdit = async () => {
