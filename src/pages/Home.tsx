@@ -136,6 +136,18 @@ export default function Home() {
       </div>
 
       <main className="px-5 py-5 grid gap-4">
+        {isSignedIn && !profile.avatarUrl && (
+          <Link
+            to="/profile"
+            className="rounded-2xl border border-accent/40 bg-accent/15 px-4 py-3 text-sm flex items-center justify-between gap-3 hover:bg-accent/25 transition animate-fade-in"
+          >
+            <span>
+              <strong className="block">Add your profile photo</strong>
+              <span className="text-muted-foreground">Helps neighbors trust you when meeting up.</span>
+            </span>
+            <span className="pill-button shrink-0" data-variant="ghost">Upload</span>
+          </Link>
+        )}
         {items.length === 0 && (
           <div className="rounded-2xl border border-border bg-card p-6 text-center">
             <strong className="block font-display">No matching posts yet</strong>
