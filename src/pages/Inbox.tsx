@@ -123,10 +123,29 @@ export default function Inbox() {
             >
               <ArrowLeft className="size-4" />
             </button>
-            <div className="size-10 rounded-full bg-accent text-accent-foreground inline-flex items-center justify-center font-display font-bold">
+            <button
+              onClick={() => navigate(`/user/${active.withId}`)}
+              className="size-10 rounded-full bg-accent text-accent-foreground inline-flex items-center justify-center font-display font-bold shrink-0"
+              aria-label={`View ${active.withName}'s profile`}
+            >
               {active.withInitials}
+            </button>
+            <div className="flex-1 min-w-0">
+              <button
+                type="button"
+                onClick={() => navigate(`/user/${active.withId}`)}
+                className="font-display text-lg font-bold truncate block text-left"
+              >
+                {active.withName}
+              </button>
+              <div className="flex items-center gap-2 flex-wrap mt-0.5">
+                <TrustBadge tier={otherTier} />
+                {hasReceived && (
+                  <AsantiButton threadId={active.id} receiverId={active.withId} receiverName={active.withName} />
+                )}
+                <ReportDialog reportedUserId={active.withId} />
+              </div>
             </div>
-            <strong className="font-display text-lg">{active.withName}</strong>
           </header>
 
           <main className="flex-1 px-5 py-4 grid gap-2 content-start overflow-y-auto">
