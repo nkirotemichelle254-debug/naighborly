@@ -22,6 +22,25 @@ export default function Details() {
   const [title, setTitle] = useState(post?.title ?? "");
   const [description, setDescription] = useState(post?.description ?? "");
   const [location, setLocation] = useState(post?.location ?? "");
+  const [ownerTier, setOwnerTier] = useState<TrustTier>("new");
+  const [ownerAsanti, setOwnerAsanti] = useState(0);
+
+  useEffect(() => {
+    if (!post?.ownerId || post?.isDemo) return;
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("trust_tier, asanti_received")
+        .eq("id", post.ownerId)
+        .maybeSingle();
+      if (!cancelled && data) {
+        setOwnerTier((data.trust_tier ?? "new") as TrustTier);
+        setOwnerAsanti(data.asanti_received ?? 0);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [post?.ownerId, post?.isDemo]);
 
   if (!post) {
     return (
