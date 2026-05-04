@@ -186,8 +186,25 @@ export default function Details() {
 
         {!isOwner && (
           <article className="rounded-2xl border border-border bg-card p-5 grid gap-3">
-            <h2 className="font-display text-lg font-bold">Reach out safely</h2>
-            <p className="text-sm text-muted-foreground">Start with a message, confirm the item, then agree on a public meetup point.</p>
+            <div className="flex items-start gap-3">
+              <ShieldAlert className="size-5 text-primary shrink-0 mt-0.5" />
+              <div className="grid gap-1">
+                <h2 className="font-display text-lg font-bold leading-tight">
+                  {ownerTier === "trusted" || ownerTier === "pillar"
+                    ? `${post.owner.split(" ")[0]} is well-known here`
+                    : ownerTier === "active" || ownerTier === "verified"
+                    ? "Meet in a public spot"
+                    : "New neighbor — go slow"}
+                </h2>
+                <p className="text-sm text-muted-foreground">
+                  {ownerTier === "trusted" || ownerTier === "pillar"
+                    ? `Thanked by ${ownerAsanti} neighbors. Still confirm details in chat before meeting.`
+                    : ownerTier === "active" || ownerTier === "verified"
+                    ? "Confirm exact item, price and pickup point in messages first. Meet during daylight in a busy area."
+                    : "This neighbor is new. Chat first, share no payment until you've met, and bring a friend if possible."}
+                </p>
+              </div>
+            </div>
             <div className="flex gap-3">
               <button onClick={handleMessage} className="pill-button flex-1 gap-2">
                 <MessageCircle className="size-4" /> Message
@@ -203,13 +220,18 @@ export default function Details() {
                 </a>
               )}
             </div>
-            <button
-              onClick={handleSave}
-              className="pill-button gap-2"
-              data-variant="ghost"
-            >
-              <Bookmark className={`size-4 ${fav ? "fill-current" : ""}`} /> {fav ? "Saved" : "Save post"}
-            </button>
+            <div className="flex items-center justify-between gap-2">
+              <button
+                onClick={handleSave}
+                className="pill-button gap-2"
+                data-variant="ghost"
+              >
+                <Bookmark className={`size-4 ${fav ? "fill-current" : ""}`} /> {fav ? "Saved" : "Save post"}
+              </button>
+              {!isDemo && post.ownerId && (
+                <ReportDialog reportedUserId={post.ownerId} postId={post.id} />
+              )}
+            </div>
           </article>
         )}
 
