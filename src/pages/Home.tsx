@@ -66,6 +66,26 @@ export default function Home() {
   const [query, setQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<PostCategory | "All">("All");
   const [intentFilter, setIntentFilter] = useState<PostIntent | "All">("All");
+  const [tierMap, setTierMap] = useState<Record<string, TrustTier>>({});
+
+  useEffect(() => {
+    const ownerIds = Array.from(
+      new Set(allPosts.filter((p) => p.ownerId && !p.isDemo).map((p) => p.ownerId as string)),
+    );
+    if (ownerIds.length === 0) return;
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("id, trust_tier")
+        .in("id", ownerIds);
+      if (cancelled || !data) return;
+      const map: Record<string, TrustTier> = {};
+      data.forEach((p) => { map[p.id] = (p.trust_tier ?? "new") as TrustTier; });
+      setTierMap(map);
+    })();
+    return () => { cancelled = true; };
+  }, [allPosts]);
 
   const posts = useMemo(() => {
     const q = query.trim().toLowerCase();
