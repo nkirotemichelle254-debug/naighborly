@@ -1,10 +1,13 @@
-import { useState, type MouseEvent } from "react";
+import { useEffect, useState, type MouseEvent } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Bookmark, Phone, MessageCircle, Trash2 } from "lucide-react";
+import { ArrowLeft, Bookmark, Phone, MessageCircle, Trash2, ShieldAlert } from "lucide-react";
 import { usePosts } from "@/context/PostsContext";
 import { useAuth } from "@/context/AuthContext";
 import { useMessages } from "@/context/MessagesContext";
 import { toast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { TrustBadge, type TrustTier } from "@/components/TrustBadge";
+import { ReportDialog } from "@/components/ReportDialog";
 
 export default function Details() {
   const { id = "" } = useParams();
