@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, MapPin } from "lucide-react";
+import { ArrowLeft, MapPin, Heart } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { usePosts } from "@/context/PostsContext";
 import { useAuth } from "@/context/AuthContext";
+import { TrustBadge, type TrustTier } from "@/components/TrustBadge";
+import { ReportDialog } from "@/components/ReportDialog";
 
 interface PublicProfile {
   id: string;
@@ -11,6 +13,9 @@ interface PublicProfile {
   neighborhood: string | null;
   bio: string | null;
   avatar_url: string | null;
+  trust_tier: TrustTier;
+  asanti_received: number;
+  created_at: string;
 }
 
 function getInitials(name: string) {
@@ -48,7 +53,7 @@ export default function UserProfile() {
     (async () => {
       const { data, error } = await supabase
         .from("profiles")
-        .select("id, display_name, neighborhood, bio, avatar_url")
+        .select("id, display_name, neighborhood, bio, avatar_url, trust_tier, asanti_received, created_at")
         .eq("id", id)
         .maybeSingle();
       if (cancelled) return;
