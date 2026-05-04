@@ -3,6 +3,10 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { ArrowLeft, Send, Search } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useMessages } from "@/context/MessagesContext";
+import { supabase } from "@/integrations/supabase/client";
+import { TrustBadge, type TrustTier } from "@/components/TrustBadge";
+import { AsantiButton } from "@/components/AsantiButton";
+import { ReportDialog } from "@/components/ReportDialog";
 
 export default function Inbox() {
   const navigate = useNavigate();
