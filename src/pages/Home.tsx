@@ -202,7 +202,7 @@ export default function Home() {
         )}
         {items.map((item, i) =>
           item.kind === "post" ? (
-            <FeedCard key={`p-${item.post.id}`} post={item.post} />
+            <FeedCard key={`p-${item.post.id}`} post={item.post} ownerTier={item.post.ownerId ? tierMap[item.post.ownerId] : undefined} />
           ) : (
             <AdCard key={`a-${i}`} index={item.index} />
           ),
