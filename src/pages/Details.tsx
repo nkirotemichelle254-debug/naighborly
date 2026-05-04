@@ -141,11 +141,15 @@ export default function Details() {
             <div className="size-12 rounded-full bg-accent text-accent-foreground inline-flex items-center justify-center font-display font-bold">
               {post.ownerInitials}
             </div>
-            <div className="flex-1">
-              <strong className="block">{post.owner}</strong>
-              <p className="text-sm text-muted-foreground">View neighbor profile</p>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <strong className="truncate">{post.owner}</strong>
+                <TrustBadge tier={ownerTier} />
+              </div>
+              <p className="text-sm text-muted-foreground">
+                {ownerAsanti > 0 ? `${ownerAsanti} asante${ownerAsanti === 1 ? "" : "s"} from neighbors` : "View neighbor profile"}
+              </p>
             </div>
-            <span className="text-xs px-2 py-1 rounded-full bg-accent/30 text-accent-foreground font-semibold">Trusted</span>
           </Link>
         ) : (
           <article className="rounded-2xl border border-border bg-card p-5 flex items-center gap-4">
@@ -154,9 +158,8 @@ export default function Details() {
             </div>
             <div className="flex-1">
               <strong className="block">{post.owner}</strong>
-              <p className="text-sm text-muted-foreground">Community member in {post.location}</p>
+              <p className="text-sm text-muted-foreground">Sample neighbor in {post.location}</p>
             </div>
-            <span className="text-xs px-2 py-1 rounded-full bg-accent/30 text-accent-foreground font-semibold">Trusted</span>
           </article>
         )}
 
