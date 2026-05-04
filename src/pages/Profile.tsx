@@ -152,8 +152,11 @@ export default function Profile() {
             <span className="text-xs text-muted-foreground">Offers live</span>
           </div>
           <div className="rounded-2xl border border-border bg-card p-4 text-center">
-            <strong className="block font-display text-2xl">{urgentCount}</strong>
-            <span className="text-xs text-muted-foreground">Urgent needs</span>
+            <strong className="font-display text-2xl inline-flex items-center gap-1">
+              <Heart className="size-4 text-primary fill-current" />
+              {profile.asantiReceived}
+            </strong>
+            <span className="block text-xs text-muted-foreground">Asantes</span>
           </div>
         </section>
 
