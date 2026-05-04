@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, Camera } from "lucide-react";
+import { ArrowLeft, Camera, Heart } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { usePosts } from "@/context/PostsContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { TrustBadge, getTierMeta } from "@/components/TrustBadge";
 
 const MAX_AVATAR_BYTES = 4 * 1024 * 1024; // 4MB
 
@@ -120,9 +121,9 @@ export default function Profile() {
           )}
           <h1 className="font-display text-3xl font-bold">{profile.name}</h1>
           <p className="text-sm opacity-90 max-w-sm">{profile.bio}</p>
-          <div className="flex gap-2 text-xs">
+          <div className="flex gap-2 text-xs flex-wrap justify-center">
             <span className="bg-card/20 px-3 py-1 rounded-full">{profile.location}</span>
-            <span className="bg-card/20 px-3 py-1 rounded-full">Community verified</span>
+            <TrustBadge tier={profile.trustTier} showNew />
           </div>
           <div className="flex gap-2 mt-2">
             <button onClick={() => setEditing((v) => !v)} className="pill-button" style={{ background: "hsl(var(--accent))", color: "hsl(var(--accent-foreground))" }}>
