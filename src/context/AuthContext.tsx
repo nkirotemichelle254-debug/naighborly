@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
+import type { TrustTier } from "@/components/TrustBadge";
 
 export interface UserProfile {
   id: string;
@@ -12,6 +13,8 @@ export interface UserProfile {
   bio: string;
   avatarUrl: string | null;
   memberSince: string;
+  trustTier: TrustTier;
+  asantiReceived: number;
 }
 
 const FALLBACK_PROFILE: UserProfile = {
@@ -23,6 +26,8 @@ const FALLBACK_PROFILE: UserProfile = {
   bio: "",
   avatarUrl: null,
   memberSince: new Date().getFullYear().toString(),
+  trustTier: "new",
+  asantiReceived: 0,
 };
 
 function getInitials(name: string) {
@@ -68,6 +73,8 @@ async function loadProfile(user: User): Promise<UserProfile> {
     bio: data?.bio ?? "",
     avatarUrl: data?.avatar_url ?? null,
     memberSince: data?.created_at ? new Date(data.created_at).getFullYear().toString() : FALLBACK_PROFILE.memberSince,
+    trustTier: (data?.trust_tier ?? "new") as TrustTier,
+    asantiReceived: data?.asanti_received ?? 0,
   };
 }
 
