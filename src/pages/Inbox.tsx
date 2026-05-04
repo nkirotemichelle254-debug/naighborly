@@ -38,6 +38,23 @@ export default function Inbox() {
   }, [threads, query]);
 
   const active = threads.find((t) => t.id === activeId);
+  const [otherTier, setOtherTier] = useState<TrustTier>("new");
+
+  useEffect(() => {
+    if (!active?.withId) return;
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("trust_tier")
+        .eq("id", active.withId)
+        .maybeSingle();
+      if (!cancelled && data) setOtherTier((data.trust_tier ?? "new") as TrustTier);
+    })();
+    return () => { cancelled = true; };
+  }, [active?.withId]);
+
+  const hasReceived = Boolean(active?.messages.some((m) => m.sender === "received"));
 
   const handleSend = () => {
     if (!active || !draft.trim()) return;
