@@ -11,7 +11,7 @@ const AD_INTERVAL = 5;
 const CATEGORY_FILTERS: Array<PostCategory | "All"> = ["All", "Item", "Service", "Swap"];
 const INTENT_FILTERS: Array<PostIntent | "All"> = ["All", "Offer", "Request"];
 
-function FeedCard({ post }: { post: Post }) {
+function FeedCard({ post, ownerTier }: { post: Post; ownerTier?: TrustTier }) {
   return (
     <Link
       to={`/post/${post.id}`}
@@ -34,7 +34,13 @@ function FeedCard({ post }: { post: Post }) {
       </div>
       <h3 className="feed-card__title">{post.title}</h3>
       <p className="feed-card__description">{post.description}</p>
-      <div className="feed-card__location">{post.location}</div>
+      <div className="flex items-center justify-between gap-2 mt-1">
+        <div className="feed-card__location">{post.location}</div>
+        <div className="flex items-center gap-1.5 text-xs text-muted-foreground min-w-0">
+          <span className="truncate max-w-[7rem]">{post.owner}</span>
+          {ownerTier && <TrustBadge tier={ownerTier} />}
+        </div>
+      </div>
     </Link>
   );
 }
