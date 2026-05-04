@@ -106,20 +106,42 @@ export default function UserProfile() {
                   getInitials(profile.display_name)
                 )}
               </div>
-              <div>
+              <div className="grid gap-2">
                 <h2 className="font-display text-2xl font-bold">{profile.display_name}</h2>
+                <div className="flex items-center justify-center gap-2 flex-wrap">
+                  <TrustBadge tier={profile.trust_tier} size="md" showNew />
+                </div>
                 {profile.neighborhood && (
-                  <p className="text-sm text-muted-foreground inline-flex items-center gap-1 mt-1">
+                  <p className="text-sm text-muted-foreground inline-flex items-center justify-center gap-1">
                     <MapPin className="size-3.5" /> {profile.neighborhood}
                   </p>
                 )}
               </div>
               {profile.bio && <p className="text-sm text-muted-foreground">{profile.bio}</p>}
-              {isMe && (
-                <Link to="/profile" className="pill-button mx-auto" data-variant="ghost">
-                  Edit your profile
-                </Link>
-              )}
+              <div className="grid grid-cols-2 gap-3 pt-2">
+                <div className="rounded-xl bg-muted/40 p-3">
+                  <div className="inline-flex items-center gap-1 text-primary">
+                    <Heart className="size-4 fill-current" />
+                    <strong className="font-display text-xl leading-none">{profile.asanti_received}</strong>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">Asantes received</p>
+                </div>
+                <div className="rounded-xl bg-muted/40 p-3">
+                  <strong className="font-display text-xl leading-none block">
+                    {new Date(profile.created_at).toLocaleDateString(undefined, { month: "short", year: "numeric" })}
+                  </strong>
+                  <p className="text-xs text-muted-foreground mt-1">Neighbor since</p>
+                </div>
+              </div>
+              <div className="flex items-center justify-center gap-3 pt-1">
+                {isMe ? (
+                  <Link to="/profile" className="pill-button" data-variant="ghost">
+                    Edit your profile
+                  </Link>
+                ) : (
+                  <ReportDialog reportedUserId={profile.id} />
+                )}
+              </div>
             </article>
 
             <section className="grid gap-3">
