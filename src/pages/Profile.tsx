@@ -236,13 +236,21 @@ export default function Profile() {
           )}
         </section>
 
-        <section className="rounded-2xl border border-border bg-card p-5">
-          <h2 className="font-display text-lg font-bold mb-3">Community standing</h2>
-          <ul className="grid gap-3">
-            <li><strong>Responsive</strong><p className="text-sm text-muted-foreground">Usually replies within the hour</p></li>
-            <li><strong>Reliable meetups</strong><p className="text-sm text-muted-foreground">Prefers public pickup points in Nairobi</p></li>
-            <li><strong>Good exchange history</strong><p className="text-sm text-muted-foreground">Known for clean swaps and clear communication</p></li>
-          </ul>
+        <section className="rounded-2xl border border-border bg-card p-5 grid gap-3">
+          <div className="flex items-center justify-between gap-3">
+            <h2 className="font-display text-lg font-bold">Community standing</h2>
+            <TrustBadge tier={profile.trustTier} size="md" showNew />
+          </div>
+          <p className="text-sm text-muted-foreground">{getTierMeta(profile.trustTier).description}</p>
+          <div className="rounded-xl bg-muted/40 p-4 grid gap-2 text-sm">
+            <strong className="font-display">How standing is earned</strong>
+            <ul className="grid gap-1.5 text-muted-foreground text-xs">
+              <li>• <strong className="text-foreground">Verified</strong> — confirm email + add photo, bio, neighborhood.</li>
+              <li>• <strong className="text-foreground">Active</strong> — verified + 3 posts or 5 conversations + 14 days.</li>
+              <li>• <strong className="text-foreground">Trusted</strong> — 5+ asantes from different neighbors, no open reports.</li>
+              <li>• <strong className="text-foreground">Pillar</strong> — 20+ asantes and 60+ days as a neighbor.</li>
+            </ul>
+          </div>
         </section>
       </main>
     </div>
