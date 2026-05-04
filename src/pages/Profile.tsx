@@ -20,7 +20,7 @@ export default function Profile() {
 
   const myPosts = useMemo(() => posts.filter((p) => p.ownerId === profile.id), [posts, profile.id]);
   const liveCount = myPosts.filter((p) => !p.resolved).length;
-  const urgentCount = myPosts.filter((p) => p.urgent).length;
+  
   const savedPosts = useMemo(() => posts.filter((p) => favorites.includes(p.id)), [posts, favorites]);
 
   const [editing, setEditing] = useState(false);
