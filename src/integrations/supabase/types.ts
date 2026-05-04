@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      asanti: {
+        Row: {
+          created_at: string
+          giver_id: string
+          id: string
+          message: string | null
+          receiver_id: string
+          thread_id: string
+        }
+        Insert: {
+          created_at?: string
+          giver_id: string
+          id?: string
+          message?: string | null
+          receiver_id: string
+          thread_id: string
+        }
+        Update: {
+          created_at?: string
+          giver_id?: string
+          id?: string
+          message?: string | null
+          receiver_id?: string
+          thread_id?: string
+        }
+        Relationships: []
+      }
       favorites: {
         Row: {
           created_at: string
@@ -128,6 +155,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          asanti_received: number
           avatar_url: string | null
           bio: string | null
           created_at: string
@@ -135,9 +163,11 @@ export type Database = {
           email: string | null
           id: string
           neighborhood: string | null
+          trust_tier: Database["public"]["Enums"]["trust_tier"]
           updated_at: string
         }
         Insert: {
+          asanti_received?: number
           avatar_url?: string | null
           bio?: string | null
           created_at?: string
@@ -145,9 +175,11 @@ export type Database = {
           email?: string | null
           id: string
           neighborhood?: string | null
+          trust_tier?: Database["public"]["Enums"]["trust_tier"]
           updated_at?: string
         }
         Update: {
+          asanti_received?: number
           avatar_url?: string | null
           bio?: string | null
           created_at?: string
@@ -155,7 +187,41 @@ export type Database = {
           email?: string | null
           id?: string
           neighborhood?: string | null
+          trust_tier?: Database["public"]["Enums"]["trust_tier"]
           updated_at?: string
+        }
+        Relationships: []
+      }
+      reports: {
+        Row: {
+          created_at: string
+          details: string | null
+          id: string
+          post_id: string | null
+          reason: string
+          reported_user_id: string | null
+          reporter_id: string
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          details?: string | null
+          id?: string
+          post_id?: string | null
+          reason: string
+          reported_user_id?: string | null
+          reporter_id: string
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          details?: string | null
+          id?: string
+          post_id?: string | null
+          reason?: string
+          reported_user_id?: string | null
+          reporter_id?: string
+          status?: string
         }
         Relationships: []
       }
@@ -212,10 +278,12 @@ export type Database = {
         Args: { _thread_id: string; _user_id: string }
         Returns: boolean
       }
+      recompute_trust_tier: { Args: { _user_id: string }; Returns: undefined }
     }
     Enums: {
       post_category: "Item" | "Service" | "Swap"
       post_intent: "Offer" | "Request"
+      trust_tier: "new" | "verified" | "active" | "trusted" | "pillar"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -345,6 +413,7 @@ export const Constants = {
     Enums: {
       post_category: ["Item", "Service", "Swap"],
       post_intent: ["Offer", "Request"],
+      trust_tier: ["new", "verified", "active", "trusted", "pillar"],
     },
   },
 } as const

@@ -1,10 +1,13 @@
-import { useState, type MouseEvent } from "react";
+import { useEffect, useState, type MouseEvent } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Bookmark, Phone, MessageCircle, Trash2 } from "lucide-react";
+import { ArrowLeft, Bookmark, Phone, MessageCircle, Trash2, ShieldAlert } from "lucide-react";
 import { usePosts } from "@/context/PostsContext";
 import { useAuth } from "@/context/AuthContext";
 import { useMessages } from "@/context/MessagesContext";
 import { toast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { TrustBadge, type TrustTier } from "@/components/TrustBadge";
+import { ReportDialog } from "@/components/ReportDialog";
 
 export default function Details() {
   const { id = "" } = useParams();
@@ -19,6 +22,25 @@ export default function Details() {
   const [title, setTitle] = useState(post?.title ?? "");
   const [description, setDescription] = useState(post?.description ?? "");
   const [location, setLocation] = useState(post?.location ?? "");
+  const [ownerTier, setOwnerTier] = useState<TrustTier>("new");
+  const [ownerAsanti, setOwnerAsanti] = useState(0);
+
+  useEffect(() => {
+    if (!post?.ownerId || post?.isDemo) return;
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("trust_tier, asanti_received")
+        .eq("id", post.ownerId)
+        .maybeSingle();
+      if (!cancelled && data) {
+        setOwnerTier((data.trust_tier ?? "new") as TrustTier);
+        setOwnerAsanti(data.asanti_received ?? 0);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [post?.ownerId, post?.isDemo]);
 
   if (!post) {
     return (
@@ -119,11 +141,15 @@ export default function Details() {
             <div className="size-12 rounded-full bg-accent text-accent-foreground inline-flex items-center justify-center font-display font-bold">
               {post.ownerInitials}
             </div>
-            <div className="flex-1">
-              <strong className="block">{post.owner}</strong>
-              <p className="text-sm text-muted-foreground">View neighbor profile</p>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <strong className="truncate">{post.owner}</strong>
+                <TrustBadge tier={ownerTier} />
+              </div>
+              <p className="text-sm text-muted-foreground">
+                {ownerAsanti > 0 ? `${ownerAsanti} asante${ownerAsanti === 1 ? "" : "s"} from neighbors` : "View neighbor profile"}
+              </p>
             </div>
-            <span className="text-xs px-2 py-1 rounded-full bg-accent/30 text-accent-foreground font-semibold">Trusted</span>
           </Link>
         ) : (
           <article className="rounded-2xl border border-border bg-card p-5 flex items-center gap-4">
@@ -132,9 +158,8 @@ export default function Details() {
             </div>
             <div className="flex-1">
               <strong className="block">{post.owner}</strong>
-              <p className="text-sm text-muted-foreground">Community member in {post.location}</p>
+              <p className="text-sm text-muted-foreground">Sample neighbor in {post.location}</p>
             </div>
-            <span className="text-xs px-2 py-1 rounded-full bg-accent/30 text-accent-foreground font-semibold">Trusted</span>
           </article>
         )}
 
@@ -161,8 +186,25 @@ export default function Details() {
 
         {!isOwner && (
           <article className="rounded-2xl border border-border bg-card p-5 grid gap-3">
-            <h2 className="font-display text-lg font-bold">Reach out safely</h2>
-            <p className="text-sm text-muted-foreground">Start with a message, confirm the item, then agree on a public meetup point.</p>
+            <div className="flex items-start gap-3">
+              <ShieldAlert className="size-5 text-primary shrink-0 mt-0.5" />
+              <div className="grid gap-1">
+                <h2 className="font-display text-lg font-bold leading-tight">
+                  {ownerTier === "trusted" || ownerTier === "pillar"
+                    ? `${post.owner.split(" ")[0]} is well-known here`
+                    : ownerTier === "active" || ownerTier === "verified"
+                    ? "Meet in a public spot"
+                    : "New neighbor — go slow"}
+                </h2>
+                <p className="text-sm text-muted-foreground">
+                  {ownerTier === "trusted" || ownerTier === "pillar"
+                    ? `Thanked by ${ownerAsanti} neighbors. Still confirm details in chat before meeting.`
+                    : ownerTier === "active" || ownerTier === "verified"
+                    ? "Confirm exact item, price and pickup point in messages first. Meet during daylight in a busy area."
+                    : "This neighbor is new. Chat first, share no payment until you've met, and bring a friend if possible."}
+                </p>
+              </div>
+            </div>
             <div className="flex gap-3">
               <button onClick={handleMessage} className="pill-button flex-1 gap-2">
                 <MessageCircle className="size-4" /> Message
@@ -178,13 +220,18 @@ export default function Details() {
                 </a>
               )}
             </div>
-            <button
-              onClick={handleSave}
-              className="pill-button gap-2"
-              data-variant="ghost"
-            >
-              <Bookmark className={`size-4 ${fav ? "fill-current" : ""}`} /> {fav ? "Saved" : "Save post"}
-            </button>
+            <div className="flex items-center justify-between gap-2">
+              <button
+                onClick={handleSave}
+                className="pill-button gap-2"
+                data-variant="ghost"
+              >
+                <Bookmark className={`size-4 ${fav ? "fill-current" : ""}`} /> {fav ? "Saved" : "Save post"}
+              </button>
+              {!isDemo && post.ownerId && (
+                <ReportDialog reportedUserId={post.ownerId} postId={post.id} />
+              )}
+            </div>
           </article>
         )}
 

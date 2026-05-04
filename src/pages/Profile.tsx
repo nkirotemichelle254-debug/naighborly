@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, Camera } from "lucide-react";
+import { ArrowLeft, Camera, Heart } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { usePosts } from "@/context/PostsContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { TrustBadge, getTierMeta } from "@/components/TrustBadge";
 
 const MAX_AVATAR_BYTES = 4 * 1024 * 1024; // 4MB
 
@@ -19,7 +20,7 @@ export default function Profile() {
 
   const myPosts = useMemo(() => posts.filter((p) => p.ownerId === profile.id), [posts, profile.id]);
   const liveCount = myPosts.filter((p) => !p.resolved).length;
-  const urgentCount = myPosts.filter((p) => p.urgent).length;
+  
   const savedPosts = useMemo(() => posts.filter((p) => favorites.includes(p.id)), [posts, favorites]);
 
   const [editing, setEditing] = useState(false);
@@ -120,9 +121,9 @@ export default function Profile() {
           )}
           <h1 className="font-display text-3xl font-bold">{profile.name}</h1>
           <p className="text-sm opacity-90 max-w-sm">{profile.bio}</p>
-          <div className="flex gap-2 text-xs">
+          <div className="flex gap-2 text-xs flex-wrap justify-center">
             <span className="bg-card/20 px-3 py-1 rounded-full">{profile.location}</span>
-            <span className="bg-card/20 px-3 py-1 rounded-full">Community verified</span>
+            <TrustBadge tier={profile.trustTier} showNew />
           </div>
           <div className="flex gap-2 mt-2">
             <button onClick={() => setEditing((v) => !v)} className="pill-button" style={{ background: "hsl(var(--accent))", color: "hsl(var(--accent-foreground))" }}>
@@ -151,8 +152,11 @@ export default function Profile() {
             <span className="text-xs text-muted-foreground">Offers live</span>
           </div>
           <div className="rounded-2xl border border-border bg-card p-4 text-center">
-            <strong className="block font-display text-2xl">{urgentCount}</strong>
-            <span className="text-xs text-muted-foreground">Urgent needs</span>
+            <strong className="font-display text-2xl inline-flex items-center gap-1">
+              <Heart className="size-4 text-primary fill-current" />
+              {profile.asantiReceived}
+            </strong>
+            <span className="block text-xs text-muted-foreground">Asantes</span>
           </div>
         </section>
 
@@ -232,13 +236,21 @@ export default function Profile() {
           )}
         </section>
 
-        <section className="rounded-2xl border border-border bg-card p-5">
-          <h2 className="font-display text-lg font-bold mb-3">Community standing</h2>
-          <ul className="grid gap-3">
-            <li><strong>Responsive</strong><p className="text-sm text-muted-foreground">Usually replies within the hour</p></li>
-            <li><strong>Reliable meetups</strong><p className="text-sm text-muted-foreground">Prefers public pickup points in Nairobi</p></li>
-            <li><strong>Good exchange history</strong><p className="text-sm text-muted-foreground">Known for clean swaps and clear communication</p></li>
-          </ul>
+        <section className="rounded-2xl border border-border bg-card p-5 grid gap-3">
+          <div className="flex items-center justify-between gap-3">
+            <h2 className="font-display text-lg font-bold">Community standing</h2>
+            <TrustBadge tier={profile.trustTier} size="md" showNew />
+          </div>
+          <p className="text-sm text-muted-foreground">{getTierMeta(profile.trustTier).description}</p>
+          <div className="rounded-xl bg-muted/40 p-4 grid gap-2 text-sm">
+            <strong className="font-display">How standing is earned</strong>
+            <ul className="grid gap-1.5 text-muted-foreground text-xs">
+              <li>• <strong className="text-foreground">Verified</strong> — confirm email + add photo, bio, neighborhood.</li>
+              <li>• <strong className="text-foreground">Active</strong> — verified + 3 posts or 5 conversations + 14 days.</li>
+              <li>• <strong className="text-foreground">Trusted</strong> — 5+ asantes from different neighbors, no open reports.</li>
+              <li>• <strong className="text-foreground">Pillar</strong> — 20+ asantes and 60+ days as a neighbor.</li>
+            </ul>
+          </div>
         </section>
       </main>
     </div>
