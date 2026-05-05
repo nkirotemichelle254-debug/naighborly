@@ -209,15 +209,30 @@ export default function Home() {
             <span className="pill-button shrink-0" data-variant="ghost">Upload</span>
           </Link>
         )}
-        {items.length === 0 && (
-          <div className="rounded-2xl border border-border bg-card p-6 text-center">
-            <strong className="block font-display">No matching posts yet</strong>
+        {loading && items.length === 0 && (
+          <>
+            <FeedCardSkeleton />
+            <FeedCardSkeleton />
+            <FeedCardSkeleton />
+          </>
+        )}
+        {!loading && items.length === 0 && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.96 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ type: "spring", stiffness: 220, damping: 22 }}
+            className="rounded-2xl border border-border bg-card p-8 text-center"
+          >
+            <div className="text-4xl mb-2" aria-hidden>🌿</div>
+            <strong className="block font-display text-lg">
+              {hasActiveFilter ? "No matches yet" : "Your neighborhood is quiet"}
+            </strong>
             <p className="text-sm text-muted-foreground mt-1">
               {hasActiveFilter
                 ? "Try clearing filters or a different search phrase."
-                : "Be the first to share something with your neighbors."}
+                : "Be the first to share something — neighbors are waiting."}
             </p>
-            {hasActiveFilter && (
+            {hasActiveFilter ? (
               <button
                 type="button"
                 onClick={() => {
@@ -230,8 +245,10 @@ export default function Home() {
               >
                 Clear filters
               </button>
+            ) : (
+              <Link to="/create" className="pill-button mt-4 inline-flex">Share something</Link>
             )}
-          </div>
+          </motion.div>
         )}
         {items.map((item, i) =>
           item.kind === "post" ? (
