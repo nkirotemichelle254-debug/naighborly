@@ -247,6 +247,37 @@
     background: hsl(var(--muted));
   }
 
+  /* Image-first card variant: full-bleed photo with overlay text */
+  .feed-card--photo {
+    padding: 0;
+    aspect-ratio: 4 / 5;
+    color: hsl(var(--primary-foreground));
+    background: hsl(var(--muted));
+  }
+  .feed-card--photo::after { display: none; }
+  .feed-card__photo {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    object-fit: cover;
+  }
+  .feed-card__photo-scrim {
+    position: absolute; inset: 0;
+    background: linear-gradient(180deg, hsl(220 36% 12% / 0.05) 30%, hsl(220 36% 12% / 0.78) 95%);
+  }
+  .feed-card__photo-content {
+    position: absolute; inset: auto 0 0 0;
+    padding: 18px 18px 18px;
+    display: grid; gap: 6px;
+    color: hsl(var(--primary-foreground));
+  }
+  .feed-card__photo-tags {
+    position: absolute; top: 14px; left: 14px; right: 14px;
+    display: flex; flex-wrap: wrap; gap: 6px;
+  }
+
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { scrollbar-width: none; }
+
   /* Filter chips */
   .filter-chip {
     flex-shrink: 0;
