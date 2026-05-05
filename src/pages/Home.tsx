@@ -95,7 +95,7 @@ function AdCard({ index }: { index: number }) {
 
 export default function Home() {
   const { profile, isSignedIn } = useAuth();
-  const { posts: allPosts } = usePosts();
+  const { posts: allPosts, loading } = usePosts();
   const [query, setQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<PostCategory | "All">("All");
   const [intentFilter, setIntentFilter] = useState<PostIntent | "All">("All");
