@@ -1,12 +1,15 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { ArrowLeft, Send, Search } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
 import { useMessages } from "@/context/MessagesContext";
 import { supabase } from "@/integrations/supabase/client";
 import { TrustBadge, type TrustTier } from "@/components/TrustBadge";
 import { AsantiButton } from "@/components/AsantiButton";
 import { ReportDialog } from "@/components/ReportDialog";
+import { SafetyScreen } from "@/components/SafetyScreen";
+import { QuickReplies } from "@/components/QuickReplies";
 
 export default function Inbox() {
   const navigate = useNavigate();
@@ -148,26 +151,43 @@ export default function Inbox() {
             </div>
           </header>
 
-          <main className="flex-1 px-5 py-4 grid gap-2 content-start overflow-y-auto">
+          <main className="flex-1 px-5 py-4 flex flex-col gap-2 overflow-y-auto">
             {active.messages.length === 0 && (
-              <p className="text-sm text-muted-foreground text-center py-10">Send the first message.</p>
-            )}
-            {active.messages.map((m) => (
-              <div
-                key={m.id}
-                className={`max-w-[78%] rounded-2xl px-4 py-2.5 text-sm ${
-                  m.sender === "sent"
-                    ? "self-end bg-primary text-primary-foreground rounded-br-md"
-                    : "self-start bg-muted text-foreground rounded-bl-md"
-                }`}
-              >
-                {m.text}
+              <div className="text-center py-10 grid gap-2">
+                <div className="text-3xl" aria-hidden>👋</div>
+                <p className="text-sm text-muted-foreground">
+                  Say hi to {active.withName.split(" ")[0]} — a warm opener goes a long way.
+                </p>
               </div>
-            ))}
+            )}
+            <AnimatePresence initial={false}>
+              {active.messages.map((m) => (
+                <motion.div
+                  key={m.id}
+                  initial={{ opacity: 0, y: 8, scale: 0.96 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  transition={{ type: "spring", stiffness: 320, damping: 24 }}
+                  className={`max-w-[78%] rounded-2xl px-4 py-2.5 text-sm ${
+                    m.sender === "sent"
+                      ? "self-end bg-primary text-primary-foreground rounded-br-md"
+                      : "self-start bg-muted text-foreground rounded-bl-md"
+                  }`}
+                >
+                  {m.text}
+                </motion.div>
+              ))}
+            </AnimatePresence>
             <div ref={messagesEndRef} />
           </main>
 
-          <div className="sticky bottom-24 px-5 pb-2">
+          <SafetyScreen
+            otherUserId={active.withId}
+            otherName={active.withName}
+            enabled={active.messages.length === 0 && !hasReceived}
+          />
+
+          <div className="sticky bottom-24 px-5 pb-2 grid gap-2">
+            <QuickReplies hasReceived={hasReceived} onPick={(text) => setDraft(text)} />
             <form
               onSubmit={(e) => {
                 e.preventDefault();
@@ -181,13 +201,14 @@ export default function Inbox() {
                 placeholder="Type a message…"
                 className="flex-1 bg-transparent outline-none text-sm"
               />
-              <button
+              <motion.button
                 type="submit"
+                whileTap={{ scale: 0.9 }}
                 className="size-9 inline-flex items-center justify-center rounded-full bg-primary text-primary-foreground"
                 aria-label="Send"
               >
                 <Send className="size-4" />
-              </button>
+              </motion.button>
             </form>
           </div>
         </>

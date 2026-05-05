@@ -1,47 +1,80 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { Search } from "lucide-react";
+import { motion } from "framer-motion";
 import { AD_SLOTS, type Post, type PostCategory, type PostIntent } from "@/data/posts";
 import { useAuth } from "@/context/AuthContext";
 import { usePosts } from "@/context/PostsContext";
 import { supabase } from "@/integrations/supabase/client";
 import { TrustBadge, type TrustTier } from "@/components/TrustBadge";
+import { FeedCardSkeleton } from "@/components/FeedCardSkeleton";
 
 const AD_INTERVAL = 5;
 const CATEGORY_FILTERS: Array<PostCategory | "All"> = ["All", "Item", "Service", "Swap"];
 const INTENT_FILTERS: Array<PostIntent | "All"> = ["All", "Offer", "Request"];
 
-function FeedCard({ post, ownerTier }: { post: Post; ownerTier?: TrustTier }) {
+function FeedCard({ post, ownerTier, index }: { post: Post; ownerTier?: TrustTier; index: number }) {
+  const hasImage = Boolean(post.imageUrl);
   return (
-    <Link
-      to={`/post/${post.id}`}
-      className={`feed-card feed-card--${post.tone} ${post.urgent ? "is-urgent" : ""} animate-fade-in`}
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: Math.min(index * 0.04, 0.2), type: "spring", stiffness: 220, damping: 24 }}
+      whileTap={{ scale: 0.98 }}
     >
-      {post.imageUrl && (
-        <img
-          src={post.imageUrl}
-          alt={post.title}
-          loading="lazy"
-          className="feed-card__thumb"
-        />
-      )}
-      <div className="feed-card__tags">
-        <span className="feed-card__pill feed-card__pill--category">{post.category}</span>
-        <span className={`feed-card__pill feed-card__pill--intent ${post.intent === "Request" ? "is-request" : ""}`}>
-          {post.intent}
-        </span>
-        {post.urgent && <span className="feed-card__pill" style={{ background: "hsl(var(--destructive))", color: "hsl(var(--destructive-foreground))" }}>Urgent</span>}
-      </div>
-      <h3 className="feed-card__title">{post.title}</h3>
-      <p className="feed-card__description">{post.description}</p>
-      <div className="flex items-center justify-between gap-2 mt-1">
-        <div className="feed-card__location">{post.location}</div>
-        <div className="flex items-center gap-1.5 text-xs text-muted-foreground min-w-0">
-          <span className="truncate max-w-[7rem]">{post.owner}</span>
-          {ownerTier && <TrustBadge tier={ownerTier} />}
-        </div>
-      </div>
-    </Link>
+      <Link
+        to={`/post/${post.id}`}
+        className={`feed-card ${hasImage ? "feed-card--photo" : `feed-card--${post.tone}`} ${post.urgent ? "is-urgent" : ""} block`}
+      >
+        {hasImage ? (
+          <>
+            <img src={post.imageUrl!} alt={post.title} loading="lazy" className="feed-card__photo" />
+            <div className="feed-card__photo-scrim" />
+            <div className="feed-card__photo-tags">
+              <span className="feed-card__pill feed-card__pill--category">{post.category}</span>
+              <span className={`feed-card__pill feed-card__pill--intent ${post.intent === "Request" ? "is-request" : ""}`}>
+                {post.intent}
+              </span>
+              {post.urgent && (
+                <span className="feed-card__pill" style={{ background: "hsl(var(--destructive))", color: "hsl(var(--destructive-foreground))" }}>Urgent</span>
+              )}
+            </div>
+            <div className="feed-card__photo-content">
+              <h3 className="feed-card__title text-xl">{post.title}</h3>
+              <p className="feed-card__description line-clamp-2">{post.description}</p>
+              <div className="flex items-center justify-between gap-2 mt-1">
+                <div className="feed-card__location">{post.location}</div>
+                <div className="flex items-center gap-1.5 text-xs opacity-90 min-w-0">
+                  <span className="truncate max-w-[7rem]">{post.owner}</span>
+                  {ownerTier && <TrustBadge tier={ownerTier} />}
+                </div>
+              </div>
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="feed-card__tags">
+              <span className="feed-card__pill feed-card__pill--category">{post.category}</span>
+              <span className={`feed-card__pill feed-card__pill--intent ${post.intent === "Request" ? "is-request" : ""}`}>
+                {post.intent}
+              </span>
+              {post.urgent && (
+                <span className="feed-card__pill" style={{ background: "hsl(var(--destructive))", color: "hsl(var(--destructive-foreground))" }}>Urgent</span>
+              )}
+            </div>
+            <h3 className="feed-card__title">{post.title}</h3>
+            <p className="feed-card__description">{post.description}</p>
+            <div className="flex items-center justify-between gap-2 mt-1">
+              <div className="feed-card__location">{post.location}</div>
+              <div className="flex items-center gap-1.5 text-xs text-muted-foreground min-w-0">
+                <span className="truncate max-w-[7rem]">{post.owner}</span>
+                {ownerTier && <TrustBadge tier={ownerTier} />}
+              </div>
+            </div>
+          </>
+        )}
+      </Link>
+    </motion.div>
   );
 }
 
@@ -62,7 +95,7 @@ function AdCard({ index }: { index: number }) {
 
 export default function Home() {
   const { profile, isSignedIn } = useAuth();
-  const { posts: allPosts } = usePosts();
+  const { posts: allPosts, loading } = usePosts();
   const [query, setQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<PostCategory | "All">("All");
   const [intentFilter, setIntentFilter] = useState<PostIntent | "All">("All");
@@ -176,15 +209,30 @@ export default function Home() {
             <span className="pill-button shrink-0" data-variant="ghost">Upload</span>
           </Link>
         )}
-        {items.length === 0 && (
-          <div className="rounded-2xl border border-border bg-card p-6 text-center">
-            <strong className="block font-display">No matching posts yet</strong>
+        {loading && items.length === 0 && (
+          <>
+            <FeedCardSkeleton />
+            <FeedCardSkeleton />
+            <FeedCardSkeleton />
+          </>
+        )}
+        {!loading && items.length === 0 && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.96 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ type: "spring", stiffness: 220, damping: 22 }}
+            className="rounded-2xl border border-border bg-card p-8 text-center"
+          >
+            <div className="text-4xl mb-2" aria-hidden>🌿</div>
+            <strong className="block font-display text-lg">
+              {hasActiveFilter ? "No matches yet" : "Your neighborhood is quiet"}
+            </strong>
             <p className="text-sm text-muted-foreground mt-1">
               {hasActiveFilter
                 ? "Try clearing filters or a different search phrase."
-                : "Be the first to share something with your neighbors."}
+                : "Be the first to share something — neighbors are waiting."}
             </p>
-            {hasActiveFilter && (
+            {hasActiveFilter ? (
               <button
                 type="button"
                 onClick={() => {
@@ -197,12 +245,14 @@ export default function Home() {
               >
                 Clear filters
               </button>
+            ) : (
+              <Link to="/create" className="pill-button mt-4 inline-flex">Share something</Link>
             )}
-          </div>
+          </motion.div>
         )}
         {items.map((item, i) =>
           item.kind === "post" ? (
-            <FeedCard key={`p-${item.post.id}`} post={item.post} ownerTier={item.post.ownerId ? tierMap[item.post.ownerId] : undefined} />
+            <FeedCard key={`p-${item.post.id}`} index={i} post={item.post} ownerTier={item.post.ownerId ? tierMap[item.post.ownerId] : undefined} />
           ) : (
             <AdCard key={`a-${i}`} index={item.index} />
           ),
