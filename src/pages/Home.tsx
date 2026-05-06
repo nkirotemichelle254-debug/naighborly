@@ -1,13 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
-import { Search } from "lucide-react";
-import { motion } from "framer-motion";
+import { Link, useSearchParams } from "react-router-dom";
+import { Search, X } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { AD_SLOTS, type Post, type PostCategory, type PostIntent } from "@/data/posts";
 import { useAuth } from "@/context/AuthContext";
 import { usePosts } from "@/context/PostsContext";
 import { supabase } from "@/integrations/supabase/client";
 import { TrustBadge, type TrustTier } from "@/components/TrustBadge";
 import { FeedCardSkeleton } from "@/components/FeedCardSkeleton";
+import { NotificationBell } from "@/components/NotificationBell";
 
 const AD_INTERVAL = 5;
 const CATEGORY_FILTERS: Array<PostCategory | "All"> = ["All", "Item", "Service", "Swap"];
