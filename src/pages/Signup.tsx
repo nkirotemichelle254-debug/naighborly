@@ -10,6 +10,7 @@ export default function Signup() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [neighborhood, setNeighborhood] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -17,22 +18,28 @@ export default function Signup() {
     e.preventDefault();
     setError("");
     if (name.trim().length < 2) return setError("Please enter your name.");
+    if (neighborhood.trim().length < 2) return setError("Please tell us your neighborhood.");
     if (!email.includes("@")) return setError("Please enter a valid email.");
     if (password.length < 6) return setError("Password must be at least 6 characters.");
     setBusy(true);
     const { error: err, needsEmailConfirmation } = await signUpWithEmail(email, password, name);
-    setBusy(false);
     if (err) {
+      setBusy(false);
       setError(err);
       return;
     }
+    // Stash neighborhood so we can save it once the session is ready (handles email-confirm flow too)
+    try {
+      localStorage.setItem(`naighborly:pending-neighborhood:${email.trim().toLowerCase()}`, neighborhood.trim());
+    } catch { /* ignore */ }
+    setBusy(false);
     if (needsEmailConfirmation) {
-      toast({ title: "Check your email", description: "Confirm your email address, then sign in to Naighborly." });
+      toast({ title: "Karibu! Check your email", description: "Confirm your email, then sign in to meet your neighbors." });
       navigate(`/login?email=${encodeURIComponent(email.trim())}`, { replace: true });
       return;
     }
-    toast({ title: "Account created", description: "You're signed in. Welcome to Naighborly!" });
-    navigate("/home", { replace: true });
+    toast({ title: `Karibu, ${name.split(" ")[0]}!`, description: `Welcome to ${neighborhood.trim()}.` });
+    navigate("/home?welcome=1", { replace: true });
   }
 
   async function handleGoogle() {
