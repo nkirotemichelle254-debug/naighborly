@@ -164,7 +164,7 @@ export default function Home() {
           <div>
             <h1 className="text-3xl font-extrabold tracking-tight">Naighborly</h1>
             <p className="text-sm text-muted-foreground mt-0.5">
-              {isSignedIn && profile.location ? `Hujambo, ${profile.name.split(" ")[0]} • ${profile.location}` : "Share what you have, find what you need"}
+              {isSignedIn && profile.location ? `Mambo, ${profile.name.split(" ")[0]} • ${profile.location}` : "Share what you have, find what you need"}
             </p>
           </div>
           <div className="flex items-center gap-2">
