@@ -97,10 +97,23 @@ function AdCard({ index }: { index: number }) {
 export default function Home() {
   const { profile, isSignedIn } = useAuth();
   const { posts: allPosts, loading } = usePosts();
+  const [params, setParams] = useSearchParams();
+  const [showWelcome, setShowWelcome] = useState(params.get("welcome") === "1");
   const [query, setQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<PostCategory | "All">("All");
   const [intentFilter, setIntentFilter] = useState<PostIntent | "All">("All");
   const [tierMap, setTierMap] = useState<Record<string, TrustTier>>({});
+
+  useEffect(() => {
+    if (!showWelcome) return;
+    const t = setTimeout(() => {
+      setShowWelcome(false);
+      const next = new URLSearchParams(params);
+      next.delete("welcome");
+      setParams(next, { replace: true });
+    }, 6000);
+    return () => clearTimeout(t);
+  }, [showWelcome, params, setParams]);
 
   useEffect(() => {
     const ownerIds = Array.from(
