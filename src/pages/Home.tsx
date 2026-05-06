@@ -216,6 +216,30 @@ export default function Home() {
       </div>
 
       <main className="px-5 py-5 grid gap-4">
+        <AnimatePresence>
+          {showWelcome && isSignedIn && (
+            <motion.div
+              initial={{ opacity: 0, y: -8, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -8, scale: 0.98 }}
+              transition={{ type: "spring", stiffness: 240, damping: 22 }}
+              className="rounded-2xl bg-gradient-to-br from-accent/40 to-accent/10 border border-accent/40 p-5 relative overflow-hidden"
+            >
+              <button
+                onClick={() => setShowWelcome(false)}
+                className="absolute top-3 right-3 size-7 inline-flex items-center justify-center rounded-full bg-card/60"
+                aria-label="Dismiss welcome"
+              >
+                <X className="size-3.5" />
+              </button>
+              <div className="text-2xl mb-1" aria-hidden>🌿</div>
+              <strong className="font-display text-lg block">Karibu, {profile.name.split(" ")[0]}!</strong>
+              <p className="text-sm text-muted-foreground mt-1">
+                You're now part of {profile.location}. Browse what neighbors are sharing, then post something of your own when you're ready.
+              </p>
+            </motion.div>
+          )}
+        </AnimatePresence>
         {isSignedIn && !profile.avatarUrl && (
           <Link
             to="/profile"
