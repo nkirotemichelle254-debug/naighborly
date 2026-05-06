@@ -8,6 +8,7 @@ import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { TrustBadge, type TrustTier } from "@/components/TrustBadge";
 import { ReportDialog } from "@/components/ReportDialog";
+import { celebrate } from "@/lib/celebrate";
 
 export default function Details() {
   const { id = "" } = useParams();
@@ -241,7 +242,23 @@ export default function Details() {
             {!editing ? (
               <div className="grid grid-cols-2 gap-2">
                 <button onClick={() => setEditing(true)} className="pill-button" data-variant="ghost">Edit</button>
-                <button onClick={() => updatePost(post.id, { resolved: !post.resolved })} className="pill-button" data-variant="ghost">
+                <button
+                  onClick={async () => {
+                    const wasResolved = post.resolved;
+                    await updatePost(post.id, { resolved: !post.resolved });
+                    if (!wasResolved) {
+                      celebrate();
+                      toast({
+                        title: "Asante for closing the loop! 🎉",
+                        description: "Your neighbors see this post is resolved.",
+                      });
+                    } else {
+                      toast({ title: "Marked as active again" });
+                    }
+                  }}
+                  className="pill-button"
+                  data-variant="ghost"
+                >
                   {post.resolved ? "Mark active" : "Mark resolved"}
                 </button>
                 <button onClick={handleDelete} className="pill-button col-span-2 gap-2" style={{ background: "hsl(var(--destructive))", color: "hsl(var(--destructive-foreground))" }}>

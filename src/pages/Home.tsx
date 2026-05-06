@@ -1,13 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
-import { Search } from "lucide-react";
-import { motion } from "framer-motion";
+import { Link, useSearchParams } from "react-router-dom";
+import { Search, X } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { AD_SLOTS, type Post, type PostCategory, type PostIntent } from "@/data/posts";
 import { useAuth } from "@/context/AuthContext";
 import { usePosts } from "@/context/PostsContext";
 import { supabase } from "@/integrations/supabase/client";
 import { TrustBadge, type TrustTier } from "@/components/TrustBadge";
 import { FeedCardSkeleton } from "@/components/FeedCardSkeleton";
+import { NotificationBell } from "@/components/NotificationBell";
 
 const AD_INTERVAL = 5;
 const CATEGORY_FILTERS: Array<PostCategory | "All"> = ["All", "Item", "Service", "Swap"];
@@ -96,10 +97,23 @@ function AdCard({ index }: { index: number }) {
 export default function Home() {
   const { profile, isSignedIn } = useAuth();
   const { posts: allPosts, loading } = usePosts();
+  const [params, setParams] = useSearchParams();
+  const [showWelcome, setShowWelcome] = useState(params.get("welcome") === "1");
   const [query, setQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<PostCategory | "All">("All");
   const [intentFilter, setIntentFilter] = useState<PostIntent | "All">("All");
   const [tierMap, setTierMap] = useState<Record<string, TrustTier>>({});
+
+  useEffect(() => {
+    if (!showWelcome) return;
+    const t = setTimeout(() => {
+      setShowWelcome(false);
+      const next = new URLSearchParams(params);
+      next.delete("welcome");
+      setParams(next, { replace: true });
+    }, 6000);
+    return () => clearTimeout(t);
+  }, [showWelcome, params, setParams]);
 
   useEffect(() => {
     const ownerIds = Array.from(
@@ -149,11 +163,16 @@ export default function Home() {
         <header className="flex items-center justify-between gap-4">
           <div>
             <h1 className="text-3xl font-extrabold tracking-tight">Naighborly</h1>
-            <p className="text-sm text-muted-foreground mt-0.5">Share what you have, find what you need</p>
+            <p className="text-sm text-muted-foreground mt-0.5">
+              {isSignedIn && profile.location ? `Hujambo, ${profile.name.split(" ")[0]} • ${profile.location}` : "Share what you have, find what you need"}
+            </p>
           </div>
-          <Link to={isSignedIn ? "/profile" : "/login"} className="profile-chip" aria-label="Open profile">
-            {isSignedIn ? profile.initials : "?"}
-          </Link>
+          <div className="flex items-center gap-2">
+            <NotificationBell />
+            <Link to={isSignedIn ? "/profile" : "/login"} className="profile-chip" aria-label="Open profile">
+              {isSignedIn ? profile.initials : "?"}
+            </Link>
+          </div>
         </header>
 
         <label className="search-input mt-4">
@@ -197,6 +216,30 @@ export default function Home() {
       </div>
 
       <main className="px-5 py-5 grid gap-4">
+        <AnimatePresence>
+          {showWelcome && isSignedIn && (
+            <motion.div
+              initial={{ opacity: 0, y: -8, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -8, scale: 0.98 }}
+              transition={{ type: "spring", stiffness: 240, damping: 22 }}
+              className="rounded-2xl bg-gradient-to-br from-accent/40 to-accent/10 border border-accent/40 p-5 relative overflow-hidden"
+            >
+              <button
+                onClick={() => setShowWelcome(false)}
+                className="absolute top-3 right-3 size-7 inline-flex items-center justify-center rounded-full bg-card/60"
+                aria-label="Dismiss welcome"
+              >
+                <X className="size-3.5" />
+              </button>
+              <div className="text-2xl mb-1" aria-hidden>🌿</div>
+              <strong className="font-display text-lg block">Karibu, {profile.name.split(" ")[0]}!</strong>
+              <p className="text-sm text-muted-foreground mt-1">
+                You're now part of {profile.location}. Browse what neighbors are sharing, then post something of your own when you're ready.
+              </p>
+            </motion.div>
+          )}
+        </AnimatePresence>
         {isSignedIn && !profile.avatarUrl && (
           <Link
             to="/profile"

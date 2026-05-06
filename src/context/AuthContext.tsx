@@ -90,7 +90,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(nextSession?.user ?? null);
       if (nextSession?.user) {
         setTimeout(() => {
-          loadProfile(nextSession.user!).then(setProfile);
+          const u = nextSession.user!;
+          // If signup stashed a neighborhood, persist it now that we're signed in.
+          try {
+            const key = `naighborly:pending-neighborhood:${(u.email ?? "").toLowerCase()}`;
+            const pending = localStorage.getItem(key);
+            if (pending) {
+              supabase.from("profiles").update({ neighborhood: pending }).eq("id", u.id).then(() => {
+                localStorage.removeItem(key);
+                loadProfile(u).then(setProfile);
+              });
+              return;
+            }
+          } catch { /* ignore */ }
+          loadProfile(u).then(setProfile);
         }, 0);
       } else {
         setProfile(FALLBACK_PROFILE);
