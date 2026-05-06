@@ -163,11 +163,16 @@ export default function Home() {
         <header className="flex items-center justify-between gap-4">
           <div>
             <h1 className="text-3xl font-extrabold tracking-tight">Naighborly</h1>
-            <p className="text-sm text-muted-foreground mt-0.5">Share what you have, find what you need</p>
+            <p className="text-sm text-muted-foreground mt-0.5">
+              {isSignedIn && profile.location ? `Hujambo, ${profile.name.split(" ")[0]} • ${profile.location}` : "Share what you have, find what you need"}
+            </p>
           </div>
-          <Link to={isSignedIn ? "/profile" : "/login"} className="profile-chip" aria-label="Open profile">
-            {isSignedIn ? profile.initials : "?"}
-          </Link>
+          <div className="flex items-center gap-2">
+            <NotificationBell />
+            <Link to={isSignedIn ? "/profile" : "/login"} className="profile-chip" aria-label="Open profile">
+              {isSignedIn ? profile.initials : "?"}
+            </Link>
+          </div>
         </header>
 
         <label className="search-input mt-4">
