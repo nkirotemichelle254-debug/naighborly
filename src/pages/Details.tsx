@@ -8,6 +8,7 @@ import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { TrustBadge, type TrustTier } from "@/components/TrustBadge";
 import { ReportDialog } from "@/components/ReportDialog";
+import { celebrate } from "@/lib/celebrate";
 
 export default function Details() {
   const { id = "" } = useParams();
