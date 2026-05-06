@@ -111,6 +111,19 @@ export default function Signup() {
         </label>
 
         <label className="block mt-4">
+          <span className="text-sm font-medium">Neighborhood</span>
+          <input
+            type="text"
+            className="mt-2 w-full rounded-xl border border-border bg-card px-4 py-3 outline-none focus:ring-2 focus:ring-ring"
+            placeholder="e.g. Westlands, Kilimani, Lavington"
+            value={neighborhood}
+            onChange={(e) => setNeighborhood(e.target.value)}
+            autoComplete="address-level2"
+          />
+          <span className="text-xs text-muted-foreground mt-1.5 block">Helps us connect you with neighbors nearby.</span>
+        </label>
+
+        <label className="block mt-4">
           <span className="text-sm font-medium">Password</span>
           <input
             type="password"
