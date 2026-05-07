@@ -45,6 +45,7 @@ export default function UserProfile() {
   const [profile, setProfile] = useState<PublicProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const [snippets, setSnippets] = useState<AsantiSnippet[]>([]);
 
   useEffect(() => {
     if (!authLoading && !isSignedIn) {
