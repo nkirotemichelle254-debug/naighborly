@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { Search, X } from "lucide-react";
+import { Search, X, Siren, MapPin } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { AD_SLOTS, type Post, type PostCategory, type PostIntent } from "@/data/posts";
 import { useAuth } from "@/context/AuthContext";
