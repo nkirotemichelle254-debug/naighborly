@@ -39,6 +39,11 @@ function FeedCard({ post, ownerTier, index, nearby }: { post: Post; ownerTier?: 
               {post.urgent && (
                 <span className="feed-card__pill" style={{ background: "hsl(var(--destructive))", color: "hsl(var(--destructive-foreground))" }}>Urgent</span>
               )}
+              {nearby && (
+                <span className="feed-card__pill inline-flex items-center gap-1" style={{ background: "hsl(var(--accent))", color: "hsl(var(--accent-foreground))" }}>
+                  <MapPin className="size-3" /> Near you
+                </span>
+              )}
             </div>
             <div className="feed-card__photo-content">
               <h3 className="feed-card__title text-xl">{post.title}</h3>
