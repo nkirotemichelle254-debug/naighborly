@@ -181,6 +181,25 @@ export default function UserProfile() {
               </div>
             </article>
 
+            {snippets.length > 0 && (
+              <section className="grid gap-3">
+                <h3 className="font-display text-lg font-bold px-1 inline-flex items-center gap-2">
+                  <Heart className="size-4 fill-current text-primary" />
+                  Recent asantes
+                </h3>
+                <div className="grid gap-2">
+                  {snippets.map((s) => (
+                    <article key={s.id} className="rounded-2xl border border-border bg-card p-4">
+                      <p className="text-sm">"{s.message}"</p>
+                      <p className="text-xs text-muted-foreground mt-2">
+                        — {s.giver_name.split(" ")[0]} • {new Date(s.created_at).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
+                      </p>
+                    </article>
+                  ))}
+                </div>
+              </section>
+            )}
+
             <section className="grid gap-3">
               <h3 className="font-display text-lg font-bold px-1">
                 Posts by {isMe ? "you" : profile.display_name.split(" ")[0]} ({userPosts.length})
