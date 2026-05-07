@@ -14,7 +14,7 @@ const AD_INTERVAL = 5;
 const CATEGORY_FILTERS: Array<PostCategory | "All"> = ["All", "Item", "Service", "Swap"];
 const INTENT_FILTERS: Array<PostIntent | "All"> = ["All", "Offer", "Request"];
 
-function FeedCard({ post, ownerTier, index }: { post: Post; ownerTier?: TrustTier; index: number }) {
+function FeedCard({ post, ownerTier, index, nearby }: { post: Post; ownerTier?: TrustTier; index: number; nearby?: boolean }) {
   const hasImage = Boolean(post.imageUrl);
   return (
     <motion.div
