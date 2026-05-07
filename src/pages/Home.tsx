@@ -323,9 +323,52 @@ export default function Home() {
             )}
           </motion.div>
         )}
+        {urgentPosts.length > 0 && (
+          <motion.section
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ type: "spring", stiffness: 220, damping: 24 }}
+            aria-label="Needs help now"
+            className="rounded-2xl border border-destructive/30 bg-destructive/5 p-3 grid gap-2"
+          >
+            <div className="flex items-center justify-between px-1">
+              <strong className="font-display text-sm inline-flex items-center gap-1.5 text-destructive">
+                <Siren className="size-4" /> Needs help now
+              </strong>
+              <span className="text-xs text-muted-foreground">{urgentPosts.length} urgent</span>
+            </div>
+            <div className="flex gap-3 overflow-x-auto -mx-1 px-1 pb-1 snap-x">
+              {urgentPosts.map((p) => (
+                <Link
+                  key={p.id}
+                  to={`/post/${p.id}`}
+                  className="snap-start shrink-0 w-[78%] max-w-[19rem] rounded-2xl border border-destructive/40 bg-card p-4 grid gap-1.5"
+                >
+                  <div className="flex items-center gap-2 text-xs">
+                    <span className="feed-card__pill" style={{ background: "hsl(var(--destructive))", color: "hsl(var(--destructive-foreground))" }}>Urgent</span>
+                    <span className="feed-card__pill feed-card__pill--category">{p.category}</span>
+                    {isNearby(p.location) && (
+                      <span className="text-[10px] inline-flex items-center gap-0.5 text-accent-foreground bg-accent rounded-full px-2 py-0.5">
+                        <MapPin className="size-2.5" /> Near
+                      </span>
+                    )}
+                  </div>
+                  <strong className="font-display leading-tight line-clamp-2">{p.title}</strong>
+                  <span className="text-xs text-muted-foreground">{p.location} • {p.time}</span>
+                </Link>
+              ))}
+            </div>
+          </motion.section>
+        )}
         {items.map((item, i) =>
           item.kind === "post" ? (
-            <FeedCard key={`p-${item.post.id}`} index={i} post={item.post} ownerTier={item.post.ownerId ? tierMap[item.post.ownerId] : undefined} />
+            <FeedCard
+              key={`p-${item.post.id}`}
+              index={i}
+              post={item.post}
+              ownerTier={item.post.ownerId ? tierMap[item.post.ownerId] : undefined}
+              nearby={isNearby(item.post.location)}
+            />
           ) : (
             <AdCard key={`a-${i}`} index={item.index} />
           ),
