@@ -18,6 +18,13 @@ interface PublicProfile {
   created_at: string;
 }
 
+interface AsantiSnippet {
+  id: string;
+  message: string;
+  created_at: string;
+  giver_name: string;
+}
+
 function getInitials(name: string) {
   return (
     name
@@ -38,6 +45,7 @@ export default function UserProfile() {
   const [profile, setProfile] = useState<PublicProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const [snippets, setSnippets] = useState<AsantiSnippet[]>([]);
 
   useEffect(() => {
     if (!authLoading && !isSignedIn) {
@@ -63,6 +71,35 @@ export default function UserProfile() {
         setProfile(data as PublicProfile);
       }
       setLoading(false);
+    })();
+    (async () => {
+      const { data: rows } = await supabase
+        .from("asanti")
+        .select("id, message, created_at, giver_id")
+        .eq("receiver_id", id)
+        .not("message", "is", null)
+        .neq("message", "")
+        .order("created_at", { ascending: false })
+        .limit(3);
+      if (cancelled || !rows || rows.length === 0) {
+        if (!cancelled) setSnippets([]);
+        return;
+      }
+      const giverIds = Array.from(new Set(rows.map((r) => r.giver_id)));
+      const { data: givers } = await supabase
+        .from("profiles")
+        .select("id, display_name")
+        .in("id", giverIds);
+      const nameMap = new Map((givers ?? []).map((g) => [g.id, g.display_name ?? "Neighbor"]));
+      if (cancelled) return;
+      setSnippets(
+        rows.map((r) => ({
+          id: r.id,
+          message: r.message ?? "",
+          created_at: r.created_at,
+          giver_name: nameMap.get(r.giver_id) ?? "Neighbor",
+        })),
+      );
     })();
     return () => {
       cancelled = true;
@@ -143,6 +180,25 @@ export default function UserProfile() {
                 )}
               </div>
             </article>
+
+            {snippets.length > 0 && (
+              <section className="grid gap-3">
+                <h3 className="font-display text-lg font-bold px-1 inline-flex items-center gap-2">
+                  <Heart className="size-4 fill-current text-primary" />
+                  Recent asantes
+                </h3>
+                <div className="grid gap-2">
+                  {snippets.map((s) => (
+                    <article key={s.id} className="rounded-2xl border border-border bg-card p-4">
+                      <p className="text-sm">"{s.message}"</p>
+                      <p className="text-xs text-muted-foreground mt-2">
+                        — {s.giver_name.split(" ")[0]} • {new Date(s.created_at).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
+                      </p>
+                    </article>
+                  ))}
+                </div>
+              </section>
+            )}
 
             <section className="grid gap-3">
               <h3 className="font-display text-lg font-bold px-1">

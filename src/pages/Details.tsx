@@ -190,20 +190,51 @@ export default function Details() {
             <div className="flex items-start gap-3">
               <ShieldAlert className="size-5 text-primary shrink-0 mt-0.5" />
               <div className="grid gap-1">
-                <h2 className="font-display text-lg font-bold leading-tight">
-                  {ownerTier === "trusted" || ownerTier === "pillar"
-                    ? `${post.owner.split(" ")[0]} is well-known here`
-                    : ownerTier === "active" || ownerTier === "verified"
+                {(() => {
+                  const firstName = post.owner.split(" ")[0];
+                  const trusted = ownerTier === "trusted" || ownerTier === "pillar";
+                  const known = ownerTier === "active" || ownerTier === "verified";
+                  const heading = trusted
+                    ? `${firstName} is well-known here`
+                    : known
                     ? "Meet in a public spot"
-                    : "New neighbor — go slow"}
-                </h2>
-                <p className="text-sm text-muted-foreground">
-                  {ownerTier === "trusted" || ownerTier === "pillar"
-                    ? `Thanked by ${ownerAsanti} neighbors. Still confirm details in chat before meeting.`
-                    : ownerTier === "active" || ownerTier === "verified"
-                    ? "Confirm exact item, price and pickup point in messages first. Meet during daylight in a busy area."
-                    : "This neighbor is new. Chat first, share no payment until you've met, and bring a friend if possible."}
-                </p>
+                    : "New neighbor — go slow";
+
+                  let body = "";
+                  if (post.category === "Service") {
+                    body = trusted
+                      ? `Thanked by ${ownerAsanti} neighbors. Still agree on scope and price in chat before any work or payment.`
+                      : known
+                      ? "Confirm scope, price and timing in messages. Pay only after the job is done — never upfront in full."
+                      : "New neighbor offering a service. Get clear scope and price in writing, never pay upfront, and ask for references.";
+                  } else if (post.category === "Swap") {
+                    body = trusted
+                      ? `Trusted swapper (${ownerAsanti} asantes). Confirm both items match the description before swapping.`
+                      : known
+                      ? "Agree on both items, condition and meeting point in messages. Inspect each item in person before swapping."
+                      : "New neighbor — confirm both items in detail, meet in daylight in a busy place, and bring a friend.";
+                  } else {
+                    // Item
+                    if (post.intent === "Request") {
+                      body = trusted
+                        ? `${firstName} is asking for help. Coordinate handover safely in chat first.`
+                        : "Confirm exactly what's needed and when. Meet at a public point and never share extra payment info.";
+                    } else {
+                      body = trusted
+                        ? `Thanked by ${ownerAsanti} neighbors. Still inspect the item before paying.`
+                        : known
+                        ? "Confirm the item, price and pickup point in messages first. Inspect before paying — meet in daylight."
+                        : "New neighbor — chat first, never send payment before pickup, and meet in a busy public place.";
+                    }
+                  }
+
+                  return (
+                    <>
+                      <h2 className="font-display text-lg font-bold leading-tight">{heading}</h2>
+                      <p className="text-sm text-muted-foreground">{body}</p>
+                    </>
+                  );
+                })()}
               </div>
             </div>
             <div className="flex gap-3">
