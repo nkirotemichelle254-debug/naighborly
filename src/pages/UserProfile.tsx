@@ -16,6 +16,8 @@ interface PublicProfile {
   trust_tier: TrustTier;
   asanti_received: number;
   created_at: string;
+}
+
 interface AsantiSnippet {
   id: string;
   message: string;
