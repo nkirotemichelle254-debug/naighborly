@@ -16,6 +16,11 @@ interface PublicProfile {
   trust_tier: TrustTier;
   asanti_received: number;
   created_at: string;
+interface AsantiSnippet {
+  id: string;
+  message: string;
+  created_at: string;
+  giver_name: string;
 }
 
 function getInitials(name: string) {
