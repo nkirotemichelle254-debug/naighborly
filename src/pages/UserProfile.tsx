@@ -72,6 +72,35 @@ export default function UserProfile() {
       }
       setLoading(false);
     })();
+    (async () => {
+      const { data: rows } = await supabase
+        .from("asanti")
+        .select("id, message, created_at, giver_id")
+        .eq("receiver_id", id)
+        .not("message", "is", null)
+        .neq("message", "")
+        .order("created_at", { ascending: false })
+        .limit(3);
+      if (cancelled || !rows || rows.length === 0) {
+        if (!cancelled) setSnippets([]);
+        return;
+      }
+      const giverIds = Array.from(new Set(rows.map((r) => r.giver_id)));
+      const { data: givers } = await supabase
+        .from("profiles")
+        .select("id, display_name")
+        .in("id", giverIds);
+      const nameMap = new Map((givers ?? []).map((g) => [g.id, g.display_name ?? "Neighbor"]));
+      if (cancelled) return;
+      setSnippets(
+        rows.map((r) => ({
+          id: r.id,
+          message: r.message ?? "",
+          created_at: r.created_at,
+          giver_name: nameMap.get(r.giver_id) ?? "Neighbor",
+        })),
+      );
+    })();
     return () => {
       cancelled = true;
     };
