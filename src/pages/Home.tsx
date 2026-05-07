@@ -144,9 +144,13 @@ export default function Home() {
     return () => { cancelled = true; };
   }, [allPosts]);
 
+  const userHood = (profile.location ?? "").trim().toLowerCase();
+  const isNearby = (loc: string) =>
+    Boolean(userHood) && loc.trim().toLowerCase() === userHood;
+
   const posts = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return allPosts.filter((p) => {
+    const filtered = allPosts.filter((p) => {
       if (categoryFilter !== "All" && p.category !== categoryFilter) return false;
       if (intentFilter !== "All" && p.intent !== intentFilter) return false;
       if (!q) return true;
@@ -155,12 +159,28 @@ export default function Home() {
         .toLowerCase()
         .includes(q);
     });
-  }, [query, categoryFilter, intentFilter, allPosts]);
+    // Sort: nearby first, demos last (preserve original recency order otherwise)
+    if (!userHood) return filtered;
+    return [...filtered].sort((a, b) => {
+      const an = isNearby(a.location) ? 0 : 1;
+      const bn = isNearby(b.location) ? 0 : 1;
+      return an - bn;
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [query, categoryFilter, intentFilter, allPosts, userHood]);
+
+  // Urgent strip: pull non-resolved urgent posts (after filtering) into a pinned row
+  const urgentPosts = useMemo(
+    () => posts.filter((p) => p.urgent && !p.resolved).slice(0, 6),
+    [posts],
+  );
+  const urgentIds = new Set(urgentPosts.map((p) => p.id));
+  const feedPosts = posts.filter((p) => !urgentIds.has(p.id));
 
   const items: Array<{ kind: "post"; post: Post } | { kind: "ad"; index: number }> = [];
-  posts.forEach((post, i) => {
+  feedPosts.forEach((post, i) => {
     items.push({ kind: "post", post });
-    if ((i + 1) % AD_INTERVAL === 0 && i !== posts.length - 1) {
+    if ((i + 1) % AD_INTERVAL === 0 && i !== feedPosts.length - 1) {
       items.push({ kind: "ad", index: Math.floor(i / AD_INTERVAL) });
     }
   });
