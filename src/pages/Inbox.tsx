@@ -222,22 +222,45 @@ export default function Inbox() {
               </div>
             )}
             <AnimatePresence initial={false}>
-              {active.messages.map((m) => (
-                <motion.div
-                  key={m.id}
-                  initial={{ opacity: 0, y: 8, scale: 0.96 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  transition={{ type: "spring", stiffness: 320, damping: 24 }}
-                  className={`max-w-[78%] rounded-2xl px-4 py-2.5 text-sm ${
-                    m.sender === "sent"
-                      ? "self-end bg-primary text-primary-foreground rounded-br-md"
-                      : "self-start bg-muted text-foreground rounded-bl-md"
-                  }`}
-                >
-                  {m.text}
-                </motion.div>
-              ))}
+              {active.messages.map((m) => {
+                const isLastSent = m.id === lastSentId;
+                return (
+                  <div key={m.id} className={`flex flex-col ${m.sender === "sent" ? "items-end" : "items-start"}`}>
+                    <motion.div
+                      initial={{ opacity: 0, y: 8, scale: 0.96 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      transition={{ type: "spring", stiffness: 320, damping: 24 }}
+                      className={`max-w-[78%] rounded-2xl px-4 py-2.5 text-sm ${
+                        m.sender === "sent"
+                          ? "bg-primary text-primary-foreground rounded-br-md"
+                          : "bg-muted text-foreground rounded-bl-md"
+                      }`}
+                    >
+                      {m.text}
+                    </motion.div>
+                    {isLastSent && (
+                      <span className="text-[10px] text-muted-foreground mt-1 inline-flex items-center gap-0.5">
+                        {lastSentRead ? (
+                          <><CheckCheck className="size-3 text-primary" /> Seen</>
+                        ) : (
+                          <><Check className="size-3" /> Sent</>
+                        )}
+                      </span>
+                    )}
+                  </div>
+                );
+              })}
             </AnimatePresence>
+            {otherTyping && (
+              <motion.div
+                initial={{ opacity: 0, y: 4 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="self-start bg-muted text-foreground rounded-2xl rounded-bl-md px-4 py-2 inline-flex items-center gap-1"
+                aria-label={`${active.withName} is typing`}
+              >
+                <span className="typing-dot" /><span className="typing-dot" /><span className="typing-dot" />
+              </motion.div>
+            )}
             <div ref={messagesEndRef} />
           </main>
 
