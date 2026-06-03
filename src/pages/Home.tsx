@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { Search, X, Siren, MapPin } from "lucide-react";
+import { Search, X, Siren, MapPin, Sparkles, CheckCircle2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { AD_SLOTS, type Post, type PostCategory, type PostIntent } from "@/data/posts";
 import { useAuth } from "@/context/AuthContext";
@@ -177,6 +177,28 @@ export default function Home() {
   const urgentIds = new Set(urgentPosts.map((p) => p.id));
   const feedPosts = posts.filter((p) => !urgentIds.has(p.id));
 
+  // Live activity ribbon: count real (non-demo) posts created in the last 24h in user's neighborhood
+  const newTodayCount = useMemo(() => {
+    if (!userHood) return 0;
+    const dayAgo = Date.now() - 24 * 60 * 60 * 1000;
+    return allPosts.filter((p) => {
+      if (p.isDemo) return false;
+      if (!isNearby(p.location)) return false;
+      // p.time is a relative label; fall back to checking time string
+      return /min|hour|Just now/i.test(p.time);
+    }).length;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [allPosts, userHood]);
+
+  // Resolved social proof: pick one recently resolved nearby post (non-demo, not already in feed prominently)
+  const resolvedHighlight = useMemo(() => {
+    const candidates = allPosts.filter(
+      (p) => p.resolved && !p.isDemo && (!userHood || isNearby(p.location)),
+    );
+    return candidates[0];
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [allPosts, userHood]);
+
   const items: Array<{ kind: "post"; post: Post } | { kind: "ad"; index: number }> = [];
   feedPosts.forEach((post, i) => {
     items.push({ kind: "post", post });
@@ -246,6 +268,16 @@ export default function Home() {
       </div>
 
       <main className="px-5 py-5 grid gap-4">
+        {isSignedIn && userHood && newTodayCount > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: -6 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="rounded-full bg-primary/10 border border-primary/30 px-4 py-2 text-sm inline-flex items-center gap-2 self-start"
+          >
+            <Sparkles className="size-4 text-primary" />
+            <span><strong className="font-semibold">{newTodayCount} new post{newTodayCount === 1 ? "" : "s"}</strong> in {profile.location} today</span>
+          </motion.div>
+        )}
         <AnimatePresence>
           {showWelcome && isSignedIn && (
             <motion.div
@@ -359,6 +391,20 @@ export default function Home() {
               ))}
             </div>
           </motion.section>
+        )}
+        {resolvedHighlight && (
+          <Link
+            to={`/post/${resolvedHighlight.id}`}
+            className="rounded-2xl border border-border bg-muted/30 px-4 py-3 text-sm flex items-center gap-3 hover:bg-muted/50 transition"
+          >
+            <CheckCircle2 className="size-5 text-primary shrink-0" />
+            <span className="min-w-0">
+              <strong className="font-semibold">{resolvedHighlight.owner.split(" ")[0]}</strong>
+              <span className="text-muted-foreground"> resolved </span>
+              <span className="truncate">"{resolvedHighlight.title}"</span>
+              <span className="text-muted-foreground"> • {resolvedHighlight.time}</span>
+            </span>
+          </Link>
         )}
         {items.map((item, i) =>
           item.kind === "post" ? (

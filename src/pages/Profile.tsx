@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, Camera, Heart } from "lucide-react";
+import { ArrowLeft, Camera, Heart, Sparkles } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { usePosts } from "@/context/PostsContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -20,8 +20,29 @@ export default function Profile() {
 
   const myPosts = useMemo(() => posts.filter((p) => p.ownerId === profile.id), [posts, profile.id]);
   const liveCount = myPosts.filter((p) => !p.resolved).length;
-  
+  const resolvedCount = myPosts.filter((p) => p.resolved).length;
+  const resolutionRate = myPosts.length > 0 ? Math.round((resolvedCount / myPosts.length) * 100) : null;
+
   const savedPosts = useMemo(() => posts.filter((p) => favorites.includes(p.id)), [posts, favorites]);
+
+  const [helpedThisMonth, setHelpedThisMonth] = useState<number>(0);
+  useEffect(() => {
+    if (!user) return;
+    let cancelled = false;
+    (async () => {
+      const start = new Date();
+      start.setDate(1);
+      start.setHours(0, 0, 0, 0);
+      const { data } = await supabase
+        .from("asanti")
+        .select("giver_id, created_at")
+        .eq("receiver_id", user.id)
+        .gte("created_at", start.toISOString());
+      if (cancelled || !data) return;
+      setHelpedThisMonth(new Set(data.map((r) => r.giver_id)).size);
+    })();
+    return () => { cancelled = true; };
+  }, [user]);
 
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState(profile.name);
@@ -159,6 +180,22 @@ export default function Profile() {
             <span className="block text-xs text-muted-foreground">Asantes</span>
           </div>
         </section>
+
+        {(helpedThisMonth > 0 || resolutionRate !== null) && (
+          <section className="flex flex-wrap gap-2">
+            {helpedThisMonth > 0 && (
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 border border-primary/30 px-3 py-1.5 text-xs font-medium">
+                <Sparkles className="size-3.5 text-primary" />
+                {helpedThisMonth} neighbor{helpedThisMonth === 1 ? "" : "s"} helped this month
+              </span>
+            )}
+            {resolutionRate !== null && myPosts.length >= 2 && (
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-accent/30 border border-accent/50 px-3 py-1.5 text-xs font-medium">
+                {resolutionRate}% of your posts resolved
+              </span>
+            )}
+          </section>
+        )}
 
         {editing && (
           <section className="rounded-2xl border border-border bg-card p-5 grid gap-3">
