@@ -218,27 +218,7 @@ export default function Home() {
             <p className="text-sm text-muted-foreground mt-0.5">
               {isSignedIn && profile.location ? `Mambo, ${profile.name.split(" ")[0]} • ${profile.location}` : "Share what you have, find what you need"}
             </p>
-      </div>
-
-      <AnimatePresence>
-        {pendingCount > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: -8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            className="sticky top-[7.5rem] z-20 flex justify-center pointer-events-none"
-          >
-            <button
-              type="button"
-              onClick={() => { applyPending(); window.scrollTo({ top: 0, behavior: "smooth" }); }}
-              className="pointer-events-auto mt-2 inline-flex items-center gap-1.5 rounded-full bg-primary text-primary-foreground px-4 py-1.5 text-sm font-semibold shadow-lg hover:opacity-90 transition"
-            >
-              <Sparkles className="size-3.5" />
-              {pendingCount} new post{pendingCount === 1 ? "" : "s"} — tap to load
-            </button>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          </div>
           <div className="flex items-center gap-2">
             <NotificationBell />
             <Link to={isSignedIn ? "/profile" : "/login"} className="profile-chip" aria-label="Open profile">
