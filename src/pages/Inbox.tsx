@@ -61,6 +61,65 @@ export default function Inbox() {
 
   const hasReceived = Boolean(active?.messages.some((m) => m.sender === "received"));
 
+  // Asanti prompt: has the current user already sent asante for this thread?
+  const [hasGivenAsanti, setHasGivenAsanti] = useState(false);
+  useEffect(() => {
+    if (!active || !user) { setHasGivenAsanti(false); return; }
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from("asanti")
+        .select("id")
+        .eq("giver_id", user.id)
+        .eq("thread_id", active.id)
+        .maybeSingle();
+      if (!cancelled) setHasGivenAsanti(Boolean(data));
+    })();
+    return () => { cancelled = true; };
+  }, [active?.id, user]);
+
+  // Typing indicator via Supabase broadcast
+  const [otherTyping, setOtherTyping] = useState(false);
+  const typingChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
+  const typingClearRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastTypingSentRef = useRef(0);
+
+  useEffect(() => {
+    if (!active || !user) return;
+    const ch = supabase.channel(`typing-${active.id}`, { config: { broadcast: { self: false } } });
+    ch.on("broadcast", { event: "typing" }, (payload) => {
+      if (payload.payload?.userId === user.id) return;
+      setOtherTyping(true);
+      if (typingClearRef.current) clearTimeout(typingClearRef.current);
+      typingClearRef.current = setTimeout(() => setOtherTyping(false), 3000);
+    }).subscribe();
+    typingChannelRef.current = ch;
+    return () => {
+      if (typingClearRef.current) clearTimeout(typingClearRef.current);
+      supabase.removeChannel(ch);
+      typingChannelRef.current = null;
+      setOtherTyping(false);
+    };
+  }, [active?.id, user]);
+
+  const broadcastTyping = () => {
+    if (!user || !typingChannelRef.current) return;
+    const now = Date.now();
+    if (now - lastTypingSentRef.current < 1500) return;
+    lastTypingSentRef.current = now;
+    typingChannelRef.current.send({ type: "broadcast", event: "typing", payload: { userId: user.id } });
+  };
+
+  // Asanti prompt trigger: thread is "quiet" (>24h since last activity) OR linked post is resolved
+  const linkedPost = active?.postId ? getById(active.postId) : undefined;
+  const lastActivityAgeMs = active ? Date.now() - new Date(active.updatedAt).getTime() : 0;
+  const isQuiet = lastActivityAgeMs > 24 * 60 * 60 * 1000;
+  const showAsantiPrompt = Boolean(active && hasReceived && !hasGivenAsanti && (isQuiet || linkedPost?.resolved));
+
+  // Read receipt: last sent message; if other side has read all (otherUnread=false), show double check
+  const lastSentId = active ? [...active.messages].reverse().find((m) => m.sender === "sent")?.id : undefined;
+  const lastSentRead = active ? !active.otherUnread : false;
+
   const handleSend = () => {
     if (!active || !draft.trim()) return;
     sendMessage(active.id, draft);
