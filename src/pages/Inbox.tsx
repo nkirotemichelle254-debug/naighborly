@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { ArrowLeft, Send, Search } from "lucide-react";
+import { ArrowLeft, Send, Search, Check, CheckCheck, Heart } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
 import { useMessages } from "@/context/MessagesContext";
+import { usePosts } from "@/context/PostsContext";
 import { supabase } from "@/integrations/supabase/client";
 import { TrustBadge, type TrustTier } from "@/components/TrustBadge";
 import { AsantiButton } from "@/components/AsantiButton";
@@ -13,8 +14,9 @@ import { QuickReplies } from "@/components/QuickReplies";
 
 export default function Inbox() {
   const navigate = useNavigate();
-  const { isSignedIn, loading } = useAuth();
+  const { isSignedIn, loading, user } = useAuth();
   const { threads, sendMessage, markRead } = useMessages();
+  const { getById } = usePosts();
   const [params, setParams] = useSearchParams();
   const initialThread = params.get("thread");
   const [activeId, setActiveId] = useState<string | null>(initialThread ?? threads[0]?.id ?? null);
