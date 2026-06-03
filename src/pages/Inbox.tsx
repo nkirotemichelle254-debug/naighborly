@@ -271,6 +271,22 @@ export default function Inbox() {
           />
 
           <div className="sticky bottom-24 px-5 pb-2 grid gap-2">
+            {showAsantiPrompt && (
+              <motion.div
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="rounded-2xl border border-primary/30 bg-primary/5 px-4 py-3 flex items-center gap-3"
+              >
+                <Heart className="size-5 text-primary fill-current shrink-0" />
+                <div className="flex-1 min-w-0 text-sm">
+                  <strong className="block">Did {active.withName.split(" ")[0]} help you?</strong>
+                  <span className="text-muted-foreground text-xs">
+                    {linkedPost?.resolved ? "You marked this resolved — share the love." : "It's been quiet for a day — a thank-you boosts their standing."}
+                  </span>
+                </div>
+                <AsantiButton threadId={active.id} receiverId={active.withId} receiverName={active.withName} />
+              </motion.div>
+            )}
             <QuickReplies hasReceived={hasReceived} onPick={(text) => setDraft(text)} />
             <form
               onSubmit={(e) => {
@@ -281,7 +297,7 @@ export default function Inbox() {
             >
               <input
                 value={draft}
-                onChange={(e) => setDraft(e.target.value)}
+                onChange={(e) => { setDraft(e.target.value); broadcastTyping(); }}
                 placeholder="Type a message…"
                 className="flex-1 bg-transparent outline-none text-sm"
               />
