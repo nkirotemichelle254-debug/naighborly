@@ -90,6 +90,8 @@ interface PostsContextValue {
   posts: Post[];
   favorites: string[];
   loading: boolean;
+  pendingCount: number;
+  applyPending: () => Promise<void>;
   getById: (id: string) => Post | undefined;
   refresh: () => Promise<void>;
   createPost: (draft: PostDraft) => Promise<Post | null>;
