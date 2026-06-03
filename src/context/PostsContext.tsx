@@ -312,8 +312,8 @@ export function PostsProvider({ children }: { children: ReactNode }) {
   const isFavorite = useCallback((id: string) => favorites.includes(id), [favorites]);
 
   const value = useMemo<PostsContextValue>(
-    () => ({ posts, favorites, loading, getById, refresh, createPost, updatePost, deletePost, toggleFavorite, isFavorite }),
-    [posts, favorites, loading, getById, refresh, createPost, updatePost, deletePost, toggleFavorite, isFavorite],
+    () => ({ posts, favorites, loading, pendingCount, applyPending, getById, refresh, createPost, updatePost, deletePost, toggleFavorite, isFavorite }),
+    [posts, favorites, loading, pendingCount, applyPending, getById, refresh, createPost, updatePost, deletePost, toggleFavorite, isFavorite],
   );
 
   return <PostsContext.Provider value={value}>{children}</PostsContext.Provider>;
