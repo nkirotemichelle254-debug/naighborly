@@ -41,6 +41,8 @@ export interface Thread {
   preview: string;
   time: string;
   unread: boolean;
+  otherUnread: boolean;
+  updatedAt: string;
   messages: Message[];
   withId: string;
 }
@@ -115,7 +117,9 @@ export function MessagesProvider({ children }: { children: ReactNode }) {
           withInitials: getInitials(withName),
           preview: r.preview ?? "Start a conversation",
           time: timeShort(r.updated_at),
+          updatedAt: r.updated_at,
           unread: isA ? r.unread_for_a : r.unread_for_b,
+          otherUnread: isA ? r.unread_for_b : r.unread_for_a,
           messages: msgs.map((m) => ({
             id: m.id,
             sender: m.sender_id === currentUserId ? "sent" : "received",
