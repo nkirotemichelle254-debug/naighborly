@@ -238,6 +238,27 @@ export default function Home() {
         </label>
       </div>
 
+      <AnimatePresence>
+        {pendingCount > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            className="sticky top-2 z-20 flex justify-center pointer-events-none px-5"
+          >
+            <button
+              type="button"
+              onClick={() => { applyPending(); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+              className="pointer-events-auto mt-3 inline-flex items-center gap-1.5 rounded-full bg-primary text-primary-foreground px-4 py-1.5 text-sm font-semibold shadow-lg hover:opacity-90 transition"
+            >
+              <Sparkles className="size-3.5" />
+              {pendingCount} new post{pendingCount === 1 ? "" : "s"} — tap to load
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+
       <div className="px-5 pt-4 grid gap-2">
         <div className="flex gap-2 overflow-x-auto -mx-1 px-1 pb-1" role="group" aria-label="Filter by category">
           {CATEGORY_FILTERS.map((c) => (
