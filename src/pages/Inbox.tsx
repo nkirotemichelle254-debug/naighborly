@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { ArrowLeft, Send, Search } from "lucide-react";
+import { ArrowLeft, Send, Search, Check, CheckCheck, Heart } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
 import { useMessages } from "@/context/MessagesContext";
+import { usePosts } from "@/context/PostsContext";
 import { supabase } from "@/integrations/supabase/client";
 import { TrustBadge, type TrustTier } from "@/components/TrustBadge";
 import { AsantiButton } from "@/components/AsantiButton";
@@ -13,8 +14,9 @@ import { QuickReplies } from "@/components/QuickReplies";
 
 export default function Inbox() {
   const navigate = useNavigate();
-  const { isSignedIn, loading } = useAuth();
+  const { isSignedIn, loading, user } = useAuth();
   const { threads, sendMessage, markRead } = useMessages();
+  const { getById } = usePosts();
   const [params, setParams] = useSearchParams();
   const initialThread = params.get("thread");
   const [activeId, setActiveId] = useState<string | null>(initialThread ?? threads[0]?.id ?? null);
@@ -58,6 +60,65 @@ export default function Inbox() {
   }, [active?.withId]);
 
   const hasReceived = Boolean(active?.messages.some((m) => m.sender === "received"));
+
+  // Asanti prompt: has the current user already sent asante for this thread?
+  const [hasGivenAsanti, setHasGivenAsanti] = useState(false);
+  useEffect(() => {
+    if (!active || !user) { setHasGivenAsanti(false); return; }
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from("asanti")
+        .select("id")
+        .eq("giver_id", user.id)
+        .eq("thread_id", active.id)
+        .maybeSingle();
+      if (!cancelled) setHasGivenAsanti(Boolean(data));
+    })();
+    return () => { cancelled = true; };
+  }, [active?.id, user]);
+
+  // Typing indicator via Supabase broadcast
+  const [otherTyping, setOtherTyping] = useState(false);
+  const typingChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
+  const typingClearRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastTypingSentRef = useRef(0);
+
+  useEffect(() => {
+    if (!active || !user) return;
+    const ch = supabase.channel(`typing-${active.id}`, { config: { broadcast: { self: false } } });
+    ch.on("broadcast", { event: "typing" }, (payload) => {
+      if (payload.payload?.userId === user.id) return;
+      setOtherTyping(true);
+      if (typingClearRef.current) clearTimeout(typingClearRef.current);
+      typingClearRef.current = setTimeout(() => setOtherTyping(false), 3000);
+    }).subscribe();
+    typingChannelRef.current = ch;
+    return () => {
+      if (typingClearRef.current) clearTimeout(typingClearRef.current);
+      supabase.removeChannel(ch);
+      typingChannelRef.current = null;
+      setOtherTyping(false);
+    };
+  }, [active?.id, user]);
+
+  const broadcastTyping = () => {
+    if (!user || !typingChannelRef.current) return;
+    const now = Date.now();
+    if (now - lastTypingSentRef.current < 1500) return;
+    lastTypingSentRef.current = now;
+    typingChannelRef.current.send({ type: "broadcast", event: "typing", payload: { userId: user.id } });
+  };
+
+  // Asanti prompt trigger: thread is "quiet" (>24h since last activity) OR linked post is resolved
+  const linkedPost = active?.postId ? getById(active.postId) : undefined;
+  const lastActivityAgeMs = active ? Date.now() - new Date(active.updatedAt).getTime() : 0;
+  const isQuiet = lastActivityAgeMs > 24 * 60 * 60 * 1000;
+  const showAsantiPrompt = Boolean(active && hasReceived && !hasGivenAsanti && (isQuiet || linkedPost?.resolved));
+
+  // Read receipt: last sent message; if other side has read all (otherUnread=false), show double check
+  const lastSentId = active ? [...active.messages].reverse().find((m) => m.sender === "sent")?.id : undefined;
+  const lastSentRead = active ? !active.otherUnread : false;
 
   const handleSend = () => {
     if (!active || !draft.trim()) return;
@@ -161,22 +222,45 @@ export default function Inbox() {
               </div>
             )}
             <AnimatePresence initial={false}>
-              {active.messages.map((m) => (
-                <motion.div
-                  key={m.id}
-                  initial={{ opacity: 0, y: 8, scale: 0.96 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  transition={{ type: "spring", stiffness: 320, damping: 24 }}
-                  className={`max-w-[78%] rounded-2xl px-4 py-2.5 text-sm ${
-                    m.sender === "sent"
-                      ? "self-end bg-primary text-primary-foreground rounded-br-md"
-                      : "self-start bg-muted text-foreground rounded-bl-md"
-                  }`}
-                >
-                  {m.text}
-                </motion.div>
-              ))}
+              {active.messages.map((m) => {
+                const isLastSent = m.id === lastSentId;
+                return (
+                  <div key={m.id} className={`flex flex-col ${m.sender === "sent" ? "items-end" : "items-start"}`}>
+                    <motion.div
+                      initial={{ opacity: 0, y: 8, scale: 0.96 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      transition={{ type: "spring", stiffness: 320, damping: 24 }}
+                      className={`max-w-[78%] rounded-2xl px-4 py-2.5 text-sm ${
+                        m.sender === "sent"
+                          ? "bg-primary text-primary-foreground rounded-br-md"
+                          : "bg-muted text-foreground rounded-bl-md"
+                      }`}
+                    >
+                      {m.text}
+                    </motion.div>
+                    {isLastSent && (
+                      <span className="text-[10px] text-muted-foreground mt-1 inline-flex items-center gap-0.5">
+                        {lastSentRead ? (
+                          <><CheckCheck className="size-3 text-primary" /> Seen</>
+                        ) : (
+                          <><Check className="size-3" /> Sent</>
+                        )}
+                      </span>
+                    )}
+                  </div>
+                );
+              })}
             </AnimatePresence>
+            {otherTyping && (
+              <motion.div
+                initial={{ opacity: 0, y: 4 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="self-start bg-muted text-foreground rounded-2xl rounded-bl-md px-4 py-2 inline-flex items-center gap-1"
+                aria-label={`${active.withName} is typing`}
+              >
+                <span className="typing-dot" /><span className="typing-dot" /><span className="typing-dot" />
+              </motion.div>
+            )}
             <div ref={messagesEndRef} />
           </main>
 
@@ -187,6 +271,22 @@ export default function Inbox() {
           />
 
           <div className="sticky bottom-24 px-5 pb-2 grid gap-2">
+            {showAsantiPrompt && (
+              <motion.div
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="rounded-2xl border border-primary/30 bg-primary/5 px-4 py-3 flex items-center gap-3"
+              >
+                <Heart className="size-5 text-primary fill-current shrink-0" />
+                <div className="flex-1 min-w-0 text-sm">
+                  <strong className="block">Did {active.withName.split(" ")[0]} help you?</strong>
+                  <span className="text-muted-foreground text-xs">
+                    {linkedPost?.resolved ? "You marked this resolved — share the love." : "It's been quiet for a day — a thank-you boosts their standing."}
+                  </span>
+                </div>
+                <AsantiButton threadId={active.id} receiverId={active.withId} receiverName={active.withName} />
+              </motion.div>
+            )}
             <QuickReplies hasReceived={hasReceived} onPick={(text) => setDraft(text)} />
             <form
               onSubmit={(e) => {
@@ -197,7 +297,7 @@ export default function Inbox() {
             >
               <input
                 value={draft}
-                onChange={(e) => setDraft(e.target.value)}
+                onChange={(e) => { setDraft(e.target.value); broadcastTyping(); }}
                 placeholder="Type a message…"
                 className="flex-1 bg-transparent outline-none text-sm"
               />

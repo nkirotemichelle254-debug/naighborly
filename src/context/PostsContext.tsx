@@ -90,6 +90,8 @@ interface PostsContextValue {
   posts: Post[];
   favorites: string[];
   loading: boolean;
+  pendingCount: number;
+  applyPending: () => Promise<void>;
   getById: (id: string) => Post | undefined;
   refresh: () => Promise<void>;
   createPost: (draft: PostDraft) => Promise<Post | null>;
@@ -106,6 +108,7 @@ export function PostsProvider({ children }: { children: ReactNode }) {
   const [posts, setPosts] = useState<Post[]>([]);
   const [favorites, setFavorites] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
+  const [pendingCount, setPendingCount] = useState(0);
 
   const fetchAndSet = useCallback(async () => {
     const { data, error } = await supabase.from("posts").select("*").order("created_at", { ascending: false });
@@ -132,7 +135,10 @@ export function PostsProvider({ children }: { children: ReactNode }) {
 
   const refresh = useCallback(async () => {
     await fetchAndSet();
+    setPendingCount(0);
   }, [fetchAndSet]);
+
+  const applyPending = refresh;
 
   const refreshFavorites = useCallback(async () => {
     if (!user) {
@@ -148,23 +154,36 @@ export function PostsProvider({ children }: { children: ReactNode }) {
     fetchAndSet().finally(() => setLoading(false));
   }, [fetchAndSet]);
 
-  // Realtime subscription for live feed updates
+  // Realtime: queue inserts as "pending" so user can opt-in via pill; apply updates/deletes immediately
   useEffect(() => {
     const channel = supabase
       .channel("posts-changes")
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "posts" },
-        () => {
-          fetchAndSet();
+        { event: "INSERT", schema: "public", table: "posts" },
+        (payload) => {
+          const row = payload.new as PostRow | undefined;
+          // Don't count own posts — they are already inserted optimistically
+          if (row && user && row.owner_id === user.id) return;
+          setPendingCount((c) => c + 1);
         },
+      )
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "posts" },
+        () => { fetchAndSet(); },
+      )
+      .on(
+        "postgres_changes",
+        { event: "DELETE", schema: "public", table: "posts" },
+        () => { fetchAndSet(); },
       )
       .subscribe();
 
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [fetchAndSet]);
+  }, [fetchAndSet, user]);
 
   useEffect(() => {
     refreshFavorites();
@@ -293,8 +312,8 @@ export function PostsProvider({ children }: { children: ReactNode }) {
   const isFavorite = useCallback((id: string) => favorites.includes(id), [favorites]);
 
   const value = useMemo<PostsContextValue>(
-    () => ({ posts, favorites, loading, getById, refresh, createPost, updatePost, deletePost, toggleFavorite, isFavorite }),
-    [posts, favorites, loading, getById, refresh, createPost, updatePost, deletePost, toggleFavorite, isFavorite],
+    () => ({ posts, favorites, loading, pendingCount, applyPending, getById, refresh, createPost, updatePost, deletePost, toggleFavorite, isFavorite }),
+    [posts, favorites, loading, pendingCount, applyPending, getById, refresh, createPost, updatePost, deletePost, toggleFavorite, isFavorite],
   );
 
   return <PostsContext.Provider value={value}>{children}</PostsContext.Provider>;
