@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { Search, X, Siren, MapPin } from "lucide-react";
+import { Search, X, Siren, MapPin, Sparkles, CheckCircle2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { AD_SLOTS, type Post, type PostCategory, type PostIntent } from "@/data/posts";
 import { useAuth } from "@/context/AuthContext";
@@ -176,6 +176,28 @@ export default function Home() {
   );
   const urgentIds = new Set(urgentPosts.map((p) => p.id));
   const feedPosts = posts.filter((p) => !urgentIds.has(p.id));
+
+  // Live activity ribbon: count real (non-demo) posts created in the last 24h in user's neighborhood
+  const newTodayCount = useMemo(() => {
+    if (!userHood) return 0;
+    const dayAgo = Date.now() - 24 * 60 * 60 * 1000;
+    return allPosts.filter((p) => {
+      if (p.isDemo) return false;
+      if (!isNearby(p.location)) return false;
+      // p.time is a relative label; fall back to checking time string
+      return /min|hour|Just now/i.test(p.time);
+    }).length;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [allPosts, userHood]);
+
+  // Resolved social proof: pick one recently resolved nearby post (non-demo, not already in feed prominently)
+  const resolvedHighlight = useMemo(() => {
+    const candidates = allPosts.filter(
+      (p) => p.resolved && !p.isDemo && (!userHood || isNearby(p.location)),
+    );
+    return candidates[0];
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [allPosts, userHood]);
 
   const items: Array<{ kind: "post"; post: Post } | { kind: "ad"; index: number }> = [];
   feedPosts.forEach((post, i) => {
