@@ -181,6 +181,22 @@ export default function Profile() {
           </div>
         </section>
 
+        {(helpedThisMonth > 0 || resolutionRate !== null) && (
+          <section className="flex flex-wrap gap-2">
+            {helpedThisMonth > 0 && (
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 border border-primary/30 px-3 py-1.5 text-xs font-medium">
+                <Sparkles className="size-3.5 text-primary" />
+                {helpedThisMonth} neighbor{helpedThisMonth === 1 ? "" : "s"} helped this month
+              </span>
+            )}
+            {resolutionRate !== null && myPosts.length >= 2 && (
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-accent/30 border border-accent/50 px-3 py-1.5 text-xs font-medium">
+                {resolutionRate}% of your posts resolved
+              </span>
+            )}
+          </section>
+        )}
+
         {editing && (
           <section className="rounded-2xl border border-border bg-card p-5 grid gap-3">
             <h2 className="font-display text-lg font-bold">Edit profile</h2>
