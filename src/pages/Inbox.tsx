@@ -5,17 +5,21 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
 import { useMessages } from "@/context/MessagesContext";
 import { usePosts } from "@/context/PostsContext";
+import { useBlocks } from "@/context/BlocksContext";
 import { supabase } from "@/integrations/supabase/client";
 import { TrustBadge, type TrustTier } from "@/components/TrustBadge";
 import { AsantiButton } from "@/components/AsantiButton";
 import { ReportDialog } from "@/components/ReportDialog";
 import { SafetyScreen } from "@/components/SafetyScreen";
 import { QuickReplies } from "@/components/QuickReplies";
+import { BlockButton } from "@/components/BlockButton";
 
 export default function Inbox() {
   const navigate = useNavigate();
   const { isSignedIn, loading, user } = useAuth();
-  const { threads, sendMessage, markRead } = useMessages();
+  const { threads: allThreads, sendMessage, markRead } = useMessages();
+  const { isBlocked } = useBlocks();
+  const threads = useMemo(() => allThreads.filter((t) => !isBlocked(t.withId)), [allThreads, isBlocked]);
   const { getById } = usePosts();
   const [params, setParams] = useSearchParams();
   const initialThread = params.get("thread");
@@ -208,6 +212,8 @@ export default function Inbox() {
                   <AsantiButton threadId={active.id} receiverId={active.withId} receiverName={active.withName} />
                 )}
                 <ReportDialog reportedUserId={active.withId} />
+                <BlockButton targetUserId={active.withId} targetName={active.withName} />
+
               </div>
             </div>
           </header>

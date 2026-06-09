@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { AD_SLOTS, type Post, type PostCategory, type PostIntent } from "@/data/posts";
 import { useAuth } from "@/context/AuthContext";
 import { usePosts } from "@/context/PostsContext";
+import { useBlocks } from "@/context/BlocksContext";
 import { supabase } from "@/integrations/supabase/client";
 import { TrustBadge, type TrustTier } from "@/components/TrustBadge";
 import { FeedCardSkeleton } from "@/components/FeedCardSkeleton";
@@ -106,7 +107,9 @@ function AdCard({ index }: { index: number }) {
 
 export default function Home() {
   const { profile, isSignedIn } = useAuth();
-  const { posts: allPosts, loading, pendingCount, applyPending } = usePosts();
+  const { posts: rawPosts, loading, pendingCount, applyPending } = usePosts();
+  const { isBlocked } = useBlocks();
+  const allPosts = useMemo(() => rawPosts.filter((p) => !p.ownerId || !isBlocked(p.ownerId)), [rawPosts, isBlocked]);
   const [params, setParams] = useSearchParams();
   const [showWelcome, setShowWelcome] = useState(params.get("welcome") === "1");
   const [query, setQuery] = useState("");
