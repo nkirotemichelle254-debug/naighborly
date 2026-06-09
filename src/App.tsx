@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/context/AuthContext";
 import { PostsProvider } from "@/context/PostsContext";
 import { MessagesProvider } from "@/context/MessagesContext";
+import { BlocksProvider } from "@/context/BlocksContext";
 import AppLayout from "@/components/layout/AppLayout";
 import Login from "@/pages/Login";
 import Signup from "@/pages/Signup";
@@ -29,9 +30,10 @@ function LegacyRedirect() {
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
-      <PostsProvider>
-        <MessagesProvider>
-          <TooltipProvider>
+      <BlocksProvider>
+        <PostsProvider>
+          <MessagesProvider>
+            <TooltipProvider>
             <Toaster />
             <Sonner />
             <BrowserRouter>
@@ -51,9 +53,10 @@ const App = () => (
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </BrowserRouter>
-          </TooltipProvider>
-        </MessagesProvider>
-      </PostsProvider>
+            </TooltipProvider>
+          </MessagesProvider>
+        </PostsProvider>
+      </BlocksProvider>
     </AuthProvider>
   </QueryClientProvider>
 );
