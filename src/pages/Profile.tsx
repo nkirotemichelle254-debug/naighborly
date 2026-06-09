@@ -6,6 +6,7 @@ import { usePosts } from "@/context/PostsContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { TrustBadge, getTierMeta } from "@/components/TrustBadge";
+import { NotificationPreferences } from "@/components/NotificationPreferences";
 
 const MAX_AVATAR_BYTES = 4 * 1024 * 1024; // 4MB
 
@@ -272,6 +273,8 @@ export default function Profile() {
             </div>
           )}
         </section>
+
+        <NotificationPreferences />
 
         <section className="rounded-2xl border border-border bg-card p-5 grid gap-3">
           <div className="flex items-center justify-between gap-3">
