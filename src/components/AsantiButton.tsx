@@ -11,6 +11,8 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "@/hooks/use-toast";
+import { celebrateAsante } from "@/lib/feedback";
+import { sendPush } from "@/lib/push";
 
 interface AsantiButtonProps {
   threadId: string;
@@ -58,6 +60,9 @@ export function AsantiButton({ threadId, receiverId, receiverName }: AsantiButto
     setGiven(true);
     setOpen(false);
     setMessage("");
+    celebrateAsante();
+    const giverName = user.user_metadata?.display_name ?? user.user_metadata?.full_name ?? user.email?.split("@")[0] ?? "A neighbor";
+    sendPush(receiverId, `${giverName} sent you asante 💛`, message.trim() || "Tap to see their thank-you.", { url: `/inbox?thread=${threadId}`, tag: `asanti-${threadId}` });
     toast({ title: `Asante sent to ${receiverName.split(" ")[0]}`, description: "It boosts their community standing." });
   };
 

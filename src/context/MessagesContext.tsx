@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
+import { sendPush } from "@/lib/push";
 
 function getInitials(name: string) {
   return (
@@ -221,6 +222,9 @@ export function MessagesProvider({ children }: { children: ReactNode }) {
             })
             .eq("id", threadId);
         }
+        // Best-effort web push
+        const senderName = user.user_metadata?.display_name ?? user.user_metadata?.full_name ?? user.email?.split("@")[0] ?? "A neighbor";
+        sendPush(t.withId, `${senderName}`, trimmed.length > 80 ? trimmed.slice(0, 80) + "…" : trimmed, { url: `/inbox?thread=${threadId}`, tag: `thread-${threadId}` });
       }
     },
     [user, threads],

@@ -41,6 +41,27 @@ export type Database = {
         }
         Relationships: []
       }
+      blocks: {
+        Row: {
+          blocked_id: string
+          blocker_id: string
+          created_at: string
+          id: string
+        }
+        Insert: {
+          blocked_id: string
+          blocker_id: string
+          created_at?: string
+          id?: string
+        }
+        Update: {
+          blocked_id?: string
+          blocker_id?: string
+          created_at?: string
+          id?: string
+        }
+        Relationships: []
+      }
       favorites: {
         Row: {
           created_at: string
@@ -192,6 +213,36 @@ export type Database = {
         }
         Relationships: []
       }
+      push_subscriptions: {
+        Row: {
+          auth: string
+          created_at: string
+          endpoint: string
+          id: string
+          p256dh: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          auth: string
+          created_at?: string
+          endpoint: string
+          id?: string
+          p256dh: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          auth?: string
+          created_at?: string
+          endpoint?: string
+          id?: string
+          p256dh?: string
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       reports: {
         Row: {
           created_at: string
@@ -268,6 +319,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      web_push_config: {
+        Row: {
+          created_at: string
+          id: boolean
+          private_key: string
+          public_key: string
+          subject: string
+        }
+        Insert: {
+          created_at?: string
+          id?: boolean
+          private_key: string
+          public_key: string
+          subject?: string
+        }
+        Update: {
+          created_at?: string
+          id?: boolean
+          private_key?: string
+          public_key?: string
+          subject?: string
+        }
+        Relationships: []
       }
     }
     Views: {

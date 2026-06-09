@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { TrustBadge, type TrustTier } from "@/components/TrustBadge";
 import { ReportDialog } from "@/components/ReportDialog";
 import { celebrate } from "@/lib/celebrate";
+import { celebrateResolved } from "@/lib/feedback";
 
 export default function Details() {
   const { id = "" } = useParams();
@@ -279,6 +280,7 @@ export default function Details() {
                     await updatePost(post.id, { resolved: !post.resolved });
                     if (!wasResolved) {
                       celebrate();
+                      celebrateResolved();
                       toast({
                         title: "Asante for closing the loop! 🎉",
                         description: "Your neighbors see this post is resolved.",

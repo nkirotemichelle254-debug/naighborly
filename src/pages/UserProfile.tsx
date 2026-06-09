@@ -6,6 +6,7 @@ import { usePosts } from "@/context/PostsContext";
 import { useAuth } from "@/context/AuthContext";
 import { TrustBadge, type TrustTier } from "@/components/TrustBadge";
 import { ReportDialog } from "@/components/ReportDialog";
+import { BlockButton } from "@/components/BlockButton";
 
 interface PublicProfile {
   id: string;
@@ -176,7 +177,10 @@ export default function UserProfile() {
                     Edit your profile
                   </Link>
                 ) : (
-                  <ReportDialog reportedUserId={profile.id} />
+                  <>
+                    <ReportDialog reportedUserId={profile.id} />
+                    <BlockButton targetUserId={profile.id} targetName={profile.display_name} />
+                  </>
                 )}
               </div>
             </article>
