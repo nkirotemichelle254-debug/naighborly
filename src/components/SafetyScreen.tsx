@@ -7,7 +7,7 @@ import type { PostCategory, PostIntent } from "@/data/posts";
 
 const STORAGE_PREFIX = "naighborly:safety-ack:";
 
-export type ExchangeKind = "swap" | "service" | "item-buy" | "item-lend" | "item-request" | "urgent" | "default";
+export type ExchangeKind = "swap" | "service" | "item-offer" | "item-request" | "urgent" | "default";
 
 interface Props {
   /** ID of the other neighbor in the conversation */
@@ -26,9 +26,7 @@ function deriveKind({ category, intent, urgent }: Pick<Props, "category" | "inte
   if (category === "Service") return "service";
   if (category === "Swap") return "swap";
   if (category === "Item") {
-    if (intent === "Request") return "item-request";
-    if (intent === "Lend") return "item-lend";
-    return "item-buy"; // Offer/sell
+    return intent === "Request" ? "item-request" : "item-offer";
   }
   return "default";
 }
@@ -64,25 +62,14 @@ const VARIANTS: Record<ExchangeKind, Variant> = {
     ],
     cta: "Got it — start chatting",
   },
-  "item-buy": {
+  "item-offer": {
     Icon: Package,
-    title: (n) => `Before you buy from ${n}`,
-    blurb: "A few habits keep purchases safe.",
+    title: (n) => `Before you pick up from ${n}`,
+    blurb: "A few habits keep handovers smooth.",
     bullets: [
-      { Icon: MessageSquare, text: "Confirm item, price and pickup time in chat." },
+      { Icon: MessageSquare, text: "Confirm item, condition and pickup time in chat." },
       { Icon: MapPin, text: "Meet in a public, busy spot during daylight." },
-      { Icon: Wallet, text: "Inspect before you pay. Never send money first." },
-    ],
-    cta: "Got it — start chatting",
-  },
-  "item-lend": {
-    Icon: HandHeart,
-    title: (n) => `Before you lend to ${n}`,
-    blurb: "Set expectations so the item comes back in good shape.",
-    bullets: [
-      { Icon: MessageSquare, text: "Agree on return date and condition in chat." },
-      { Icon: MapPin, text: "Hand over and collect in a public spot." },
-      { Icon: Package, text: "Snap a quick photo before and after." },
+      { Icon: Wallet, text: "If money's involved, inspect first — never pay before pickup." },
     ],
     cta: "Got it — start chatting",
   },
