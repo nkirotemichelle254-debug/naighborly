@@ -274,6 +274,9 @@ export default function Inbox() {
             otherUserId={active.withId}
             otherName={active.withName}
             enabled={active.messages.length === 0 && !hasReceived}
+            category={linkedPost?.category}
+            intent={linkedPost?.intent}
+            urgent={linkedPost?.urgent}
           />
 
           <div className="sticky bottom-24 px-5 pb-2 grid gap-2">
