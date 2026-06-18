@@ -2,6 +2,8 @@ import { useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "@/hooks/use-toast";
+import { PlaceAutocomplete, type PlaceValue } from "@/components/PlaceAutocomplete";
+
 
 export default function Signup() {
   const { signUpWithEmail, signInWithGoogle } = useAuth();
@@ -11,7 +13,9 @@ export default function Signup() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [neighborhood, setNeighborhood] = useState("");
+  const [place, setPlace] = useState<PlaceValue | null>(null);
   const [error, setError] = useState("");
+
   const [busy, setBusy] = useState(false);
 
   async function handleSubmit(e: FormEvent) {
@@ -19,7 +23,9 @@ export default function Signup() {
     setError("");
     if (name.trim().length < 2) return setError("Please enter your name.");
     if (neighborhood.trim().length < 2) return setError("Please tell us your neighborhood.");
+    if (!place) return setError("Pick your neighborhood from the suggestions so we can place you on the map.");
     if (!email.includes("@")) return setError("Please enter a valid email.");
+
     if (password.length < 6) return setError("Password must be at least 6 characters.");
     setBusy(true);
     const { error: err, needsEmailConfirmation } = await signUpWithEmail(email, password, name);
@@ -29,9 +35,14 @@ export default function Signup() {
       return;
     }
     // Stash neighborhood so we can save it once the session is ready (handles email-confirm flow too)
+    // Stash the picked place so we can save it once the session is ready (handles email-confirm flow too)
     try {
-      localStorage.setItem(`naighborly:pending-neighborhood:${email.trim().toLowerCase()}`, neighborhood.trim());
+      localStorage.setItem(
+        `naighborly:pending-neighborhood:${email.trim().toLowerCase()}`,
+        JSON.stringify({ label: place.label, lat: place.lat, lng: place.lng, placeId: place.placeId }),
+      );
     } catch { /* ignore */ }
+
     setBusy(false);
     if (needsEmailConfirmation) {
       toast({ title: "Karibu! Check your email", description: "Confirm your email, then sign in to meet your neighbors." });
@@ -112,16 +123,20 @@ export default function Signup() {
 
         <label className="block mt-4">
           <span className="text-sm font-medium">Neighborhood</span>
-          <input
-            type="text"
-            className="mt-2 w-full rounded-xl border border-border bg-card px-4 py-3 outline-none focus:ring-2 focus:ring-ring"
-            placeholder="e.g. Westlands, Kilimani, Lavington"
-            value={neighborhood}
-            onChange={(e) => setNeighborhood(e.target.value)}
-            autoComplete="address-level2"
-          />
-          <span className="text-xs text-muted-foreground mt-1.5 block">Helps us connect you with neighbors nearby.</span>
+          <div className="mt-2">
+            <PlaceAutocomplete
+              value={neighborhood}
+              onChange={(v) => { setNeighborhood(v); if (place && v !== place.label) setPlace(null); }}
+              onSelect={(p) => { setPlace(p); setNeighborhood(p.label); }}
+              placeholder="e.g. Westlands, Kilimani, Lavington"
+              countries={["ke"]}
+            />
+          </div>
+          <span className="text-xs text-muted-foreground mt-1.5 block">
+            {place ? "✓ Got it — we'll show you neighbors nearby." : "Pick from the suggestions so we know where to place you."}
+          </span>
         </label>
+
 
         <label className="block mt-4">
           <span className="text-sm font-medium">Password</span>
