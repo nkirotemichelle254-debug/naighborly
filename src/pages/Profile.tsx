@@ -7,6 +7,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { TrustBadge, getTierMeta } from "@/components/TrustBadge";
 import { NotificationPreferences } from "@/components/NotificationPreferences";
+import { PlaceAutocomplete, type PlaceValue } from "@/components/PlaceAutocomplete";
+
 
 const MAX_AVATAR_BYTES = 4 * 1024 * 1024; // 4MB
 
@@ -48,7 +50,9 @@ export default function Profile() {
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState(profile.name);
   const [location, setLocation] = useState(profile.location);
+  const [placePick, setPlacePick] = useState<PlaceValue | null>(null);
   const [bio, setBio] = useState(profile.bio);
+
   const [uploading, setUploading] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -94,7 +98,14 @@ export default function Profile() {
       });
     }
     if (name.trim().length < 2) return toast({ title: "Add a name", variant: "destructive" });
-    const { error } = await updateProfile({ name: name.trim(), location: location.trim(), bio: bio.trim() });
+    const patch: Parameters<typeof updateProfile>[0] = { name: name.trim(), location: location.trim(), bio: bio.trim() };
+    if (placePick && placePick.label === location.trim()) {
+      patch.latitude = placePick.lat;
+      patch.longitude = placePick.lng;
+      patch.placeId = placePick.placeId;
+    }
+    const { error } = await updateProfile(patch);
+
     if (error) return toast({ title: "Could not save", description: error, variant: "destructive" });
     setEditing(false);
     toast({ title: "Profile updated" });
@@ -212,7 +223,20 @@ export default function Profile() {
             </label>
             <label className="grid gap-1.5">
               <span className="text-sm font-medium">Neighborhood</span>
-              <input className="rounded-xl border border-input bg-card px-4 py-3" value={location} onChange={(e) => setLocation(e.target.value)} />
+              <PlaceAutocomplete
+                value={location}
+                onChange={(v) => { setLocation(v); if (placePick && v !== placePick.label) setPlacePick(null); }}
+                onSelect={(p) => { setPlacePick(p); setLocation(p.label); }}
+                countries={["ke"]}
+              />
+              <span className="text-xs text-muted-foreground">
+                {placePick
+                  ? "✓ New location ready to save."
+                  : profile.latitude
+                    ? "Your map location is set. Pick again only if you've moved."
+                    : "Pick from the suggestions so we can show you nearby neighbors."}
+              </span>
+
             </label>
             <label className="grid gap-1.5">
               <span className="text-sm font-medium">Bio</span>
