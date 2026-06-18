@@ -129,7 +129,9 @@ export type Database = {
           id: string
           image_url: string | null
           intent: Database["public"]["Enums"]["post_intent"]
+          latitude: number | null
           location: string
+          longitude: number | null
           note: string | null
           owner_id: string
           phone: string | null
@@ -146,7 +148,9 @@ export type Database = {
           id?: string
           image_url?: string | null
           intent: Database["public"]["Enums"]["post_intent"]
+          latitude?: number | null
           location?: string
+          longitude?: number | null
           note?: string | null
           owner_id: string
           phone?: string | null
@@ -163,7 +167,9 @@ export type Database = {
           id?: string
           image_url?: string | null
           intent?: Database["public"]["Enums"]["post_intent"]
+          latitude?: number | null
           location?: string
+          longitude?: number | null
           note?: string | null
           owner_id?: string
           phone?: string | null
@@ -183,7 +189,10 @@ export type Database = {
           display_name: string
           email: string | null
           id: string
+          latitude: number | null
+          longitude: number | null
           neighborhood: string | null
+          place_id: string | null
           trust_tier: Database["public"]["Enums"]["trust_tier"]
           updated_at: string
         }
@@ -195,7 +204,10 @@ export type Database = {
           display_name?: string
           email?: string | null
           id: string
+          latitude?: number | null
+          longitude?: number | null
           neighborhood?: string | null
+          place_id?: string | null
           trust_tier?: Database["public"]["Enums"]["trust_tier"]
           updated_at?: string
         }
@@ -207,7 +219,10 @@ export type Database = {
           display_name?: string
           email?: string | null
           id?: string
+          latitude?: number | null
+          longitude?: number | null
           neighborhood?: string | null
+          place_id?: string | null
           trust_tier?: Database["public"]["Enums"]["trust_tier"]
           updated_at?: string
         }
