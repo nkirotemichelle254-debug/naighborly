@@ -15,6 +15,9 @@ export interface UserProfile {
   memberSince: string;
   trustTier: TrustTier;
   asantiReceived: number;
+  latitude: number | null;
+  longitude: number | null;
+  placeId: string | null;
 }
 
 const FALLBACK_PROFILE: UserProfile = {
@@ -28,7 +31,11 @@ const FALLBACK_PROFILE: UserProfile = {
   memberSince: new Date().getFullYear().toString(),
   trustTier: "new",
   asantiReceived: 0,
+  latitude: null,
+  longitude: null,
+  placeId: null,
 };
+
 
 function getInitials(name: string) {
   return (
@@ -56,7 +63,7 @@ interface AuthContextValue {
   signUpWithEmail: (email: string, password: string, name: string) => Promise<AuthResult>;
   signInWithGoogle: () => Promise<AuthResult>;
   signOut: () => Promise<void>;
-  updateProfile: (patch: Partial<Pick<UserProfile, "name" | "location" | "bio" | "avatarUrl">>) => Promise<AuthResult>;
+  updateProfile: (patch: Partial<Pick<UserProfile, "name" | "location" | "bio" | "avatarUrl" | "latitude" | "longitude" | "placeId">>) => Promise<AuthResult>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -75,8 +82,12 @@ async function loadProfile(user: User): Promise<UserProfile> {
     memberSince: data?.created_at ? new Date(data.created_at).getFullYear().toString() : FALLBACK_PROFILE.memberSince,
     trustTier: (data?.trust_tier ?? "new") as TrustTier,
     asantiReceived: data?.asanti_received ?? 0,
+    latitude: data?.latitude ?? null,
+    longitude: data?.longitude ?? null,
+    placeId: data?.place_id ?? null,
   };
 }
+
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
@@ -94,16 +105,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           // If signup stashed a neighborhood, persist it now that we're signed in.
           try {
             const key = `naighborly:pending-neighborhood:${(u.email ?? "").toLowerCase()}`;
-            const pending = localStorage.getItem(key);
-            if (pending) {
-              supabase.from("profiles").update({ neighborhood: pending }).eq("id", u.id).then(() => {
-                localStorage.removeItem(key);
-                loadProfile(u).then(setProfile);
-              });
-              return;
+            const pendingRaw = localStorage.getItem(key);
+            if (pendingRaw) {
+              let patch: { neighborhood: string; latitude?: number; longitude?: number; place_id?: string } | null = null;
+              try {
+                const parsed = JSON.parse(pendingRaw);
+                if (parsed && typeof parsed === "object" && parsed.label) {
+                  patch = {
+                    neighborhood: String(parsed.label),
+                    latitude: typeof parsed.lat === "number" ? parsed.lat : undefined,
+                    longitude: typeof parsed.lng === "number" ? parsed.lng : undefined,
+                    place_id: typeof parsed.placeId === "string" ? parsed.placeId : undefined,
+                  };
+                }
+              } catch {
+                patch = { neighborhood: pendingRaw };
+              }
+              if (patch) {
+                supabase.from("profiles").update(patch).eq("id", u.id).then(() => {
+                  localStorage.removeItem(key);
+                  loadProfile(u).then(setProfile);
+                });
+                return;
+              }
             }
           } catch { /* ignore */ }
           loadProfile(u).then(setProfile);
+
         }, 0);
       } else {
         setProfile(FALLBACK_PROFILE);
@@ -159,18 +187,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const updateProfile = useCallback(
-    async (patch: Partial<Pick<UserProfile, "name" | "location" | "bio" | "avatarUrl">>) => {
+    async (patch) => {
       if (!user) return { error: "Not signed in" };
       const dbPatch: {
         display_name?: string;
         neighborhood?: string;
         bio?: string;
         avatar_url?: string | null;
+        latitude?: number | null;
+        longitude?: number | null;
+        place_id?: string | null;
       } = {};
       if (patch.name !== undefined) dbPatch.display_name = patch.name.trim();
       if (patch.location !== undefined) dbPatch.neighborhood = patch.location.trim();
       if (patch.bio !== undefined) dbPatch.bio = patch.bio.trim();
       if (patch.avatarUrl !== undefined) dbPatch.avatar_url = patch.avatarUrl;
+      if (patch.latitude !== undefined) dbPatch.latitude = patch.latitude;
+      if (patch.longitude !== undefined) dbPatch.longitude = patch.longitude;
+      if (patch.placeId !== undefined) dbPatch.place_id = patch.placeId;
       const { error } = await supabase.from("profiles").update(dbPatch).eq("id", user.id);
       if (error) return { error: error.message };
       setProfile((prev) => {
@@ -186,6 +220,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     },
     [user],
   );
+
 
   const value = useMemo<AuthContextValue>(
     () => ({
