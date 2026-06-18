@@ -1,4 +1,6 @@
+/// <reference types="google.maps" />
 // Loads the Google Maps JS API (places library) exactly once, on demand.
+
 // Uses the Lovable-managed browser key + tracking channel.
 
 let loaderPromise: Promise<typeof google> | null = null;
