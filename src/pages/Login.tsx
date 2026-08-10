@@ -32,7 +32,7 @@ export default function Login() {
   async function handleGoogle() {
     setError("");
     setBusy(true);
-    const { error: err } = await signInWithGoogle();
+    const { error: err } = await signInWithGoogle(next);
     if (err) {
       setBusy(false);
       setError(err);

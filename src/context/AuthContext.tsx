@@ -61,7 +61,7 @@ interface AuthContextValue {
   loading: boolean;
   signInWithEmail: (email: string, password: string) => Promise<AuthResult>;
   signUpWithEmail: (email: string, password: string, name: string) => Promise<AuthResult>;
-  signInWithGoogle: () => Promise<AuthResult>;
+  signInWithGoogle: (redirectPath?: string) => Promise<AuthResult>;
   signOut: () => Promise<void>;
   updateProfile: (patch: Partial<Pick<UserProfile, "name" | "location" | "bio" | "avatarUrl" | "latitude" | "longitude" | "placeId">>) => Promise<AuthResult>;
 }
@@ -174,9 +174,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { needsEmailConfirmation: !data.session };
   }, []);
 
-  const signInWithGoogle = useCallback(async () => {
+  const signInWithGoogle = useCallback(async (redirectPath?: string) => {
+    const safePath = redirectPath && redirectPath.startsWith("/") && !redirectPath.startsWith("//") ? redirectPath : "";
     const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin,
+      redirect_uri: `${window.location.origin}${safePath}`,
     });
     if (result.error) return { error: result.error instanceof Error ? result.error.message : String(result.error) };
     return {};
