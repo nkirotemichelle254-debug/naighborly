@@ -41,9 +41,9 @@ function FeedCard({ post, ownerTier, index, nearby, distanceLabel }: { post: Pos
               {post.urgent && (
                 <span className="feed-card__pill" style={{ background: "hsl(var(--destructive))", color: "hsl(var(--destructive-foreground))" }}>Urgent</span>
               )}
-              {nearby && (
+              {(distanceLabel || nearby) && (
                 <span className="feed-card__pill inline-flex items-center gap-1" style={{ background: "hsl(var(--accent))", color: "hsl(var(--accent-foreground))" }}>
-                  <MapPin className="size-3" /> Near you
+                  <MapPin className="size-3" /> {distanceLabel ?? "Near you"}
                 </span>
               )}
             </div>
@@ -69,9 +69,9 @@ function FeedCard({ post, ownerTier, index, nearby, distanceLabel }: { post: Pos
               {post.urgent && (
                 <span className="feed-card__pill" style={{ background: "hsl(var(--destructive))", color: "hsl(var(--destructive-foreground))" }}>Urgent</span>
               )}
-              {nearby && (
+              {(distanceLabel || nearby) && (
                 <span className="feed-card__pill inline-flex items-center gap-1" style={{ background: "hsl(var(--accent))", color: "hsl(var(--accent-foreground))" }}>
-                  <MapPin className="size-3" /> Near you
+                  <MapPin className="size-3" /> {distanceLabel ?? "Near you"}
                 </span>
               )}
             </div>
