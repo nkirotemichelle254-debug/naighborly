@@ -10,12 +10,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { TrustBadge, type TrustTier } from "@/components/TrustBadge";
 import { FeedCardSkeleton } from "@/components/FeedCardSkeleton";
 import { NotificationBell } from "@/components/NotificationBell";
+import { DISTANCE_OPTIONS, distanceMeters, formatDistance } from "@/lib/distance";
 
 const AD_INTERVAL = 5;
 const CATEGORY_FILTERS: Array<PostCategory | "All"> = ["All", "Item", "Service", "Swap"];
 const INTENT_FILTERS: Array<PostIntent | "All"> = ["All", "Offer", "Request"];
 
-function FeedCard({ post, ownerTier, index, nearby }: { post: Post; ownerTier?: TrustTier; index: number; nearby?: boolean }) {
+function FeedCard({ post, ownerTier, index, nearby, distanceLabel }: { post: Post; ownerTier?: TrustTier; index: number; nearby?: boolean; distanceLabel?: string }) {
   const hasImage = Boolean(post.imageUrl);
   return (
     <motion.div
@@ -40,9 +41,9 @@ function FeedCard({ post, ownerTier, index, nearby }: { post: Post; ownerTier?: 
               {post.urgent && (
                 <span className="feed-card__pill" style={{ background: "hsl(var(--destructive))", color: "hsl(var(--destructive-foreground))" }}>Urgent</span>
               )}
-              {nearby && (
+              {(distanceLabel || nearby) && (
                 <span className="feed-card__pill inline-flex items-center gap-1" style={{ background: "hsl(var(--accent))", color: "hsl(var(--accent-foreground))" }}>
-                  <MapPin className="size-3" /> Near you
+                  <MapPin className="size-3" /> {distanceLabel ?? "Near you"}
                 </span>
               )}
             </div>
@@ -68,9 +69,9 @@ function FeedCard({ post, ownerTier, index, nearby }: { post: Post; ownerTier?: 
               {post.urgent && (
                 <span className="feed-card__pill" style={{ background: "hsl(var(--destructive))", color: "hsl(var(--destructive-foreground))" }}>Urgent</span>
               )}
-              {nearby && (
+              {(distanceLabel || nearby) && (
                 <span className="feed-card__pill inline-flex items-center gap-1" style={{ background: "hsl(var(--accent))", color: "hsl(var(--accent-foreground))" }}>
-                  <MapPin className="size-3" /> Near you
+                  <MapPin className="size-3" /> {distanceLabel ?? "Near you"}
                 </span>
               )}
             </div>
@@ -116,6 +117,7 @@ export default function Home() {
   const [categoryFilter, setCategoryFilter] = useState<PostCategory | "All">("All");
   const [intentFilter, setIntentFilter] = useState<PostIntent | "All">("All");
   const [tierMap, setTierMap] = useState<Record<string, TrustTier>>({});
+  const [radius, setRadius] = useState<number | null>(null);
 
   useEffect(() => {
     if (!showWelcome) return;
@@ -151,18 +153,44 @@ export default function Home() {
   const isNearby = (loc: string) =>
     Boolean(userHood) && loc.trim().toLowerCase() === userHood;
 
+  const hasCoords = typeof profile.latitude === "number" && typeof profile.longitude === "number";
+  const me = { latitude: profile.latitude, longitude: profile.longitude };
+
+  // Distance in metres per post (null when either side has no coordinates)
+  const distanceMap = useMemo(() => {
+    const map: Record<string, number> = {};
+    if (!hasCoords) return map;
+    allPosts.forEach((p) => {
+      const d = distanceMeters(me, { latitude: p.latitude, longitude: p.longitude });
+      if (d !== null) map[p.id] = d;
+    });
+    return map;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [allPosts, hasCoords, profile.latitude, profile.longitude]);
+
   const posts = useMemo(() => {
     const q = query.trim().toLowerCase();
     const filtered = allPosts.filter((p) => {
       if (categoryFilter !== "All" && p.category !== categoryFilter) return false;
       if (intentFilter !== "All" && p.intent !== intentFilter) return false;
+      if (radius !== null) {
+        const d = distanceMap[p.id];
+        if (d === undefined || d > radius) return false;
+      }
       if (!q) return true;
       return [p.title, p.description, p.category, p.intent, p.location]
         .join(" ")
         .toLowerCase()
         .includes(q);
     });
-    // Sort: nearby first, demos last (preserve original recency order otherwise)
+    // Sort: closest first when we know coordinates, else same-neighborhood first
+    if (hasCoords) {
+      return [...filtered].sort((a, b) => {
+        const ad = distanceMap[a.id] ?? Number.POSITIVE_INFINITY;
+        const bd = distanceMap[b.id] ?? Number.POSITIVE_INFINITY;
+        return ad - bd;
+      });
+    }
     if (!userHood) return filtered;
     return [...filtered].sort((a, b) => {
       const an = isNearby(a.location) ? 0 : 1;
@@ -170,7 +198,7 @@ export default function Home() {
       return an - bn;
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [query, categoryFilter, intentFilter, allPosts, userHood]);
+  }, [query, categoryFilter, intentFilter, allPosts, userHood, radius, distanceMap, hasCoords]);
 
   // Urgent strip: pull non-resolved urgent posts (after filtering) into a pinned row
   const urgentPosts = useMemo(
@@ -210,7 +238,7 @@ export default function Home() {
     }
   });
 
-  const hasActiveFilter = categoryFilter !== "All" || intentFilter !== "All" || query.trim().length > 0;
+  const hasActiveFilter = categoryFilter !== "All" || intentFilter !== "All" || radius !== null || query.trim().length > 0;
 
   return (
     <div className="min-h-screen animate-fade-in">
@@ -289,7 +317,31 @@ export default function Home() {
             </button>
           ))}
         </div>
+        {hasCoords && (
+          <div className="flex gap-2 overflow-x-auto -mx-1 px-1 pb-1" role="group" aria-label="Filter by distance">
+            {DISTANCE_OPTIONS.map((o) => (
+              <button
+                key={o.label}
+                type="button"
+                onClick={() => setRadius(radius === o.meters ? null : o.meters)}
+                data-active={radius === o.meters}
+                className="filter-chip"
+              >
+                Within {o.label}
+              </button>
+            ))}
+            <button
+              type="button"
+              onClick={() => setRadius(null)}
+              data-active={radius === null}
+              className="filter-chip"
+            >
+              Everywhere
+            </button>
+          </div>
+        )}
       </div>
+
 
       <main className="px-5 py-5 grid gap-4">
         {isSignedIn && userHood && newTodayCount > 0 && (
@@ -338,6 +390,18 @@ export default function Home() {
             <span className="pill-button shrink-0" data-variant="ghost">Upload</span>
           </Link>
         )}
+        {isSignedIn && !hasCoords && (
+          <Link
+            to="/profile"
+            className="rounded-2xl border border-primary/40 bg-primary/10 px-4 py-3 text-sm flex items-center justify-between gap-3 hover:bg-primary/20 transition animate-fade-in"
+          >
+            <span>
+              <strong className="block">Pin your neighborhood on the map</strong>
+              <span className="text-muted-foreground">Re-pick your area so we can show you what's actually close by.</span>
+            </span>
+            <span className="pill-button shrink-0" data-variant="ghost">Set location</span>
+          </Link>
+        )}
         {loading && items.length === 0 && (
           <>
             <FeedCardSkeleton />
@@ -368,6 +432,7 @@ export default function Home() {
                   setQuery("");
                   setCategoryFilter("All");
                   setIntentFilter("All");
+                  setRadius(null);
                 }}
                 className="pill-button mt-4"
                 data-variant="ghost"
@@ -438,6 +503,9 @@ export default function Home() {
               post={item.post}
               ownerTier={item.post.ownerId ? tierMap[item.post.ownerId] : undefined}
               nearby={isNearby(item.post.location)}
+              distanceLabel={
+                distanceMap[item.post.id] !== undefined ? formatDistance(distanceMap[item.post.id]) : undefined
+              }
             />
           ) : (
             <AdCard key={`a-${i}`} index={item.index} />

@@ -22,6 +22,8 @@ export interface Post {
   resolved?: boolean;
   imageUrl?: string | null;
   isDemo?: boolean;
+  latitude?: number | null;
+  longitude?: number | null;
 }
 
 export const SEED_POSTS: Post[] = [

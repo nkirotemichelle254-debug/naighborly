@@ -48,6 +48,8 @@ interface PostRow {
   resolved: boolean;
   note: string | null;
   created_at: string;
+  latitude: number | null;
+  longitude: number | null;
 }
 
 function rowToPost(r: PostRow, ownerNames = new Map<string, string>()): Post {
@@ -71,6 +73,8 @@ function rowToPost(r: PostRow, ownerNames = new Map<string, string>()): Post {
     resolved: r.resolved,
     ownerId: r.owner_id,
     imageUrl: r.image_url,
+    latitude: r.latitude ?? null,
+    longitude: r.longitude ?? null,
   };
 }
 
@@ -104,7 +108,7 @@ interface PostsContextValue {
 const PostsContext = createContext<PostsContextValue | null>(null);
 
 export function PostsProvider({ children }: { children: ReactNode }) {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const [posts, setPosts] = useState<Post[]>([]);
   const [favorites, setFavorites] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
@@ -228,6 +232,8 @@ export function PostsProvider({ children }: { children: ReactNode }) {
           allow_calls: draft.allowCalls,
           urgent: draft.urgent,
           image_url: imageUrl,
+          latitude: profile.latitude ?? null,
+          longitude: profile.longitude ?? null,
         })
         .select("*")
         .single();
@@ -245,7 +251,7 @@ export function PostsProvider({ children }: { children: ReactNode }) {
       setPosts((prev) => [post, ...prev.filter((p) => !SEED_POSTS.some((seed) => seed.id === p.id))]);
       return post;
     },
-    [user],
+    [user, profile.latitude, profile.longitude],
   );
 
   const updatePost = useCallback(
