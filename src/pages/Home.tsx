@@ -153,18 +153,44 @@ export default function Home() {
   const isNearby = (loc: string) =>
     Boolean(userHood) && loc.trim().toLowerCase() === userHood;
 
+  const hasCoords = typeof profile.latitude === "number" && typeof profile.longitude === "number";
+  const me = { latitude: profile.latitude, longitude: profile.longitude };
+
+  // Distance in metres per post (null when either side has no coordinates)
+  const distanceMap = useMemo(() => {
+    const map: Record<string, number> = {};
+    if (!hasCoords) return map;
+    allPosts.forEach((p) => {
+      const d = distanceMeters(me, { latitude: p.latitude, longitude: p.longitude });
+      if (d !== null) map[p.id] = d;
+    });
+    return map;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [allPosts, hasCoords, profile.latitude, profile.longitude]);
+
   const posts = useMemo(() => {
     const q = query.trim().toLowerCase();
     const filtered = allPosts.filter((p) => {
       if (categoryFilter !== "All" && p.category !== categoryFilter) return false;
       if (intentFilter !== "All" && p.intent !== intentFilter) return false;
+      if (radius !== null) {
+        const d = distanceMap[p.id];
+        if (d === undefined || d > radius) return false;
+      }
       if (!q) return true;
       return [p.title, p.description, p.category, p.intent, p.location]
         .join(" ")
         .toLowerCase()
         .includes(q);
     });
-    // Sort: nearby first, demos last (preserve original recency order otherwise)
+    // Sort: closest first when we know coordinates, else same-neighborhood first
+    if (hasCoords) {
+      return [...filtered].sort((a, b) => {
+        const ad = distanceMap[a.id] ?? Number.POSITIVE_INFINITY;
+        const bd = distanceMap[b.id] ?? Number.POSITIVE_INFINITY;
+        return ad - bd;
+      });
+    }
     if (!userHood) return filtered;
     return [...filtered].sort((a, b) => {
       const an = isNearby(a.location) ? 0 : 1;
@@ -172,7 +198,7 @@ export default function Home() {
       return an - bn;
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [query, categoryFilter, intentFilter, allPosts, userHood]);
+  }, [query, categoryFilter, intentFilter, allPosts, userHood, radius, distanceMap, hasCoords]);
 
   // Urgent strip: pull non-resolved urgent posts (after filtering) into a pinned row
   const urgentPosts = useMemo(
