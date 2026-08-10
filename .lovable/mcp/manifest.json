@@ -1,0 +1,209 @@
+{
+  "version": 1,
+  "sdk_version": "0.26.1",
+  "path": "/mcp",
+  "auth": {
+    "type": "oauth",
+    "issuer": "https://okheiiyncxulfkozgndt.supabase.co/auth/v1",
+    "accepted_audiences": [
+      "authenticated"
+    ]
+  },
+  "mcp": {
+    "server": {
+      "name": "nairobi-neighborly-hub",
+      "version": "0.1.0",
+      "title": "Nairobi Neighborly Hub"
+    },
+    "tools": [
+      {
+        "name": "search_posts",
+        "title": "Search neighborhood posts",
+        "description": "Search Naighborly posts (offers and requests) by text, category, intent, neighborhood, urgency or resolved state.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "string",
+              "description": "Text to match in the title or description."
+            },
+            "category": {
+              "type": "string",
+              "enum": [
+                "Item",
+                "Service",
+                "Swap"
+              ]
+            },
+            "intent": {
+              "type": "string",
+              "enum": [
+                "Offer",
+                "Request"
+              ]
+            },
+            "neighborhood": {
+              "type": "string",
+              "description": "Partial location/neighborhood name."
+            },
+            "urgent_only": {
+              "type": "boolean"
+            },
+            "include_resolved": {
+              "type": "boolean",
+              "description": "Defaults to false."
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "description": "Defaults to 20."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "get_post",
+        "title": "Get a post",
+        "description": "Fetch a single Naighborly post by id, with its owner's public profile details.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "post_id": {
+              "type": "string",
+              "format": "uuid",
+              "description": "The post id."
+            }
+          },
+          "required": [
+            "post_id"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "create_post",
+        "title": "Create a post",
+        "description": "Create a new Naighborly post (an offer or a request) on behalf of the signed-in neighbor.",
+        "annotations": {
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "title": {
+              "type": "string",
+              "minLength": 3,
+              "maxLength": 120
+            },
+            "description": {
+              "type": "string",
+              "minLength": 3,
+              "maxLength": 2000
+            },
+            "category": {
+              "type": "string",
+              "enum": [
+                "Item",
+                "Service",
+                "Swap"
+              ]
+            },
+            "intent": {
+              "type": "string",
+              "enum": [
+                "Offer",
+                "Request"
+              ]
+            },
+            "location": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 120,
+              "description": "Neighborhood label. Defaults to the user's saved neighborhood."
+            },
+            "urgent": {
+              "type": "boolean"
+            },
+            "note": {
+              "type": "string",
+              "maxLength": 500
+            }
+          },
+          "required": [
+            "title",
+            "description",
+            "category",
+            "intent"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "resolve_post",
+        "title": "Mark a post resolved",
+        "description": "Mark one of the signed-in neighbor's own posts as resolved (or reopen it by setting resolved to false).",
+        "annotations": {
+          "readOnlyHint": false,
+          "destructiveHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "post_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "resolved": {
+              "type": "boolean",
+              "description": "Defaults to true."
+            }
+          },
+          "required": [
+            "post_id"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "my_profile",
+        "title": "My neighbor profile",
+        "description": "Get the signed-in neighbor's Naighborly profile: name, neighborhood, trust tier, asanti received, and their own posts.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        },
+        "outputSchema": null
+      }
+    ]
+  }
+}
