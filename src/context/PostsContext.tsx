@@ -251,7 +251,7 @@ export function PostsProvider({ children }: { children: ReactNode }) {
       setPosts((prev) => [post, ...prev.filter((p) => !SEED_POSTS.some((seed) => seed.id === p.id))]);
       return post;
     },
-    [user],
+    [user, profile.latitude, profile.longitude],
   );
 
   const updatePost = useCallback(
