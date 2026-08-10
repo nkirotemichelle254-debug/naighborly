@@ -117,6 +117,7 @@ export default function Home() {
   const [categoryFilter, setCategoryFilter] = useState<PostCategory | "All">("All");
   const [intentFilter, setIntentFilter] = useState<PostIntent | "All">("All");
   const [tierMap, setTierMap] = useState<Record<string, TrustTier>>({});
+  const [radius, setRadius] = useState<number | null>(null);
 
   useEffect(() => {
     if (!showWelcome) return;
