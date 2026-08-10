@@ -503,6 +503,9 @@ export default function Home() {
               post={item.post}
               ownerTier={item.post.ownerId ? tierMap[item.post.ownerId] : undefined}
               nearby={isNearby(item.post.location)}
+              distanceLabel={
+                distanceMap[item.post.id] !== undefined ? formatDistance(distanceMap[item.post.id]) : undefined
+              }
             />
           ) : (
             <AdCard key={`a-${i}`} index={item.index} />
