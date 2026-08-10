@@ -10,12 +10,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { TrustBadge, type TrustTier } from "@/components/TrustBadge";
 import { FeedCardSkeleton } from "@/components/FeedCardSkeleton";
 import { NotificationBell } from "@/components/NotificationBell";
+import { DISTANCE_OPTIONS, distanceMeters, formatDistance } from "@/lib/distance";
 
 const AD_INTERVAL = 5;
 const CATEGORY_FILTERS: Array<PostCategory | "All"> = ["All", "Item", "Service", "Swap"];
 const INTENT_FILTERS: Array<PostIntent | "All"> = ["All", "Offer", "Request"];
 
-function FeedCard({ post, ownerTier, index, nearby }: { post: Post; ownerTier?: TrustTier; index: number; nearby?: boolean }) {
+function FeedCard({ post, ownerTier, index, nearby, distanceLabel }: { post: Post; ownerTier?: TrustTier; index: number; nearby?: boolean; distanceLabel?: string }) {
   const hasImage = Boolean(post.imageUrl);
   return (
     <motion.div
