@@ -108,7 +108,7 @@ interface PostsContextValue {
 const PostsContext = createContext<PostsContextValue | null>(null);
 
 export function PostsProvider({ children }: { children: ReactNode }) {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const [posts, setPosts] = useState<Post[]>([]);
   const [favorites, setFavorites] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
@@ -232,6 +232,8 @@ export function PostsProvider({ children }: { children: ReactNode }) {
           allow_calls: draft.allowCalls,
           urgent: draft.urgent,
           image_url: imageUrl,
+          latitude: profile.latitude ?? null,
+          longitude: profile.longitude ?? null,
         })
         .select("*")
         .single();
