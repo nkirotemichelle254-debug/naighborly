@@ -17,6 +17,7 @@ import Inbox from "@/pages/Inbox";
 import Profile from "@/pages/Profile";
 import NotFound from "@/pages/NotFound";
 import UserProfile from "@/pages/UserProfile";
+import OAuthConsent from "@/pages/OAuthConsent";
 
 const queryClient = new QueryClient();
 
@@ -49,6 +50,7 @@ const App = () => (
                   <Route path="/post/:id" element={<Details />} />
                   <Route path="/user/:id" element={<UserProfile />} />
                 </Route>
+                <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
                 <Route path="/legacy" element={<LegacyRedirect />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
