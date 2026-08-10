@@ -48,6 +48,8 @@ interface PostRow {
   resolved: boolean;
   note: string | null;
   created_at: string;
+  latitude: number | null;
+  longitude: number | null;
 }
 
 function rowToPost(r: PostRow, ownerNames = new Map<string, string>()): Post {
@@ -71,6 +73,8 @@ function rowToPost(r: PostRow, ownerNames = new Map<string, string>()): Post {
     resolved: r.resolved,
     ownerId: r.owner_id,
     imageUrl: r.image_url,
+    latitude: r.latitude ?? null,
+    longitude: r.longitude ?? null,
   };
 }
 
