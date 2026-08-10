@@ -390,6 +390,18 @@ export default function Home() {
             <span className="pill-button shrink-0" data-variant="ghost">Upload</span>
           </Link>
         )}
+        {isSignedIn && !hasCoords && (
+          <Link
+            to="/profile"
+            className="rounded-2xl border border-primary/40 bg-primary/10 px-4 py-3 text-sm flex items-center justify-between gap-3 hover:bg-primary/20 transition animate-fade-in"
+          >
+            <span>
+              <strong className="block">Pin your neighborhood on the map</strong>
+              <span className="text-muted-foreground">Re-pick your area so we can show you what's actually close by.</span>
+            </span>
+            <span className="pill-button shrink-0" data-variant="ghost">Set location</span>
+          </Link>
+        )}
         {loading && items.length === 0 && (
           <>
             <FeedCardSkeleton />
@@ -420,6 +432,7 @@ export default function Home() {
                   setQuery("");
                   setCategoryFilter("All");
                   setIntentFilter("All");
+                  setRadius(null);
                 }}
                 className="pill-button mt-4"
                 data-variant="ghost"
