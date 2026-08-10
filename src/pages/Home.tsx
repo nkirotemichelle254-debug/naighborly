@@ -238,7 +238,7 @@ export default function Home() {
     }
   });
 
-  const hasActiveFilter = categoryFilter !== "All" || intentFilter !== "All" || query.trim().length > 0;
+  const hasActiveFilter = categoryFilter !== "All" || intentFilter !== "All" || radius !== null || query.trim().length > 0;
 
   return (
     <div className="min-h-screen animate-fade-in">
@@ -317,7 +317,31 @@ export default function Home() {
             </button>
           ))}
         </div>
+        {hasCoords && (
+          <div className="flex gap-2 overflow-x-auto -mx-1 px-1 pb-1" role="group" aria-label="Filter by distance">
+            {DISTANCE_OPTIONS.map((o) => (
+              <button
+                key={o.label}
+                type="button"
+                onClick={() => setRadius(radius === o.meters ? null : o.meters)}
+                data-active={radius === o.meters}
+                className="filter-chip"
+              >
+                Within {o.label}
+              </button>
+            ))}
+            <button
+              type="button"
+              onClick={() => setRadius(null)}
+              data-active={radius === null}
+              className="filter-chip"
+            >
+              Everywhere
+            </button>
+          </div>
+        )}
       </div>
+
 
       <main className="px-5 py-5 grid gap-4">
         {isSignedIn && userHood && newTodayCount > 0 && (
