@@ -240,10 +240,18 @@ export default function Home() {
     }
   });
 
+  // Posts shared in the user's area (used by the desktop sidebar)
+  const hoodPostCount = useMemo(
+    () => allPosts.filter((p) => !p.isDemo && (!userHood || isNearby(p.location))).length,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [allPosts, userHood],
+  );
+
   const hasActiveFilter = categoryFilter !== "All" || intentFilter !== "All" || radius !== null || query.trim().length > 0;
 
   return (
     <div className="min-h-screen animate-fade-in">
+      <OnboardingOverlay active={showWelcome} onDone={dismissWelcome} />
       <div className="sticky top-0 z-30 kitenge-header backdrop-blur px-5 pt-6 pb-4 border-b border-border">
         <header className="flex items-center justify-between gap-4">
           <div>
@@ -292,6 +300,8 @@ export default function Home() {
       </AnimatePresence>
 
 
+      <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_19rem] lg:gap-6 lg:items-start">
+      <div>
       <div className="px-5 pt-4 grid gap-2">
         <div className="flex gap-2 overflow-x-auto -mx-1 px-1 pb-1" role="group" aria-label="Filter by category">
           {CATEGORY_FILTERS.map((c) => (
@@ -514,6 +524,38 @@ export default function Home() {
         </>
         )}
       </main>
+      </div>
+
+      <aside className="hidden lg:grid gap-4 content-start sticky top-32 pr-5 py-5" aria-label="Neighbourhood sidebar">
+        <section className="rounded-2xl border border-border bg-card p-5 grid gap-2">
+          <h2 className="font-display text-base font-bold">Community Standing</h2>
+          <p className="text-sm text-muted-foreground">
+            Every Asante a neighbour sends you lifts your standing — from New Neighbour all the way to Pillar.
+          </p>
+          <ul className="grid gap-1 text-xs text-muted-foreground">
+            <li>• <strong className="text-foreground">Verified</strong> — photo, bio and neighbourhood set.</li>
+            <li>• <strong className="text-foreground">Active</strong> — posting and chatting regularly.</li>
+            <li>• <strong className="text-foreground">Trusted</strong> — 5+ Asantes from different neighbours.</li>
+            <li>• <strong className="text-foreground">Pillar</strong> — 20+ Asantes over 60+ days.</li>
+          </ul>
+        </section>
+
+        <section className="rounded-2xl border border-border bg-card p-5 grid gap-1">
+          <h2 className="font-display text-base font-bold">{profile.location || "Your area"}</h2>
+          <strong className="font-display text-3xl">{hoodPostCount}</strong>
+          <span className="text-sm text-muted-foreground">listings shared near you</span>
+          {newTodayCount > 0 && (
+            <span className="text-xs text-primary font-semibold mt-1">{newTodayCount} new today</span>
+          )}
+        </section>
+
+        <section className="rounded-2xl border border-accent/50 bg-accent/15 p-5 grid gap-2">
+          <h2 className="font-display text-base font-bold">Got something to share?</h2>
+          <p className="text-sm text-muted-foreground">A skill, a swap, a spare drill — your neighbours are waiting.</p>
+          <Link to="/create" className="pill-button mt-1">Post something</Link>
+        </section>
+      </aside>
+      </div>
 
     </div>
   );
