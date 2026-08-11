@@ -192,7 +192,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (!user) return { error: "Not signed in" };
       const dbPatch: {
         display_name?: string;
-        neighbourhood?: string;
+        neighborhood?: string;
         bio?: string;
         avatar_url?: string | null;
         latitude?: number | null;
