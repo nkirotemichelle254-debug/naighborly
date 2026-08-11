@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { Search, X, Siren, MapPin, Sparkles, CheckCircle2 } from "lucide-react";
+import { Search, X, Siren, MapPin, Sparkles, CheckCircle2, Map as MapIcon, List } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { AD_SLOTS, type Post, type PostCategory, type PostIntent } from "@/data/posts";
 import { useAuth } from "@/context/AuthContext";
@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { TrustBadge, type TrustTier } from "@/components/TrustBadge";
 import { FeedCardSkeleton } from "@/components/FeedCardSkeleton";
 import { NotificationBell } from "@/components/NotificationBell";
+import { FeedMap } from "@/components/FeedMap";
 import { DISTANCE_OPTIONS, distanceMeters, formatDistance } from "@/lib/distance";
 
 const AD_INTERVAL = 5;
