@@ -37,7 +37,7 @@ export function NotificationPreferences() {
       if (res.ok) {
         setEnabled(true);
         setPermission("granted");
-        toast({ title: "You're all set", description: "We'll ping you when neighbors message or thank you." });
+        toast({ title: "You're all set", description: "We'll ping you when neighbours message or thank you." });
       } else if (res.reason === "denied") {
         toast({ title: "Notifications blocked", description: "Enable them in your browser settings to receive pings.", variant: "destructive" });
       } else if (res.reason === "unsupported") {
@@ -68,7 +68,7 @@ export function NotificationPreferences() {
             <p className="text-xs text-muted-foreground">
               {!supported ? "Not supported on this browser." :
                 permission === "denied" ? "Blocked — change it in your browser settings." :
-                  enabled ? "On for this device." : "Get pinged when neighbors message or thank you, even when the app is closed."}
+                  enabled ? "On for this device." : "Get pinged when neighbours message or thank you, even when the app is closed."}
             </p>
           </div>
         </div>

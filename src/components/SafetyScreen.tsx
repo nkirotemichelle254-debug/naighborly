@@ -10,7 +10,7 @@ const STORAGE_PREFIX = "naighborly:safety-ack:";
 export type ExchangeKind = "swap" | "service" | "item-offer" | "item-request" | "urgent" | "default";
 
 interface Props {
-  /** ID of the other neighbor in the conversation */
+  /** ID of the other neighbour in the conversation */
   otherUserId: string;
   otherName: string;
   /** Should we show the screen? (e.g. only on threads with 0 messages so far) */
@@ -80,7 +80,7 @@ const VARIANTS: Record<ExchangeKind, Variant> = {
     bullets: [
       { Icon: MessageSquare, text: "Confirm exactly what's needed and when." },
       { Icon: MapPin, text: "Meet at a public, easy-to-find point." },
-      { Icon: Wallet, text: "Never share payment details — neighbors don't ask for that." },
+      { Icon: Wallet, text: "Never share payment details — neighbours don't ask for that." },
     ],
     cta: "Got it — start chatting",
   },
@@ -117,7 +117,7 @@ export function SafetyScreen({ otherUserId, otherName, enabled, category, intent
 
   useEffect(() => {
     if (!enabled || !otherUserId) return;
-    // Re-show if context changes (e.g. urgent vs default for the same neighbor).
+    // Re-show if context changes (e.g. urgent vs default for the same neighbour).
     const key = `${STORAGE_PREFIX}${otherUserId}:${kind}`;
     const acked = localStorage.getItem(key);
     if (!acked) setOpen(true);

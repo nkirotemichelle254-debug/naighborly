@@ -93,7 +93,7 @@ export default function Profile() {
     if (!hasAvatar) {
       return toast({
         title: "Add a profile photo first",
-        description: "Neighbors trust real faces. Tap your avatar to upload one.",
+        description: "Neighbours trust real faces. Tap your avatar to upload one.",
         variant: "destructive",
       });
     }
@@ -128,7 +128,7 @@ export default function Profile() {
         </button>
         <div className="grid gap-3 justify-items-center">
           <span className="text-xs font-semibold uppercase tracking-wider bg-card/20 px-3 py-1 rounded-full">
-            Neighbor since {profile.memberSince}
+            Neighbour since {profile.memberSince}
           </span>
           <button
             type="button"
@@ -149,7 +149,7 @@ export default function Profile() {
           <input ref={fileRef} type="file" accept="image/*" hidden onChange={handleAvatarChange} />
           {!hasAvatar && (
             <p className="text-xs opacity-90 max-w-xs text-center bg-card/20 px-3 py-1.5 rounded-full">
-              Add a photo to edit your profile and build trust with neighbors
+              Add a photo to edit your profile and build trust with neighbours
             </p>
           )}
           <h1 className="font-display text-3xl font-bold">{profile.name}</h1>
@@ -198,7 +198,7 @@ export default function Profile() {
             {helpedThisMonth > 0 && (
               <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 border border-primary/30 px-3 py-1.5 text-xs font-medium">
                 <Sparkles className="size-3.5 text-primary" />
-                {helpedThisMonth} neighbor{helpedThisMonth === 1 ? "" : "s"} helped this month
+                {helpedThisMonth} neighbour{helpedThisMonth === 1 ? "" : "s"} helped this month
               </span>
             )}
             {resolutionRate !== null && myPosts.length >= 2 && (
@@ -214,7 +214,7 @@ export default function Profile() {
             <h2 className="font-display text-lg font-bold">Edit profile</h2>
             {!hasAvatar && (
               <div className="rounded-xl bg-destructive-soft border border-destructive/30 text-destructive px-4 py-3 text-sm">
-                Upload a profile photo above before saving changes to your name, neighborhood, or bio.
+                Upload a profile photo above before saving changes to your name, neighbourhood, or bio.
               </div>
             )}
             <label className="grid gap-1.5">
@@ -222,7 +222,7 @@ export default function Profile() {
               <input className="rounded-xl border border-input bg-card px-4 py-3" value={name} onChange={(e) => setName(e.target.value)} />
             </label>
             <label className="grid gap-1.5">
-              <span className="text-sm font-medium">Neighborhood</span>
+              <span className="text-sm font-medium">Neighbourhood</span>
               <PlaceAutocomplete
                 value={location}
                 onChange={(v) => { setLocation(v); if (placePick && v !== placePick.label) setPlacePick(null); }}
@@ -234,7 +234,7 @@ export default function Profile() {
                   ? "✓ New location ready to save."
                   : profile.latitude
                     ? "Your map location is set. Pick again only if you've moved."
-                    : "Pick from the suggestions so we can show you nearby neighbors."}
+                    : "Pick from the suggestions so we can show you nearby neighbours."}
               </span>
 
             </label>
@@ -309,10 +309,10 @@ export default function Profile() {
           <div className="rounded-xl bg-muted/40 p-4 grid gap-2 text-sm">
             <strong className="font-display">How standing is earned</strong>
             <ul className="grid gap-1.5 text-muted-foreground text-xs">
-              <li>• <strong className="text-foreground">Verified</strong> — confirm email + add photo, bio, neighborhood.</li>
+              <li>• <strong className="text-foreground">Verified</strong> — confirm email + add photo, bio, neighbourhood.</li>
               <li>• <strong className="text-foreground">Active</strong> — verified + 3 posts or 5 conversations + 14 days.</li>
-              <li>• <strong className="text-foreground">Trusted</strong> — 5+ asantes from different neighbors, no open reports.</li>
-              <li>• <strong className="text-foreground">Pillar</strong> — 20+ asantes and 60+ days as a neighbor.</li>
+              <li>• <strong className="text-foreground">Trusted</strong> — 5+ asantes from different neighbours, no open reports.</li>
+              <li>• <strong className="text-foreground">Pillar</strong> — 20+ asantes and 60+ days as a neighbour.</li>
             </ul>
           </div>
         </section>

@@ -61,13 +61,13 @@ function supabaseForUser(ctx) {
 // src/lib/mcp/tools/search-posts.ts
 var search_posts_default = defineTool({
   name: "search_posts",
-  title: "Search neighborhood posts",
-  description: "Search Naighborly posts (offers and requests) by text, category, intent, neighborhood, urgency or resolved state.",
+  title: "Search neighbourhood posts",
+  description: "Search Naighborly posts (offers and requests) by text, category, intent, neighbourhood, urgency or resolved state.",
   inputSchema: {
     query: z.string().trim().optional().describe("Text to match in the title or description."),
     category: z.enum(["Item", "Service", "Swap"]).optional(),
     intent: z.enum(["Offer", "Request"]).optional(),
-    neighborhood: z.string().trim().optional().describe("Partial location/neighborhood name."),
+    neighbourhood: z.string().trim().optional().describe("Partial location/neighbourhood name."),
     urgent_only: z.boolean().optional(),
     include_resolved: z.boolean().optional().describe("Defaults to false."),
     limit: z.number().int().min(1).max(50).optional().describe("Defaults to 20.")
@@ -82,7 +82,7 @@ var search_posts_default = defineTool({
     if (input.query) q = q.or(`title.ilike.%${input.query}%,description.ilike.%${input.query}%`);
     if (input.category) q = q.eq("category", input.category);
     if (input.intent) q = q.eq("intent", input.intent);
-    if (input.neighborhood) q = q.ilike("location", `%${input.neighborhood}%`);
+    if (input.neighbourhood) q = q.ilike("location", `%${input.neighbourhood}%`);
     if (input.urgent_only) q = q.eq("urgent", true);
     if (!input.include_resolved) q = q.eq("resolved", false);
     const { data, error } = await q;
@@ -111,7 +111,7 @@ var get_post_default = defineTool2({
     const { data: post, error } = await supabase.from("posts").select("*").eq("id", post_id).maybeSingle();
     if (error) return { content: [{ type: "text", text: error.message }], isError: true };
     if (!post) return { content: [{ type: "text", text: "Post not found" }], isError: true };
-    const { data: owner } = await supabase.from("profiles").select("id,display_name,neighborhood,bio,trust_tier,asanti_received,avatar_url").eq("id", post.owner_id).maybeSingle();
+    const { data: owner } = await supabase.from("profiles").select("id,display_name,neighbourhood,bio,trust_tier,asanti_received,avatar_url").eq("id", post.owner_id).maybeSingle();
     return {
       content: [{ type: "text", text: JSON.stringify({ post, owner }) }],
       structuredContent: { post, owner: owner ?? null }
@@ -125,13 +125,13 @@ import { z as z3 } from "npm:zod@^3.25.76";
 var create_post_default = defineTool3({
   name: "create_post",
   title: "Create a post",
-  description: "Create a new Naighborly post (an offer or a request) on behalf of the signed-in neighbor.",
+  description: "Create a new Naighborly post (an offer or a request) on behalf of the signed-in neighbour.",
   inputSchema: {
     title: z3.string().trim().min(3).max(120),
     description: z3.string().trim().min(3).max(2e3),
     category: z3.enum(["Item", "Service", "Swap"]),
     intent: z3.enum(["Offer", "Request"]),
-    location: z3.string().trim().min(1).max(120).optional().describe("Neighborhood label. Defaults to the user's saved neighborhood."),
+    location: z3.string().trim().min(1).max(120).optional().describe("Neighbourhood label. Defaults to the user's saved neighbourhood."),
     urgent: z3.boolean().optional(),
     note: z3.string().trim().max(500).optional()
   },
@@ -145,9 +145,9 @@ var create_post_default = defineTool3({
     let location = input.location;
     let latitude = null;
     let longitude = null;
-    const { data: profile } = await supabase.from("profiles").select("neighborhood,latitude,longitude").eq("id", userId).maybeSingle();
-    if (!location) location = profile?.neighborhood ?? "Nairobi";
-    if (profile && location === profile.neighborhood) {
+    const { data: profile } = await supabase.from("profiles").select("neighbourhood,latitude,longitude").eq("id", userId).maybeSingle();
+    if (!location) location = profile?.neighbourhood ?? "Nairobi";
+    if (profile && location === profile.neighbourhood) {
       latitude = profile.latitude ?? null;
       longitude = profile.longitude ?? null;
     }
@@ -177,7 +177,7 @@ import { z as z4 } from "npm:zod@^3.25.76";
 var resolve_post_default = defineTool4({
   name: "resolve_post",
   title: "Mark a post resolved",
-  description: "Mark one of the signed-in neighbor's own posts as resolved (or reopen it by setting resolved to false).",
+  description: "Mark one of the signed-in neighbour's own posts as resolved (or reopen it by setting resolved to false).",
   inputSchema: {
     post_id: z4.string().uuid(),
     resolved: z4.boolean().optional().describe("Defaults to true.")
@@ -207,8 +207,8 @@ var resolve_post_default = defineTool4({
 import { defineTool as defineTool5 } from "npm:@lovable.dev/mcp-js@0.26.2";
 var my_profile_default = defineTool5({
   name: "my_profile",
-  title: "My neighbor profile",
-  description: "Get the signed-in neighbor's Naighborly profile: name, neighborhood, trust tier, asanti received, and their own posts.",
+  title: "My neighbour profile",
+  description: "Get the signed-in neighbour's Naighborly profile: name, neighbourhood, trust tier, asanti received, and their own posts.",
   inputSchema: {},
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
   handler: async (_input, ctx) => {
@@ -217,7 +217,7 @@ var my_profile_default = defineTool5({
     }
     const supabase = supabaseForUser(ctx);
     const userId = ctx.getUserId();
-    const { data: profile, error } = await supabase.from("profiles").select("id,display_name,neighborhood,bio,trust_tier,asanti_received,avatar_url,created_at").eq("id", userId).maybeSingle();
+    const { data: profile, error } = await supabase.from("profiles").select("id,display_name,neighbourhood,bio,trust_tier,asanti_received,avatar_url,created_at").eq("id", userId).maybeSingle();
     if (error) return { content: [{ type: "text", text: error.message }], isError: true };
     const { data: posts } = await supabase.from("posts").select("id,title,category,intent,resolved,urgent,created_at").eq("owner_id", userId).order("created_at", { ascending: false }).limit(25);
     return {
@@ -233,7 +233,7 @@ var mcp_default = defineMcp({
   name: "nairobi-neighborly-hub",
   title: "Nairobi Neighborly Hub",
   version: "0.1.0",
-  instructions: "Tools for Naighborly, a Nairobi neighborhood help-and-share app. Use `search_posts` to find neighbor offers and requests, `get_post` for full detail plus the owner's trust standing, `create_post` to post on the signed-in neighbor's behalf, `resolve_post` to close their own post, and `my_profile` for their standing and posts. All tools act as the signed-in neighbor.",
+  instructions: "Tools for Naighborly, a Nairobi neighbourhood help-and-share app. Use `search_posts` to find neighbour offers and requests, `get_post` for full detail plus the owner's trust standing, `create_post` to post on the signed-in neighbour's behalf, `resolve_post` to close their own post, and `my_profile` for their standing and posts. All tools act as the signed-in neighbour.",
   auth: auth.oauth.issuer({
     issuer: `https://${projectRef}.supabase.co/auth/v1`,
     acceptedAudiences: "authenticated"

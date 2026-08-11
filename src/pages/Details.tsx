@@ -149,7 +149,7 @@ export default function Details() {
                 <TrustBadge tier={ownerTier} />
               </div>
               <p className="text-sm text-muted-foreground">
-                {ownerAsanti > 0 ? `${ownerAsanti} asante${ownerAsanti === 1 ? "" : "s"} from neighbors` : "View neighbor profile"}
+                {ownerAsanti > 0 ? `${ownerAsanti} asante${ownerAsanti === 1 ? "" : "s"} from neighbours` : "View neighbour profile"}
               </p>
             </div>
           </Link>
@@ -160,7 +160,7 @@ export default function Details() {
             </div>
             <div className="flex-1">
               <strong className="block">{post.owner}</strong>
-              <p className="text-sm text-muted-foreground">Sample neighbor in {post.location}</p>
+              <p className="text-sm text-muted-foreground">Sample neighbour in {post.location}</p>
             </div>
           </article>
         )}
@@ -169,7 +169,7 @@ export default function Details() {
           <div><span className="text-xs text-muted-foreground">Category</span><strong className="block">{post.category}</strong></div>
           <div><span className="text-xs text-muted-foreground">Intent</span><strong className="block">{post.intent}</strong></div>
           <div><span className="text-xs text-muted-foreground">Posted</span><strong className="block">{post.time}</strong></div>
-          <div><span className="text-xs text-muted-foreground">Neighborhood</span><strong className="block">{post.location}</strong></div>
+          <div><span className="text-xs text-muted-foreground">Neighbourhood</span><strong className="block">{post.location}</strong></div>
         </article>
 
         <article className="rounded-2xl border border-border bg-card p-5 grid gap-3">
@@ -199,21 +199,21 @@ export default function Details() {
                     ? `${firstName} is well-known here`
                     : known
                     ? "Meet in a public spot"
-                    : "New neighbor — go slow";
+                    : "New neighbour — go slow";
 
                   let body = "";
                   if (post.category === "Service") {
                     body = trusted
-                      ? `Thanked by ${ownerAsanti} neighbors. Still agree on scope and price in chat before any work or payment.`
+                      ? `Thanked by ${ownerAsanti} neighbours. Still agree on scope and price in chat before any work or payment.`
                       : known
                       ? "Confirm scope, price and timing in messages. Pay only after the job is done — never upfront in full."
-                      : "New neighbor offering a service. Get clear scope and price in writing, never pay upfront, and ask for references.";
+                      : "New neighbour offering a service. Get clear scope and price in writing, never pay upfront, and ask for references.";
                   } else if (post.category === "Swap") {
                     body = trusted
                       ? `Trusted swapper (${ownerAsanti} asantes). Confirm both items match the description before swapping.`
                       : known
                       ? "Agree on both items, condition and meeting point in messages. Inspect each item in person before swapping."
-                      : "New neighbor — confirm both items in detail, meet in daylight in a busy place, and bring a friend.";
+                      : "New neighbour — confirm both items in detail, meet in daylight in a busy place, and bring a friend.";
                   } else {
                     // Item
                     if (post.intent === "Request") {
@@ -222,10 +222,10 @@ export default function Details() {
                         : "Confirm exactly what's needed and when. Meet at a public point and never share extra payment info.";
                     } else {
                       body = trusted
-                        ? `Thanked by ${ownerAsanti} neighbors. Still inspect the item before paying.`
+                        ? `Thanked by ${ownerAsanti} neighbours. Still inspect the item before paying.`
                         : known
                         ? "Confirm the item, price and pickup point in messages first. Inspect before paying — meet in daylight."
-                        : "New neighbor — chat first, never send payment before pickup, and meet in a busy public place.";
+                        : "New neighbour — chat first, never send payment before pickup, and meet in a busy public place.";
                     }
                   }
 
@@ -283,7 +283,7 @@ export default function Details() {
                       celebrateResolved();
                       toast({
                         title: "Asante for closing the loop! 🎉",
-                        description: "Your neighbors see this post is resolved.",
+                        description: "Your neighbours see this post is resolved.",
                       });
                     } else {
                       toast({ title: "Marked as active again" });

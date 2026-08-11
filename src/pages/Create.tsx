@@ -14,7 +14,7 @@ const CATEGORIES: { value: PostCategory; emoji: string; label: string; descripti
 
 const INTENTS: { value: PostIntent; eyebrow: string; title: string; description: string }[] = [
   { value: "Offer", eyebrow: "Share with the community", title: "Offer", description: "You have something useful to give, lend, or do." },
-  { value: "Request", eyebrow: "Ask for support", title: "Request", description: "Let trusted neighbors know what you need." },
+  { value: "Request", eyebrow: "Ask for support", title: "Request", description: "Let trusted neighbours know what you need." },
 ];
 
 export default function Create() {
@@ -85,7 +85,7 @@ export default function Create() {
   const submit = async () => {
     if (title.trim().length < 4) return setError("Title needs at least 4 characters");
     if (description.trim().length < 12) return setError("Add at least 12 characters of description");
-    if (location.trim().length < 2) return setError("Add a neighborhood");
+    if (location.trim().length < 2) return setError("Add a neighbourhood");
     if (allowCalls && !/^\+?[0-9\s-]{7,18}$/.test(phone.trim()))
       return setError("Enter a reachable phone or switch calls off");
 
@@ -156,7 +156,7 @@ export default function Create() {
           <>
             <div>
               <h2 className="font-display text-2xl font-bold">What do you want to do?</h2>
-              <p className="text-sm text-muted-foreground mt-1">Tell your neighbors if you are offering help or asking for it</p>
+              <p className="text-sm text-muted-foreground mt-1">Tell your neighbours if you are offering help or asking for it</p>
             </div>
             <div className="grid gap-3">
               {INTENTS.map((i) => (

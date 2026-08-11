@@ -6,7 +6,7 @@ export default defineTool({
   name: "resolve_post",
   title: "Mark a post resolved",
   description:
-    "Mark one of the signed-in neighbor's own posts as resolved (or reopen it by setting resolved to false).",
+    "Mark one of the signed-in neighbour's own posts as resolved (or reopen it by setting resolved to false).",
   inputSchema: {
     post_id: z.string().uuid(),
     resolved: z.boolean().optional().describe("Defaults to true."),

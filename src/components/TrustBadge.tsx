@@ -13,7 +13,7 @@ interface TierMeta {
 
 const TIERS: Record<TrustTier, TierMeta> = {
   new: {
-    label: "New neighbor",
+    label: "New neighbour",
     Icon: null,
     className: "bg-muted text-muted-foreground",
     description: "Just joined the community.",
@@ -22,10 +22,10 @@ const TIERS: Record<TrustTier, TierMeta> = {
     label: "Verified",
     Icon: ShieldCheck,
     className: "bg-accent/30 text-accent-foreground",
-    description: "Confirmed email, photo, bio and neighborhood.",
+    description: "Confirmed email, photo, bio and neighbourhood.",
   },
   active: {
-    label: "Active neighbor",
+    label: "Active neighbour",
     Icon: Sprout,
     className: "bg-primary/15 text-primary",
     description: "Regularly posting or chatting in the community.",
@@ -34,13 +34,13 @@ const TIERS: Record<TrustTier, TierMeta> = {
     label: "Trusted",
     Icon: Star,
     className: "bg-amber-500/20 text-amber-700 dark:text-amber-300",
-    description: "Thanked by 5+ different neighbors with a clean record.",
+    description: "Thanked by 5+ different neighbours with a clean record.",
   },
   pillar: {
     label: "Community pillar",
     Icon: Sparkles,
     className: "bg-gradient-to-r from-primary/25 to-amber-500/25 text-primary",
-    description: "20+ thank-yous, 60+ days active. A cornerstone of the neighborhood.",
+    description: "20+ thank-yous, 60+ days active. A cornerstone of the neighbourhood.",
   },
 };
 

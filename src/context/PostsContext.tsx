@@ -53,7 +53,7 @@ interface PostRow {
 }
 
 function rowToPost(r: PostRow, ownerNames = new Map<string, string>()): Post {
-  const owner = ownerNames.get(r.owner_id) ?? "Neighbor";
+  const owner = ownerNames.get(r.owner_id) ?? "Neighbour";
   return {
     id: r.id,
     title: r.title,
@@ -133,7 +133,7 @@ export function PostsProvider({ children }: { children: ReactNode }) {
     const rows = data as PostRow[];
     const ownerIds = Array.from(new Set(rows.map((row) => row.owner_id)));
     const { data: profiles } = await supabase.from("profiles").select("id, display_name").in("id", ownerIds);
-    const ownerNames = new Map((profiles ?? []).map((p) => [p.id, p.display_name ?? "Neighbor"]));
+    const ownerNames = new Map((profiles ?? []).map((p) => [p.id, p.display_name ?? "Neighbour"]));
     setPosts(rows.map((row) => rowToPost(row, ownerNames)));
   }, []);
 
@@ -246,7 +246,7 @@ export function PostsProvider({ children }: { children: ReactNode }) {
         });
         return null;
       }
-      const ownerName = user.user_metadata?.full_name ?? user.user_metadata?.display_name ?? user.email?.split("@")[0] ?? "Neighbor";
+      const ownerName = user.user_metadata?.full_name ?? user.user_metadata?.display_name ?? user.email?.split("@")[0] ?? "Neighbour";
       const post = rowToPost(data as PostRow, new Map([[user.id, ownerName]]));
       setPosts((prev) => [post, ...prev.filter((p) => !SEED_POSTS.some((seed) => seed.id === p.id))]);
       return post;

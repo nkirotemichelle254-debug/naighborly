@@ -4,14 +4,14 @@ import { supabaseForUser } from "../supabase";
 
 export default defineTool({
   name: "search_posts",
-  title: "Search neighborhood posts",
+  title: "Search neighbourhood posts",
   description:
-    "Search Naighborly posts (offers and requests) by text, category, intent, neighborhood, urgency or resolved state.",
+    "Search Naighborly posts (offers and requests) by text, category, intent, neighbourhood, urgency or resolved state.",
   inputSchema: {
     query: z.string().trim().optional().describe("Text to match in the title or description."),
     category: z.enum(["Item", "Service", "Swap"]).optional(),
     intent: z.enum(["Offer", "Request"]).optional(),
-    neighborhood: z.string().trim().optional().describe("Partial location/neighborhood name."),
+    neighbourhood: z.string().trim().optional().describe("Partial location/neighbourhood name."),
     urgent_only: z.boolean().optional(),
     include_resolved: z.boolean().optional().describe("Defaults to false."),
     limit: z.number().int().min(1).max(50).optional().describe("Defaults to 20."),
@@ -31,7 +31,7 @@ export default defineTool({
     if (input.query) q = q.or(`title.ilike.%${input.query}%,description.ilike.%${input.query}%`);
     if (input.category) q = q.eq("category", input.category);
     if (input.intent) q = q.eq("intent", input.intent);
-    if (input.neighborhood) q = q.ilike("location", `%${input.neighborhood}%`);
+    if (input.neighbourhood) q = q.ilike("location", `%${input.neighbourhood}%`);
     if (input.urgent_only) q = q.eq("urgent", true);
     if (!input.include_resolved) q = q.eq("resolved", false);
 

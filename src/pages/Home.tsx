@@ -186,7 +186,7 @@ export default function Home() {
         .toLowerCase()
         .includes(q);
     });
-    // Sort: closest first when we know coordinates, else same-neighborhood first
+    // Sort: closest first when we know coordinates, else same-neighbourhood first
     if (hasCoords) {
       return [...filtered].sort((a, b) => {
         const ad = distanceMap[a.id] ?? Number.POSITIVE_INFINITY;
@@ -211,7 +211,7 @@ export default function Home() {
   const urgentIds = new Set(urgentPosts.map((p) => p.id));
   const feedPosts = posts.filter((p) => !urgentIds.has(p.id));
 
-  // Live activity ribbon: count real (non-demo) posts created in the last 24h in user's neighborhood
+  // Live activity ribbon: count real (non-demo) posts created in the last 24h in user's neighbourhood
   const newTodayCount = useMemo(() => {
     if (!userHood) return 0;
     const dayAgo = Date.now() - 24 * 60 * 60 * 1000;
@@ -395,7 +395,7 @@ export default function Home() {
               <div className="text-2xl mb-1" aria-hidden>🌿</div>
               <strong className="font-display text-lg block">Karibu, {profile.name.split(" ")[0]}!</strong>
               <p className="text-sm text-muted-foreground mt-1">
-                You're now part of {profile.location}. Browse what neighbors are sharing, then post something of your own when you're ready.
+                You're now part of {profile.location}. Browse what neighbours are sharing, then post something of your own when you're ready.
               </p>
             </motion.div>
           )}
@@ -407,7 +407,7 @@ export default function Home() {
           >
             <span>
               <strong className="block">Add your profile photo</strong>
-              <span className="text-muted-foreground">Helps neighbors trust you when meeting up.</span>
+              <span className="text-muted-foreground">Helps neighbours trust you when meeting up.</span>
             </span>
             <span className="pill-button shrink-0" data-variant="ghost">Upload</span>
           </Link>
@@ -418,7 +418,7 @@ export default function Home() {
             className="rounded-2xl border border-primary/40 bg-primary/10 px-4 py-3 text-sm flex items-center justify-between gap-3 hover:bg-primary/20 transition animate-fade-in"
           >
             <span>
-              <strong className="block">Pin your neighborhood on the map</strong>
+              <strong className="block">Pin your neighbourhood on the map</strong>
               <span className="text-muted-foreground">Re-pick your area so we can show you what's actually close by.</span>
             </span>
             <span className="pill-button shrink-0" data-variant="ghost">Set location</span>
@@ -443,12 +443,12 @@ export default function Home() {
           >
             <div className="text-4xl mb-2" aria-hidden>🌿</div>
             <strong className="block font-display text-lg">
-              {hasActiveFilter ? "No matches yet" : "Your neighborhood is quiet"}
+              {hasActiveFilter ? "No matches yet" : "Your neighbourhood is quiet"}
             </strong>
             <p className="text-sm text-muted-foreground mt-1">
               {hasActiveFilter
                 ? "Try clearing filters or a different search phrase."
-                : "Be the first to share something — neighbors are waiting."}
+                : "Be the first to share something — neighbours are waiting."}
             </p>
             {hasActiveFilter ? (
               <button

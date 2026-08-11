@@ -6,13 +6,13 @@ export default defineTool({
   name: "create_post",
   title: "Create a post",
   description:
-    "Create a new Naighborly post (an offer or a request) on behalf of the signed-in neighbor.",
+    "Create a new Naighborly post (an offer or a request) on behalf of the signed-in neighbour.",
   inputSchema: {
     title: z.string().trim().min(3).max(120),
     description: z.string().trim().min(3).max(2000),
     category: z.enum(["Item", "Service", "Swap"]),
     intent: z.enum(["Offer", "Request"]),
-    location: z.string().trim().min(1).max(120).optional().describe("Neighborhood label. Defaults to the user's saved neighborhood."),
+    location: z.string().trim().min(1).max(120).optional().describe("Neighbourhood label. Defaults to the user's saved neighbourhood."),
     urgent: z.boolean().optional(),
     note: z.string().trim().max(500).optional(),
   },
@@ -29,11 +29,11 @@ export default defineTool({
     let longitude: number | null = null;
     const { data: profile } = await supabase
       .from("profiles")
-      .select("neighborhood,latitude,longitude")
+      .select("neighbourhood,latitude,longitude")
       .eq("id", userId)
       .maybeSingle();
-    if (!location) location = profile?.neighborhood ?? "Nairobi";
-    if (profile && location === profile.neighborhood) {
+    if (!location) location = profile?.neighbourhood ?? "Nairobi";
+    if (profile && location === profile.neighbourhood) {
       latitude = profile.latitude ?? null;
       longitude = profile.longitude ?? null;
     }

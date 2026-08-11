@@ -18,8 +18,8 @@
     "tools": [
       {
         "name": "search_posts",
-        "title": "Search neighborhood posts",
-        "description": "Search Naighborly posts (offers and requests) by text, category, intent, neighborhood, urgency or resolved state.",
+        "title": "Search neighbourhood posts",
+        "description": "Search Naighborly posts (offers and requests) by text, category, intent, neighbourhood, urgency or resolved state.",
         "annotations": {
           "readOnlyHint": true,
           "idempotentHint": true,
@@ -47,9 +47,9 @@
                 "Request"
               ]
             },
-            "neighborhood": {
+            "neighbourhood": {
               "type": "string",
-              "description": "Partial location/neighborhood name."
+              "description": "Partial location/neighbourhood name."
             },
             "urgent_only": {
               "type": "boolean"
@@ -99,7 +99,7 @@
       {
         "name": "create_post",
         "title": "Create a post",
-        "description": "Create a new Naighborly post (an offer or a request) on behalf of the signed-in neighbor.",
+        "description": "Create a new Naighborly post (an offer or a request) on behalf of the signed-in neighbour.",
         "annotations": {
           "readOnlyHint": false,
           "destructiveHint": false,
@@ -137,7 +137,7 @@
               "type": "string",
               "minLength": 1,
               "maxLength": 120,
-              "description": "Neighborhood label. Defaults to the user's saved neighborhood."
+              "description": "Neighbourhood label. Defaults to the user's saved neighbourhood."
             },
             "urgent": {
               "type": "boolean"
@@ -161,7 +161,7 @@
       {
         "name": "resolve_post",
         "title": "Mark a post resolved",
-        "description": "Mark one of the signed-in neighbor's own posts as resolved (or reopen it by setting resolved to false).",
+        "description": "Mark one of the signed-in neighbour's own posts as resolved (or reopen it by setting resolved to false).",
         "annotations": {
           "readOnlyHint": false,
           "destructiveHint": true,
@@ -190,8 +190,8 @@
       },
       {
         "name": "my_profile",
-        "title": "My neighbor profile",
-        "description": "Get the signed-in neighbor's Naighborly profile: name, neighborhood, trust tier, asanti received, and their own posts.",
+        "title": "My neighbour profile",
+        "description": "Get the signed-in neighbour's Naighborly profile: name, neighbourhood, trust tier, asanti received, and their own posts.",
         "annotations": {
           "readOnlyHint": true,
           "idempotentHint": true,
