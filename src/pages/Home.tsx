@@ -424,6 +424,9 @@ export default function Home() {
             <span className="pill-button shrink-0" data-variant="ghost">Set location</span>
           </Link>
         )}
+        {view === "map" && <FeedMap posts={posts} center={me} />}
+        {view === "list" && (
+        <>
         {loading && items.length === 0 && (
           <>
             <FeedCardSkeleton />
