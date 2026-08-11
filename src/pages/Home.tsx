@@ -343,7 +343,26 @@ export default function Home() {
             </button>
           </div>
         )}
+        <div className="flex gap-2 -mx-1 px-1" role="group" aria-label="Feed view">
+          <button
+            type="button"
+            onClick={() => setView("list")}
+            data-active={view === "list"}
+            className="filter-chip inline-flex items-center gap-1.5"
+          >
+            <List className="size-3.5" /> List
+          </button>
+          <button
+            type="button"
+            onClick={() => setView("map")}
+            data-active={view === "map"}
+            className="filter-chip inline-flex items-center gap-1.5"
+          >
+            <MapIcon className="size-3.5" /> Map
+          </button>
+        </div>
       </div>
+
 
 
       <main className="px-5 py-5 grid gap-4">
