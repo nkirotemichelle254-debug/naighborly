@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { Search, X, Siren, MapPin, Sparkles, CheckCircle2 } from "lucide-react";
+import { Search, X, Siren, MapPin, Sparkles, CheckCircle2, Map as MapIcon, List } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { AD_SLOTS, type Post, type PostCategory, type PostIntent } from "@/data/posts";
 import { useAuth } from "@/context/AuthContext";
@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { TrustBadge, type TrustTier } from "@/components/TrustBadge";
 import { FeedCardSkeleton } from "@/components/FeedCardSkeleton";
 import { NotificationBell } from "@/components/NotificationBell";
+import { FeedMap } from "@/components/FeedMap";
 import { DISTANCE_OPTIONS, distanceMeters, formatDistance } from "@/lib/distance";
 
 const AD_INTERVAL = 5;
@@ -118,6 +119,8 @@ export default function Home() {
   const [intentFilter, setIntentFilter] = useState<PostIntent | "All">("All");
   const [tierMap, setTierMap] = useState<Record<string, TrustTier>>({});
   const [radius, setRadius] = useState<number | null>(null);
+  const [view, setView] = useState<"list" | "map">("list");
+
 
   useEffect(() => {
     if (!showWelcome) return;
@@ -340,7 +343,26 @@ export default function Home() {
             </button>
           </div>
         )}
+        <div className="flex gap-2 -mx-1 px-1" role="group" aria-label="Feed view">
+          <button
+            type="button"
+            onClick={() => setView("list")}
+            data-active={view === "list"}
+            className="filter-chip inline-flex items-center gap-1.5"
+          >
+            <List className="size-3.5" /> List
+          </button>
+          <button
+            type="button"
+            onClick={() => setView("map")}
+            data-active={view === "map"}
+            className="filter-chip inline-flex items-center gap-1.5"
+          >
+            <MapIcon className="size-3.5" /> Map
+          </button>
+        </div>
       </div>
+
 
 
       <main className="px-5 py-5 grid gap-4">
@@ -402,6 +424,9 @@ export default function Home() {
             <span className="pill-button shrink-0" data-variant="ghost">Set location</span>
           </Link>
         )}
+        {view === "map" && <FeedMap posts={posts} center={me} />}
+        {view === "list" && (
+        <>
         {loading && items.length === 0 && (
           <>
             <FeedCardSkeleton />
@@ -511,7 +536,10 @@ export default function Home() {
             <AdCard key={`a-${i}`} index={item.index} />
           ),
         )}
+        </>
+        )}
       </main>
+
     </div>
   );
 }
