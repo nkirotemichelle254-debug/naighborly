@@ -338,7 +338,6 @@ export default function Details() {
             })()}
             {editing && (
 
-            ) : (
               <div className="grid gap-3">
                 <label className="grid gap-1.5">
                   <span className="text-sm font-medium">Title</span>
