@@ -319,6 +319,25 @@ export default function Details() {
                   <Trash2 className="size-4" /> Delete post
                 </button>
               </div>
+            )}
+            {justResolved && post.resolved && (() => {
+              const thread = threads.find((t) => t.postId === post.id);
+              if (!thread) return null;
+              return (
+                <div className="rounded-xl border border-accent/50 bg-accent/15 p-4 flex items-center justify-between gap-3">
+                  <span className="text-sm">
+                    <strong className="font-display block">Who came through for you?</strong>
+                    <span className="text-muted-foreground">Send {thread.withName.split(" ")[0]} an Asante — it builds their standing.</span>
+                  </span>
+                  <span className="shrink-0 inline-flex items-center gap-1">
+                    <Heart className="size-4 text-primary" />
+                    <AsantiButton threadId={thread.id} receiverId={thread.withId} receiverName={thread.withName} />
+                  </span>
+                </div>
+              );
+            })()}
+            {editing && (
+
             ) : (
               <div className="grid gap-3">
                 <label className="grid gap-1.5">
