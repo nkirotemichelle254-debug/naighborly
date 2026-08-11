@@ -533,7 +533,10 @@ export default function Home() {
             <AdCard key={`a-${i}`} index={item.index} />
           ),
         )}
+        </>
+        )}
       </main>
+
     </div>
   );
 }
