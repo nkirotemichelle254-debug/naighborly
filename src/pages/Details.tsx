@@ -1,6 +1,6 @@
 import { useEffect, useState, type MouseEvent } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Bookmark, Phone, MessageCircle, Trash2, ShieldAlert } from "lucide-react";
+import { ArrowLeft, Bookmark, Phone, MessageCircle, Trash2, ShieldAlert, Share2, Heart } from "lucide-react";
 import { usePosts } from "@/context/PostsContext";
 import { useAuth } from "@/context/AuthContext";
 import { useMessages } from "@/context/MessagesContext";
@@ -8,6 +8,7 @@ import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { TrustBadge, type TrustTier } from "@/components/TrustBadge";
 import { ReportDialog } from "@/components/ReportDialog";
+import { AsantiButton } from "@/components/AsantiButton";
 import { celebrate } from "@/lib/celebrate";
 import { celebrateResolved } from "@/lib/feedback";
 
@@ -16,7 +17,7 @@ export default function Details() {
   const navigate = useNavigate();
   const { getById, deletePost, updatePost, toggleFavorite, isFavorite } = usePosts();
   const { profile, isSignedIn } = useAuth();
-  const { ensureThreadForPost } = useMessages();
+  const { ensureThreadForPost, threads } = useMessages();
 
   const post = getById(id);
 
@@ -26,6 +27,7 @@ export default function Details() {
   const [location, setLocation] = useState(post?.location ?? "");
   const [ownerTier, setOwnerTier] = useState<TrustTier>("new");
   const [ownerAsanti, setOwnerAsanti] = useState(0);
+  const [justResolved, setJustResolved] = useState(false);
 
   useEffect(() => {
     if (!post?.ownerId || post?.isDemo) return;
@@ -61,8 +63,8 @@ export default function Details() {
   const handleMessage = async () => {
     if (isDemo) {
       toast({
-        title: "This is a sample post",
-        description: "Create your own post or wait for neighbours to share theirs to start chatting.",
+        title: "This is a sample listing",
+        description: "Real neighbours are joining soon. Sign up and post something first — then you can message others!",
       });
       return;
     }
@@ -75,8 +77,8 @@ export default function Details() {
   const handleSave = async () => {
     if (isDemo) {
       toast({
-        title: "Sample posts can't be saved",
-        description: "Saving works on real neighbour posts. Try creating one!",
+        title: "Can't save sample listings",
+        description: "Once real neighbours start posting, you'll be able to save their listings here.",
       });
       return;
     }
@@ -91,6 +93,20 @@ export default function Details() {
         title: "Sample number",
         description: "This is a demo contact. Real numbers appear once neighbours post.",
       });
+    }
+  };
+
+  const handleShare = async () => {
+    const url = window.location.href;
+    try {
+      if (typeof navigator !== "undefined" && navigator.share) {
+        await navigator.share({ title: post.title, text: post.description, url });
+        return;
+      }
+      await navigator.clipboard.writeText(url);
+      toast({ title: "Link copied — share it with your neighbours" });
+    } catch {
+      /* user cancelled the share sheet */
     }
   };
 
@@ -242,6 +258,9 @@ export default function Details() {
               <button onClick={handleMessage} className="pill-button flex-1 gap-2">
                 <MessageCircle className="size-4" /> Message
               </button>
+              <button onClick={handleShare} className="pill-button gap-2" data-variant="ghost" aria-label="Share this listing">
+                <Share2 className="size-4" /> Share
+              </button>
               {post.allowCalls && post.phone && (
                 <a
                   href={isDemo ? undefined : `tel:${post.phone}`}
@@ -281,11 +300,13 @@ export default function Details() {
                     if (!wasResolved) {
                       celebrate();
                       celebrateResolved();
+                      setJustResolved(true);
                       toast({
-                        title: "Asante for closing the loop! 🎉",
-                        description: "Your neighbours see this post is resolved.",
+                        title: "Sorted! 🎉",
+                        description: `${post.title} is resolved. Great neighbourly work.`,
                       });
                     } else {
+                      setJustResolved(false);
                       toast({ title: "Marked as active again" });
                     }
                   }}
