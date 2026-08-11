@@ -90,13 +90,6 @@ export default function Profile() {
   };
 
   const saveProfile = async () => {
-    if (!hasAvatar) {
-      return toast({
-        title: "Add a profile photo first",
-        description: "Neighbours trust real faces. Tap your avatar to upload one.",
-        variant: "destructive",
-      });
-    }
     if (name.trim().length < 2) return toast({ title: "Add a name", variant: "destructive" });
     const patch: Parameters<typeof updateProfile>[0] = { name: name.trim(), location: location.trim(), bio: bio.trim() };
     if (placePick && placePick.label === location.trim()) {
@@ -149,7 +142,7 @@ export default function Profile() {
           <input ref={fileRef} type="file" accept="image/*" hidden onChange={handleAvatarChange} />
           {!hasAvatar && (
             <p className="text-xs opacity-90 max-w-xs text-center bg-card/20 px-3 py-1.5 rounded-full">
-              Add a photo to edit your profile and build trust with neighbours
+              Add a photo to build trust — it unlocks messaging neighbours
             </p>
           )}
           <h1 className="font-display text-3xl font-bold">{profile.name}</h1>
@@ -213,8 +206,8 @@ export default function Profile() {
           <section className="rounded-2xl border border-border bg-card p-5 grid gap-3">
             <h2 className="font-display text-lg font-bold">Edit profile</h2>
             {!hasAvatar && (
-              <div className="rounded-xl bg-destructive-soft border border-destructive/30 text-destructive px-4 py-3 text-sm">
-                Upload a profile photo above before saving changes to your name, neighbourhood, or bio.
+              <div className="rounded-xl bg-accent/15 border border-accent/40 px-4 py-3 text-sm">
+                Add a photo to build trust — you'll need one before you can message other neighbours. You can still save your neighbourhood and bio now.
               </div>
             )}
             <label className="grid gap-1.5">
@@ -242,7 +235,7 @@ export default function Profile() {
               <span className="text-sm font-medium">Bio</span>
               <textarea rows={3} className="rounded-xl border border-input bg-card px-4 py-3" value={bio} onChange={(e) => setBio(e.target.value)} />
             </label>
-            <button onClick={saveProfile} disabled={!hasAvatar} className="pill-button disabled:opacity-50 disabled:cursor-not-allowed">
+            <button onClick={saveProfile} className="pill-button">
               Save profile
             </button>
           </section>
