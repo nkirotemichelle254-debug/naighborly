@@ -119,6 +119,8 @@ export default function Home() {
   const [intentFilter, setIntentFilter] = useState<PostIntent | "All">("All");
   const [tierMap, setTierMap] = useState<Record<string, TrustTier>>({});
   const [radius, setRadius] = useState<number | null>(null);
+  const [view, setView] = useState<"list" | "map">("list");
+
 
   useEffect(() => {
     if (!showWelcome) return;
