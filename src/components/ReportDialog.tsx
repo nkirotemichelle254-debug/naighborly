@@ -71,7 +71,7 @@ export function ReportDialog({ reportedUserId, postId, trigger }: ReportDialogPr
         <DialogHeader>
           <DialogTitle>Report to keep the community safe</DialogTitle>
           <DialogDescription>
-            Reports are private. Our team reviews every one. Repeated reports affect a neighbor's standing.
+            Reports are private. Our team reviews every one. Repeated reports affect a neighbour's standing.
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-3">

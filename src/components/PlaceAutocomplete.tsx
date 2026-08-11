@@ -37,7 +37,7 @@ export function PlaceAutocomplete({
   value,
   onChange,
   onSelect,
-  placeholder = "Start typing your neighborhood…",
+  placeholder = "Start typing your neighbourhood…",
   className = "",
   countries,
 }: Props) {

@@ -10,11 +10,13 @@ const navItems = [
 export default function AppLayout() {
   const { pathname } = useLocation();
   const hideNav = pathname === "/login" || pathname === "/signup";
+  const wide = pathname.startsWith("/home");
 
   return (
-    <div className="app-frame pb-28">
+    <div className="app-frame pb-28 pb-safe" data-wide={wide}>
       <Outlet />
       {!hideNav && (
+
         <nav className="app-bottom-nav" aria-label="Primary">
           <NavLink to="/home" className="app-bottom-nav__item" data-active={pathname.startsWith("/home")}>
             <Home className="size-5" aria-hidden />

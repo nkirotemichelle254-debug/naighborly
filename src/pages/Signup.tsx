@@ -12,7 +12,7 @@ export default function Signup() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [neighborhood, setNeighborhood] = useState("");
+  const [neighbourhood, setNeighbourhood] = useState("");
   const [place, setPlace] = useState<PlaceValue | null>(null);
   const [error, setError] = useState("");
 
@@ -22,8 +22,8 @@ export default function Signup() {
     e.preventDefault();
     setError("");
     if (name.trim().length < 2) return setError("Please enter your name.");
-    if (neighborhood.trim().length < 2) return setError("Please tell us your neighborhood.");
-    if (!place) return setError("Pick your neighborhood from the suggestions so we can place you on the map.");
+    if (neighbourhood.trim().length < 2) return setError("Please tell us your neighbourhood.");
+    if (!place) return setError("Pick your neighbourhood from the suggestions so we can place you on the map.");
     if (!email.includes("@")) return setError("Please enter a valid email.");
 
     if (password.length < 6) return setError("Password must be at least 6 characters.");
@@ -34,7 +34,7 @@ export default function Signup() {
       setError(err);
       return;
     }
-    // Stash neighborhood so we can save it once the session is ready (handles email-confirm flow too)
+    // Stash neighbourhood so we can save it once the session is ready (handles email-confirm flow too)
     // Stash the picked place so we can save it once the session is ready (handles email-confirm flow too)
     try {
       localStorage.setItem(
@@ -45,11 +45,11 @@ export default function Signup() {
 
     setBusy(false);
     if (needsEmailConfirmation) {
-      toast({ title: "Karibu! Check your email", description: "Confirm your email, then sign in to meet your neighbors." });
+      toast({ title: "Karibu! Check your email", description: "Confirm your email, then sign in to meet your neighbours." });
       navigate(`/login?email=${encodeURIComponent(email.trim())}`, { replace: true });
       return;
     }
-    toast({ title: `Karibu, ${name.split(" ")[0]}!`, description: `Welcome to ${neighborhood.trim()}.` });
+    toast({ title: `Karibu, ${name.split(" ")[0]}!`, description: `Welcome to ${neighbourhood.trim()}.` });
     navigate("/home?welcome=1", { replace: true });
   }
 
@@ -68,7 +68,7 @@ export default function Signup() {
       <header className="auth-hero">
         <div>
           <h1 className="text-4xl font-extrabold tracking-tight">Naighborly</h1>
-          <p className="mt-2 text-sm opacity-90">Join trusted exchange across your neighborhood.</p>
+          <p className="mt-2 text-sm opacity-90">Join trusted exchange across your neighbourhood.</p>
         </div>
       </header>
 
@@ -122,18 +122,18 @@ export default function Signup() {
         </label>
 
         <label className="block mt-4">
-          <span className="text-sm font-medium">Neighborhood</span>
+          <span className="text-sm font-medium">Neighbourhood</span>
           <div className="mt-2">
             <PlaceAutocomplete
-              value={neighborhood}
-              onChange={(v) => { setNeighborhood(v); if (place && v !== place.label) setPlace(null); }}
-              onSelect={(p) => { setPlace(p); setNeighborhood(p.label); }}
+              value={neighbourhood}
+              onChange={(v) => { setNeighbourhood(v); if (place && v !== place.label) setPlace(null); }}
+              onSelect={(p) => { setPlace(p); setNeighbourhood(p.label); }}
               placeholder="e.g. Westlands, Kilimani, Lavington"
               countries={["ke"]}
             />
           </div>
           <span className="text-xs text-muted-foreground mt-1.5 block">
-            {place ? "✓ Got it — we'll show you neighbors nearby." : "Pick from the suggestions so we know where to place you."}
+            {place ? "✓ Got it — we'll show you neighbours nearby." : "Pick from the suggestions so we know where to place you."}
           </span>
         </label>
 

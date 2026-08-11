@@ -23,7 +23,7 @@ export default defineTool({
 
     const { data: owner } = await supabase
       .from("profiles")
-      .select("id,display_name,neighborhood,bio,trust_tier,asanti_received,avatar_url")
+      .select("id,display_name,neighbourhood,bio,trust_tier,asanti_received,avatar_url")
       .eq("id", post.owner_id)
       .maybeSingle();
 

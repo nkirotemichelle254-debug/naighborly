@@ -91,14 +91,14 @@ export default function UserProfile() {
         .from("profiles")
         .select("id, display_name")
         .in("id", giverIds);
-      const nameMap = new Map((givers ?? []).map((g) => [g.id, g.display_name ?? "Neighbor"]));
+      const nameMap = new Map((givers ?? []).map((g) => [g.id, g.display_name ?? "Neighbour"]));
       if (cancelled) return;
       setSnippets(
         rows.map((r) => ({
           id: r.id,
           message: r.message ?? "",
           created_at: r.created_at,
-          giver_name: nameMap.get(r.giver_id) ?? "Neighbor",
+          giver_name: nameMap.get(r.giver_id) ?? "Neighbour",
         })),
       );
     })();
@@ -116,19 +116,19 @@ export default function UserProfile() {
         <button onClick={() => navigate(-1)} className="size-9 inline-flex items-center justify-center rounded-full border border-border" aria-label="Back">
           <ArrowLeft className="size-4" />
         </button>
-        <h1 className="font-display text-xl font-bold">Neighbor profile</h1>
+        <h1 className="font-display text-xl font-bold">Neighbour profile</h1>
       </header>
 
       <main className="px-5 py-5 grid gap-4">
         {loading && (
           <div className="rounded-2xl border border-border bg-card p-6 text-center">
-            <p className="text-sm text-muted-foreground">Loading neighbor…</p>
+            <p className="text-sm text-muted-foreground">Loading neighbour…</p>
           </div>
         )}
 
         {!loading && notFound && (
           <div className="rounded-2xl border border-border bg-card p-6 text-center">
-            <strong className="block font-display">Neighbor not found</strong>
+            <strong className="block font-display">Neighbour not found</strong>
             <p className="text-sm text-muted-foreground mt-1">This profile may have been removed.</p>
             <Link to="/home" className="pill-button mt-4 inline-flex" data-variant="ghost">Back to feed</Link>
           </div>
@@ -168,7 +168,7 @@ export default function UserProfile() {
                   <strong className="font-display text-xl leading-none block">
                     {new Date(profile.created_at).toLocaleDateString(undefined, { month: "short", year: "numeric" })}
                   </strong>
-                  <p className="text-xs text-muted-foreground mt-1">Neighbor since</p>
+                  <p className="text-xs text-muted-foreground mt-1">Neighbour since</p>
                 </div>
               </div>
               <div className="flex items-center justify-center gap-3 pt-1">

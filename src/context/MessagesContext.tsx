@@ -89,7 +89,7 @@ export function MessagesProvider({ children }: { children: ReactNode }) {
       if (rows.length === 0) return [];
       const otherIds = Array.from(new Set(rows.map((r) => (r.user_a === currentUserId ? r.user_b : r.user_a))));
       const { data: profilesData } = await supabase.from("profiles").select("id, display_name").in("id", otherIds);
-      const nameById = new Map((profilesData ?? []).map((p) => [p.id, p.display_name ?? "Neighbor"]));
+      const nameById = new Map((profilesData ?? []).map((p) => [p.id, p.display_name ?? "Neighbour"]));
 
       const threadIds = rows.map((r) => r.id);
       const { data: messagesData } = await supabase
@@ -108,7 +108,7 @@ export function MessagesProvider({ children }: { children: ReactNode }) {
       return rows.map((r) => {
         const isA = r.user_a === currentUserId;
         const otherId = isA ? r.user_b : r.user_a;
-        const withName = nameById.get(otherId) ?? "Neighbor";
+        const withName = nameById.get(otherId) ?? "Neighbour";
         const msgs = byThread.get(r.id) ?? [];
         return {
           id: r.id,
@@ -223,7 +223,7 @@ export function MessagesProvider({ children }: { children: ReactNode }) {
             .eq("id", threadId);
         }
         // Best-effort web push
-        const senderName = user.user_metadata?.display_name ?? user.user_metadata?.full_name ?? user.email?.split("@")[0] ?? "A neighbor";
+        const senderName = user.user_metadata?.display_name ?? user.user_metadata?.full_name ?? user.email?.split("@")[0] ?? "A neighbour";
         sendPush(t.withId, `${senderName}`, trimmed.length > 80 ? trimmed.slice(0, 80) + "…" : trimmed, { url: `/inbox?thread=${threadId}`, tag: `thread-${threadId}` });
       }
     },

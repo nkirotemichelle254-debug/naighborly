@@ -22,7 +22,7 @@ export interface UserProfile {
 
 const FALLBACK_PROFILE: UserProfile = {
   id: "",
-  name: "Neighbor",
+  name: "Neighbour",
   initials: "N",
   email: "",
   location: "Nairobi",
@@ -70,7 +70,7 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 
 async function loadProfile(user: User): Promise<UserProfile> {
   const { data } = await supabase.from("profiles").select("*").eq("id", user.id).maybeSingle();
-  const name = (data?.display_name ?? user.user_metadata?.full_name ?? user.email?.split("@")[0] ?? "Neighbor").trim();
+  const name = (data?.display_name ?? user.user_metadata?.full_name ?? user.email?.split("@")[0] ?? "Neighbour").trim();
   return {
     id: user.id,
     name,
@@ -102,7 +102,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (nextSession?.user) {
         setTimeout(() => {
           const u = nextSession.user!;
-          // If signup stashed a neighborhood, persist it now that we're signed in.
+          // If signup stashed a neighbourhood, persist it now that we're signed in.
           try {
             const key = `naighborly:pending-neighborhood:${(u.email ?? "").toLowerCase()}`;
             const pendingRaw = localStorage.getItem(key);

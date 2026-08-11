@@ -61,7 +61,7 @@ export function AsantiButton({ threadId, receiverId, receiverName }: AsantiButto
     setOpen(false);
     setMessage("");
     celebrateAsante();
-    const giverName = user.user_metadata?.display_name ?? user.user_metadata?.full_name ?? user.email?.split("@")[0] ?? "A neighbor";
+    const giverName = user.user_metadata?.display_name ?? user.user_metadata?.full_name ?? user.email?.split("@")[0] ?? "A neighbour";
     sendPush(receiverId, `${giverName} sent you asante 💛`, message.trim() || "Tap to see their thank-you.", { url: `/inbox?thread=${threadId}`, tag: `asanti-${threadId}` });
     toast({ title: `Asante sent to ${receiverName.split(" ")[0]}`, description: "It boosts their community standing." });
   };

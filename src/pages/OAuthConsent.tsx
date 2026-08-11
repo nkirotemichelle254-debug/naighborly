@@ -90,7 +90,7 @@ export default function OAuthConsent() {
           <>
             <p className="mt-3 text-sm text-muted-foreground">
               <span className="font-semibold text-foreground">{clientName}</span> wants to use Naighborly as you. It
-              will be able to search neighborhood posts, read your profile and standing, create posts on your behalf,
+              will be able to search neighbourhood posts, read your profile and standing, create posts on your behalf,
               and resolve your own posts.
             </p>
             <div className="mt-6 flex gap-3">

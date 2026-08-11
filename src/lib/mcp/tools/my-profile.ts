@@ -3,9 +3,9 @@ import { supabaseForUser } from "../supabase";
 
 export default defineTool({
   name: "my_profile",
-  title: "My neighbor profile",
+  title: "My neighbour profile",
   description:
-    "Get the signed-in neighbor's Naighborly profile: name, neighborhood, trust tier, asanti received, and their own posts.",
+    "Get the signed-in neighbour's Naighborly profile: name, neighbourhood, trust tier, asanti received, and their own posts.",
   inputSchema: {},
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
   handler: async (_input, ctx) => {
@@ -17,7 +17,7 @@ export default defineTool({
 
     const { data: profile, error } = await supabase
       .from("profiles")
-      .select("id,display_name,neighborhood,bio,trust_tier,asanti_received,avatar_url,created_at")
+      .select("id,display_name,neighbourhood,bio,trust_tier,asanti_received,avatar_url,created_at")
       .eq("id", userId)
       .maybeSingle();
     if (error) return { content: [{ type: "text", text: error.message }], isError: true };

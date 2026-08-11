@@ -44,7 +44,7 @@ export default function Login() {
       <header className="auth-hero">
         <div>
           <h1 className="text-4xl font-extrabold tracking-tight">Naighborly</h1>
-          <p className="mt-2 text-sm opacity-90">Share. Connect. Thrive together.</p>
+          <p className="mt-2 text-sm opacity-90">Your hood, in your pocket.</p>
         </div>
       </header>
 

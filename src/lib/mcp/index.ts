@@ -12,7 +12,7 @@ export default defineMcp({
   title: "Nairobi Neighborly Hub",
   version: "0.1.0",
   instructions:
-    "Tools for Naighborly, a Nairobi neighborhood help-and-share app. Use `search_posts` to find neighbor offers and requests, `get_post` for full detail plus the owner's trust standing, `create_post` to post on the signed-in neighbor's behalf, `resolve_post` to close their own post, and `my_profile` for their standing and posts. All tools act as the signed-in neighbor.",
+    "Tools for Naighborly, a Nairobi neighbourhood help-and-share app. Use `search_posts` to find neighbour offers and requests, `get_post` for full detail plus the owner's trust standing, `create_post` to post on the signed-in neighbour's behalf, `resolve_post` to close their own post, and `my_profile` for their standing and posts. All tools act as the signed-in neighbour.",
   auth: auth.oauth.issuer({
     issuer: `https://${projectRef}.supabase.co/auth/v1`,
     acceptedAudiences: "authenticated",

@@ -1,6 +1,6 @@
 import { useEffect, useState, type MouseEvent } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Bookmark, Phone, MessageCircle, Trash2, ShieldAlert } from "lucide-react";
+import { ArrowLeft, Bookmark, Phone, MessageCircle, Trash2, ShieldAlert, Share2, Heart } from "lucide-react";
 import { usePosts } from "@/context/PostsContext";
 import { useAuth } from "@/context/AuthContext";
 import { useMessages } from "@/context/MessagesContext";
@@ -8,6 +8,7 @@ import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { TrustBadge, type TrustTier } from "@/components/TrustBadge";
 import { ReportDialog } from "@/components/ReportDialog";
+import { AsantiButton } from "@/components/AsantiButton";
 import { celebrate } from "@/lib/celebrate";
 import { celebrateResolved } from "@/lib/feedback";
 
@@ -16,7 +17,7 @@ export default function Details() {
   const navigate = useNavigate();
   const { getById, deletePost, updatePost, toggleFavorite, isFavorite } = usePosts();
   const { profile, isSignedIn } = useAuth();
-  const { ensureThreadForPost } = useMessages();
+  const { ensureThreadForPost, threads } = useMessages();
 
   const post = getById(id);
 
@@ -26,6 +27,7 @@ export default function Details() {
   const [location, setLocation] = useState(post?.location ?? "");
   const [ownerTier, setOwnerTier] = useState<TrustTier>("new");
   const [ownerAsanti, setOwnerAsanti] = useState(0);
+  const [justResolved, setJustResolved] = useState(false);
 
   useEffect(() => {
     if (!post?.ownerId || post?.isDemo) return;
@@ -61,8 +63,8 @@ export default function Details() {
   const handleMessage = async () => {
     if (isDemo) {
       toast({
-        title: "This is a sample post",
-        description: "Create your own post or wait for neighbours to share theirs to start chatting.",
+        title: "This is a sample listing",
+        description: "Real neighbours are joining soon. Sign up and post something first — then you can message others!",
       });
       return;
     }
@@ -75,8 +77,8 @@ export default function Details() {
   const handleSave = async () => {
     if (isDemo) {
       toast({
-        title: "Sample posts can't be saved",
-        description: "Saving works on real neighbour posts. Try creating one!",
+        title: "Can't save sample listings",
+        description: "Once real neighbours start posting, you'll be able to save their listings here.",
       });
       return;
     }
@@ -91,6 +93,20 @@ export default function Details() {
         title: "Sample number",
         description: "This is a demo contact. Real numbers appear once neighbours post.",
       });
+    }
+  };
+
+  const handleShare = async () => {
+    const url = window.location.href;
+    try {
+      if (typeof navigator !== "undefined" && navigator.share) {
+        await navigator.share({ title: post.title, text: post.description, url });
+        return;
+      }
+      await navigator.clipboard.writeText(url);
+      toast({ title: "Link copied — share it with your neighbours" });
+    } catch {
+      /* user cancelled the share sheet */
     }
   };
 
@@ -149,7 +165,7 @@ export default function Details() {
                 <TrustBadge tier={ownerTier} />
               </div>
               <p className="text-sm text-muted-foreground">
-                {ownerAsanti > 0 ? `${ownerAsanti} asante${ownerAsanti === 1 ? "" : "s"} from neighbors` : "View neighbor profile"}
+                {ownerAsanti > 0 ? `${ownerAsanti} asante${ownerAsanti === 1 ? "" : "s"} from neighbours` : "View neighbour profile"}
               </p>
             </div>
           </Link>
@@ -160,7 +176,7 @@ export default function Details() {
             </div>
             <div className="flex-1">
               <strong className="block">{post.owner}</strong>
-              <p className="text-sm text-muted-foreground">Sample neighbor in {post.location}</p>
+              <p className="text-sm text-muted-foreground">Sample neighbour in {post.location}</p>
             </div>
           </article>
         )}
@@ -169,7 +185,7 @@ export default function Details() {
           <div><span className="text-xs text-muted-foreground">Category</span><strong className="block">{post.category}</strong></div>
           <div><span className="text-xs text-muted-foreground">Intent</span><strong className="block">{post.intent}</strong></div>
           <div><span className="text-xs text-muted-foreground">Posted</span><strong className="block">{post.time}</strong></div>
-          <div><span className="text-xs text-muted-foreground">Neighborhood</span><strong className="block">{post.location}</strong></div>
+          <div><span className="text-xs text-muted-foreground">Neighbourhood</span><strong className="block">{post.location}</strong></div>
         </article>
 
         <article className="rounded-2xl border border-border bg-card p-5 grid gap-3">
@@ -199,21 +215,21 @@ export default function Details() {
                     ? `${firstName} is well-known here`
                     : known
                     ? "Meet in a public spot"
-                    : "New neighbor — go slow";
+                    : "New neighbour — go slow";
 
                   let body = "";
                   if (post.category === "Service") {
                     body = trusted
-                      ? `Thanked by ${ownerAsanti} neighbors. Still agree on scope and price in chat before any work or payment.`
+                      ? `Thanked by ${ownerAsanti} neighbours. Still agree on scope and price in chat before any work or payment.`
                       : known
                       ? "Confirm scope, price and timing in messages. Pay only after the job is done — never upfront in full."
-                      : "New neighbor offering a service. Get clear scope and price in writing, never pay upfront, and ask for references.";
+                      : "New neighbour offering a service. Get clear scope and price in writing, never pay upfront, and ask for references.";
                   } else if (post.category === "Swap") {
                     body = trusted
                       ? `Trusted swapper (${ownerAsanti} asantes). Confirm both items match the description before swapping.`
                       : known
                       ? "Agree on both items, condition and meeting point in messages. Inspect each item in person before swapping."
-                      : "New neighbor — confirm both items in detail, meet in daylight in a busy place, and bring a friend.";
+                      : "New neighbour — confirm both items in detail, meet in daylight in a busy place, and bring a friend.";
                   } else {
                     // Item
                     if (post.intent === "Request") {
@@ -222,10 +238,10 @@ export default function Details() {
                         : "Confirm exactly what's needed and when. Meet at a public point and never share extra payment info.";
                     } else {
                       body = trusted
-                        ? `Thanked by ${ownerAsanti} neighbors. Still inspect the item before paying.`
+                        ? `Thanked by ${ownerAsanti} neighbours. Still inspect the item before paying.`
                         : known
                         ? "Confirm the item, price and pickup point in messages first. Inspect before paying — meet in daylight."
-                        : "New neighbor — chat first, never send payment before pickup, and meet in a busy public place.";
+                        : "New neighbour — chat first, never send payment before pickup, and meet in a busy public place.";
                     }
                   }
 
@@ -241,6 +257,9 @@ export default function Details() {
             <div className="flex gap-3">
               <button onClick={handleMessage} className="pill-button flex-1 gap-2">
                 <MessageCircle className="size-4" /> Message
+              </button>
+              <button onClick={handleShare} className="pill-button gap-2" data-variant="ghost" aria-label="Share this listing">
+                <Share2 className="size-4" /> Share
               </button>
               {post.allowCalls && post.phone && (
                 <a
@@ -271,7 +290,7 @@ export default function Details() {
         {isOwner && (
           <article className="rounded-2xl border border-border bg-card p-5 grid gap-3">
             <h2 className="font-display text-lg font-bold">Manage your post</h2>
-            {!editing ? (
+            {!editing && (
               <div className="grid grid-cols-2 gap-2">
                 <button onClick={() => setEditing(true)} className="pill-button" data-variant="ghost">Edit</button>
                 <button
@@ -281,11 +300,13 @@ export default function Details() {
                     if (!wasResolved) {
                       celebrate();
                       celebrateResolved();
+                      setJustResolved(true);
                       toast({
-                        title: "Asante for closing the loop! 🎉",
-                        description: "Your neighbors see this post is resolved.",
+                        title: "Sorted! 🎉",
+                        description: `${post.title} is resolved. Great neighbourly work.`,
                       });
                     } else {
+                      setJustResolved(false);
                       toast({ title: "Marked as active again" });
                     }
                   }}
@@ -298,7 +319,25 @@ export default function Details() {
                   <Trash2 className="size-4" /> Delete post
                 </button>
               </div>
-            ) : (
+            )}
+            {justResolved && post.resolved && (() => {
+              const thread = threads.find((t) => t.postId === post.id);
+              if (!thread) return null;
+              return (
+                <div className="rounded-xl border border-accent/50 bg-accent/15 p-4 flex items-center justify-between gap-3">
+                  <span className="text-sm">
+                    <strong className="font-display block">Who came through for you?</strong>
+                    <span className="text-muted-foreground">Send {thread.withName.split(" ")[0]} an Asante — it builds their standing.</span>
+                  </span>
+                  <span className="shrink-0 inline-flex items-center gap-1">
+                    <Heart className="size-4 text-primary" />
+                    <AsantiButton threadId={thread.id} receiverId={thread.withId} receiverName={thread.withName} />
+                  </span>
+                </div>
+              );
+            })()}
+            {editing && (
+
               <div className="grid gap-3">
                 <label className="grid gap-1.5">
                   <span className="text-sm font-medium">Title</span>
