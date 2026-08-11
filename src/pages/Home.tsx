@@ -11,9 +11,10 @@ import { TrustBadge, type TrustTier } from "@/components/TrustBadge";
 import { FeedCardSkeleton } from "@/components/FeedCardSkeleton";
 import { NotificationBell } from "@/components/NotificationBell";
 import { FeedMap } from "@/components/FeedMap";
+import { OnboardingOverlay } from "@/components/OnboardingOverlay";
 import { DISTANCE_OPTIONS, distanceMeters, formatDistance } from "@/lib/distance";
 
-const AD_INTERVAL = 5;
+const AD_INTERVAL = 999; // ads disabled until the feed has real content
 const CATEGORY_FILTERS: Array<PostCategory | "All"> = ["All", "Item", "Service", "Swap"];
 const INTENT_FILTERS: Array<PostIntent | "All"> = ["All", "Offer", "Request"];
 
@@ -48,6 +49,7 @@ function FeedCard({ post, ownerTier, index, nearby, distanceLabel }: { post: Pos
                 </span>
               )}
             </div>
+            {post.isDemo && <span className="feed-card__sample-pill">Sample</span>}
             <div className="feed-card__photo-content">
               <h3 className="feed-card__title text-xl">{post.title}</h3>
               <p className="feed-card__description line-clamp-2">{post.description}</p>
@@ -78,6 +80,7 @@ function FeedCard({ post, ownerTier, index, nearby, distanceLabel }: { post: Pos
             </div>
             <h3 className="feed-card__title">{post.title}</h3>
             <p className="feed-card__description">{post.description}</p>
+            {post.isDemo && <span className="feed-card__sample-pill">Sample</span>}
             <div className="flex items-center justify-between gap-2 mt-1">
               <div className="feed-card__location">{post.location}</div>
               <div className="flex items-center gap-1.5 text-xs text-muted-foreground min-w-0">
@@ -122,16 +125,12 @@ export default function Home() {
   const [view, setView] = useState<"list" | "map">("list");
 
 
-  useEffect(() => {
-    if (!showWelcome) return;
-    const t = setTimeout(() => {
-      setShowWelcome(false);
-      const next = new URLSearchParams(params);
-      next.delete("welcome");
-      setParams(next, { replace: true });
-    }, 6000);
-    return () => clearTimeout(t);
-  }, [showWelcome, params, setParams]);
+  const dismissWelcome = () => {
+    setShowWelcome(false);
+    const next = new URLSearchParams(params);
+    next.delete("welcome");
+    setParams(next, { replace: true });
+  };
 
   useEffect(() => {
     const ownerIds = Array.from(
@@ -376,30 +375,6 @@ export default function Home() {
             <span><strong className="font-semibold">{newTodayCount} new post{newTodayCount === 1 ? "" : "s"}</strong> in {profile.location} today</span>
           </motion.div>
         )}
-        <AnimatePresence>
-          {showWelcome && isSignedIn && (
-            <motion.div
-              initial={{ opacity: 0, y: -8, scale: 0.98 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -8, scale: 0.98 }}
-              transition={{ type: "spring", stiffness: 240, damping: 22 }}
-              className="rounded-2xl bg-gradient-to-br from-accent/40 to-accent/10 border border-accent/40 p-5 relative overflow-hidden"
-            >
-              <button
-                onClick={() => setShowWelcome(false)}
-                className="absolute top-3 right-3 size-7 inline-flex items-center justify-center rounded-full bg-card/60"
-                aria-label="Dismiss welcome"
-              >
-                <X className="size-3.5" />
-              </button>
-              <div className="text-2xl mb-1" aria-hidden>🌿</div>
-              <strong className="font-display text-lg block">Karibu, {profile.name.split(" ")[0]}!</strong>
-              <p className="text-sm text-muted-foreground mt-1">
-                You're now part of {profile.location}. Browse what neighbours are sharing, then post something of your own when you're ready.
-              </p>
-            </motion.div>
-          )}
-        </AnimatePresence>
         {isSignedIn && !profile.avatarUrl && (
           <Link
             to="/profile"
@@ -448,7 +423,7 @@ export default function Home() {
             <p className="text-sm text-muted-foreground mt-1">
               {hasActiveFilter
                 ? "Try clearing filters or a different search phrase."
-                : "Be the first to share something — neighbours are waiting."}
+                : "Be the first to post something — your neighbours are waiting."}
             </p>
             {hasActiveFilter ? (
               <button
@@ -475,11 +450,11 @@ export default function Home() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ type: "spring", stiffness: 220, damping: 24 }}
             aria-label="Needs help now"
-            className="rounded-2xl border border-destructive/30 bg-destructive/5 p-3 grid gap-2"
+            className="rounded-2xl border-2 border-destructive/50 bg-destructive/5 p-3 grid gap-2 animate-urgent-pulse"
           >
             <div className="flex items-center justify-between px-1">
               <strong className="font-display text-sm inline-flex items-center gap-1.5 text-destructive">
-                <Siren className="size-4" /> Needs help now
+                <Siren className="size-4" /> 🚨 Needs help now
               </strong>
               <span className="text-xs text-muted-foreground">{urgentPosts.length} urgent</span>
             </div>
@@ -488,7 +463,7 @@ export default function Home() {
                 <Link
                   key={p.id}
                   to={`/post/${p.id}`}
-                  className="snap-start shrink-0 w-[78%] max-w-[19rem] rounded-2xl border border-destructive/40 bg-card p-4 grid gap-1.5"
+                  className="snap-start shrink-0 w-[85%] max-w-[22rem] rounded-2xl border border-destructive/40 bg-card p-4 grid gap-1.5"
                 >
                   <div className="flex items-center gap-2 text-xs">
                     <span className="feed-card__pill" style={{ background: "hsl(var(--destructive))", color: "hsl(var(--destructive-foreground))" }}>Urgent</span>
