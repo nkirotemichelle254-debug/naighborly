@@ -176,12 +176,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signInWithGoogle = useCallback(async (redirectPath?: string) => {
     const safePath = redirectPath && redirectPath.startsWith("/") && !redirectPath.startsWith("//") ? redirectPath : "";
+    try {
+      if (safePath) sessionStorage.setItem("naighborly:post-auth-path", safePath);
+    } catch { /* ignore */ }
     const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: `${window.location.origin}${safePath}`,
+      redirect_uri: window.location.origin,
     });
     if (result.error) return { error: result.error instanceof Error ? result.error.message : String(result.error) };
     return {};
   }, []);
+
 
   const signOut = useCallback(async () => {
     await supabase.auth.signOut();
