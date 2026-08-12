@@ -1,9 +1,9 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 
 export default function Login() {
-  const { signInWithEmail, signInWithGoogle } = useAuth();
+  const { signInWithEmail, signInWithGoogle, isSignedIn, loading } = useAuth();
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const next = params.get("next") || "/home";
@@ -14,6 +14,18 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+
+  // If a session arrives (e.g. Google popup completes), leave the auth page.
+  useEffect(() => {
+    if (loading || !isSignedIn) return;
+    let stored: string | null = null;
+    try {
+      stored = sessionStorage.getItem("naighborly:post-auth-path");
+      if (stored) sessionStorage.removeItem("naighborly:post-auth-path");
+    } catch { /* ignore */ }
+    navigate(stored || next, { replace: true });
+  }, [isSignedIn, loading, navigate, next]);
+
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
