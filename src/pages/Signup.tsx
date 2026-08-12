@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "@/hooks/use-toast";
@@ -6,7 +6,7 @@ import { PlaceAutocomplete, type PlaceValue } from "@/components/PlaceAutocomple
 
 
 export default function Signup() {
-  const { signUpWithEmail, signInWithGoogle } = useAuth();
+  const { signUpWithEmail, signInWithGoogle, isSignedIn, loading } = useAuth();
   const navigate = useNavigate();
 
   const [name, setName] = useState("");
@@ -17,6 +17,13 @@ export default function Signup() {
   const [error, setError] = useState("");
 
   const [busy, setBusy] = useState(false);
+
+  // Google sign-up completes in a popup — move on as soon as the session exists.
+  useEffect(() => {
+    if (loading || !isSignedIn) return;
+    navigate("/home?welcome=1", { replace: true });
+  }, [isSignedIn, loading, navigate]);
+
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
