@@ -252,7 +252,10 @@ export default function Home() {
   return (
     <div className="min-h-screen animate-fade-in">
       <OnboardingOverlay active={showWelcome} onDone={dismissWelcome} />
-      <div className="sticky top-0 z-30 kitenge-header backdrop-blur px-5 pt-6 pb-4 border-b border-border">
+      <div className="sticky top-0 z-30">
+        <div className="brand-stripe" aria-hidden />
+      </div>
+      <div className="sticky top-1 z-30 kitenge-header backdrop-blur px-5 pt-6 pb-4 border-b border-border">
         <header className="flex items-center justify-between gap-4">
           <div>
             <h1 className="text-3xl font-extrabold tracking-tight">Naighborly</h1>
@@ -424,9 +427,10 @@ export default function Home() {
             initial={{ opacity: 0, scale: 0.96 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ type: "spring", stiffness: 220, damping: 22 }}
-            className="rounded-2xl border border-border bg-card p-8 text-center"
+            className="rounded-2xl border border-border p-10 text-center"
+            style={{ background: "linear-gradient(135deg, hsl(34,55%,97%), hsl(34,42%,94%))" }}
           >
-            <div className="text-4xl mb-2" aria-hidden>🌿</div>
+            <div className="text-5xl mb-3" aria-hidden>🏘️</div>
             <strong className="block font-display text-lg">
               {hasActiveFilter ? "No matches yet" : "Your neighbourhood is quiet"}
             </strong>
