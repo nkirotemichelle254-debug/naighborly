@@ -299,6 +299,27 @@ export default function Profile() {
             <TrustBadge tier={profile.trustTier} size="md" showNew />
           </div>
           <p className="text-sm text-muted-foreground">{getTierMeta(profile.trustTier).description}</p>
+          <div className="grid gap-1.5">
+            <div className="flex items-center gap-1.5" aria-hidden>
+              {(["new", "verified", "active", "trusted", "pillar"] as const).map((tier, i) => {
+                const order = ["new", "verified", "active", "trusted", "pillar"];
+                const currentIndex = order.indexOf(profile.trustTier);
+                const isDone = i <= currentIndex;
+                const isNext = i === currentIndex + 1;
+                return (
+                  <span
+                    key={tier}
+                    className={`h-2 flex-1 rounded-full ${isDone ? "bg-primary" : isNext ? "bg-accent" : "bg-muted"}`}
+                  />
+                );
+              })}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {profile.trustTier === "pillar"
+                ? "You are a Community Pillar 🌿"
+                : `Next: ${["verified", "active", "trusted", "pillar"][["new", "verified", "active", "trusted"].indexOf(profile.trustTier)]}`}
+            </p>
+          </div>
           <div className="rounded-xl bg-muted/40 p-4 grid gap-2 text-sm">
             <strong className="font-display">How standing is earned</strong>
             <ul className="grid gap-1.5 text-muted-foreground text-xs">

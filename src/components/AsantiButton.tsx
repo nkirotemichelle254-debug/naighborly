@@ -69,7 +69,7 @@ export function AsantiButton({ threadId, receiverId, receiverName }: AsantiButto
   if (given) {
     return (
       <span className="inline-flex items-center gap-1 text-xs font-semibold text-primary">
-        <Heart className="size-3.5 fill-current" /> Asante sent
+        <Heart className="size-3.5 fill-accent text-accent" /> Asante sent
       </span>
     );
   }
@@ -78,7 +78,7 @@ export function AsantiButton({ threadId, receiverId, receiverName }: AsantiButto
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <button type="button" className="inline-flex items-center gap-1 text-xs font-semibold text-muted-foreground hover:text-primary transition">
-          <Heart className="size-3.5" /> Send Asante
+          <Heart className="size-3.5 text-accent" /> Send Asante
         </button>
       </DialogTrigger>
       <DialogContent>
