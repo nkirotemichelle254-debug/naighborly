@@ -252,10 +252,8 @@ export default function Home() {
   return (
     <div className="min-h-screen animate-fade-in">
       <OnboardingOverlay active={showWelcome} onDone={dismissWelcome} />
-      <div className="sticky top-0 z-30">
-        <div className="brand-stripe" aria-hidden />
-      </div>
-      <div className="sticky top-1 z-30 kitenge-header backdrop-blur px-5 pt-6 pb-4 border-b border-border">
+      <div className="brand-stripe" aria-hidden />
+      <div className="sticky top-0 z-30 kitenge-header backdrop-blur px-5 pt-6 pb-4 border-b border-border">
         <header className="flex items-center justify-between gap-4">
           <div>
             <h1 className="text-3xl font-extrabold tracking-tight">Naighborly</h1>
