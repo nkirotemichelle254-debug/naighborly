@@ -2,7 +2,12 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 
-type OAuthDetails = Record<string, unknown>;
+type OAuthDetails = {
+  redirect_url?: string;
+  redirect_to?: string;
+  client?: { name?: string };
+  [key: string]: unknown;
+};
 
 type OAuthNamespace = {
   getAuthorizationDetails: (id: string) => Promise<{ data?: OAuthDetails; error?: { message: string } | null }>;
