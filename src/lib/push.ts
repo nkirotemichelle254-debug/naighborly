@@ -56,9 +56,11 @@ export async function enablePush(userId: string): Promise<{ ok: boolean; reason?
     });
   }
   const json = sub.toJSON();
-  const endpoint = json.endpoint!;
-  const p256dh = json.keys?.p256dh!;
-  const auth = json.keys?.auth!;
+  const endpoint = json.endpoint;
+  const p256dh = json.keys?.p256dh;
+  const auth = json.keys?.auth;
+  if (!endpoint || !p256dh || !auth) return;
+
 
   // Upsert by endpoint
   await supabase.from("push_subscriptions").delete().eq("endpoint", endpoint);

@@ -2,10 +2,12 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 
+type OAuthDetails = Record<string, unknown>;
+
 type OAuthNamespace = {
-  getAuthorizationDetails: (id: string) => Promise<{ data?: any; error?: { message: string } | null }>;
-  approveAuthorization: (id: string) => Promise<{ data?: any; error?: { message: string } | null }>;
-  denyAuthorization: (id: string) => Promise<{ data?: any; error?: { message: string } | null }>;
+  getAuthorizationDetails: (id: string) => Promise<{ data?: OAuthDetails; error?: { message: string } | null }>;
+  approveAuthorization: (id: string) => Promise<{ data?: OAuthDetails; error?: { message: string } | null }>;
+  denyAuthorization: (id: string) => Promise<{ data?: OAuthDetails; error?: { message: string } | null }>;
 };
 
 function oauth(): OAuthNamespace {
@@ -15,7 +17,7 @@ function oauth(): OAuthNamespace {
 export default function OAuthConsent() {
   const [params] = useSearchParams();
   const authorizationId = params.get("authorization_id") ?? "";
-  const [details, setDetails] = useState<any>(null);
+  const [details, setDetails] = useState<OAuthDetails | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
