@@ -507,6 +507,7 @@ export default function Home() {
             </span>
           </Link>
         )}
+        <div className="grid gap-4 sm:grid-cols-2">
         {items.map((item, i) =>
           item.kind === "post" ? (
             <FeedCard
@@ -523,6 +524,8 @@ export default function Home() {
             <AdCard key={`a-${i}`} index={item.index} />
           ),
         )}
+        </div>
+
         </>
         )}
       </main>
