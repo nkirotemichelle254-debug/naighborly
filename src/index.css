@@ -426,21 +426,34 @@
     color: hsl(var(--primary-foreground) / 0.82);
   }
 
-  /* Wide layout for the feed on large screens */
-  @media (min-width: 1024px) {
-    .app-frame[data-wide="true"] {
-      max-width: 1000px;
+  /* Responsive shell — widen the frame on tablets and desktops */
+  @media (min-width: 640px) {
+    :root { --mobile-frame-width: 100%; }
+    .app-frame {
+      max-width: 720px;
+      box-shadow: var(--shadow-soft);
+    }
+    .app-bottom-nav {
+      width: min(100%, 720px);
+      padding-left: 40px;
+      padding-right: 40px;
     }
   }
 
-  /* Phone-frame effect on tablet and up */
-  @media (min-width: 768px) {
+  @media (min-width: 1024px) {
     .app-frame {
-      border-left: 1px solid hsl(var(--border));
-      border-right: 1px solid hsl(var(--border));
-      border-radius: 0;
+      max-width: 960px;
+    }
+    .app-frame[data-wide="true"] {
+      max-width: 1200px;
+    }
+    .app-bottom-nav {
+      width: min(100%, 960px);
+      padding-left: 15%;
+      padding-right: 15%;
     }
   }
+
 
   /* Profile chip */
   .profile-chip {
